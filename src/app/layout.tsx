@@ -29,7 +29,8 @@ export default function RootLayout({
       </head>
       <body className={`${font.className} antialiased`}>
         <NextTopLoader 
-          color="#D42S1D"
+          color="red"
+          showSpinner={false}
         />
         <header>
           <Header />
