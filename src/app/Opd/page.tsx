@@ -39,25 +39,25 @@ const Opd = () => {
             <div className="w-full flex flex-wrap items-center justify-start gap-2">
                 <button 
                     onClick={handleTujuan}
-                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Tujuan ? "bg-[#00923F] text-white border-[#00923F]" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
+                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Tujuan ? "bg-red-400 text-white border-red-400" : "text-[#1C1D1D] hover:bg-red-600 hover:text-white"}`}
                 >
                     Tujuan
                 </button>
                 <button 
                     onClick={handleSasaran}
-                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Sasaran ? "bg-[#00923F] text-white border-[#00923F]" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
+                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Sasaran ? "bg-green-600 text-white border-green-bg-green-600" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
                 >
                     Sasaran
                 </button>
                 <button 
                     onClick={handleIku}
-                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Iku ? "bg-[#00923F] text-white border-[#00923F]" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
+                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Iku ? "bg-sky-600 text-white border-sky-600" : "text-[#1C1D1D] hover:bg-sky-800 hover:text-white"}`}
                 >
                     IKU
                 </button>
                 <button 
                     onClick={handleRenaksi}
-                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Renaksi ? "bg-[#00923F] text-white border-[#00923F]" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
+                    className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Renaksi ? "bg-yellow-500 text-white border-yellow-500" : "text-[#1C1D1D] hover:bg-yellow-700 hover:text-white"}`}
                 >
                     Renaksi OPD
                 </button>

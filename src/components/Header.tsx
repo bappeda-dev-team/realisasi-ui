@@ -92,7 +92,7 @@ export const Header = () => {
                     </Link>
                 </ul>
                 <div className="md:hidden">
-                    <button 
+                    <button
                         onClick={toggleMobileMenu}
                         className={`focus:outline-none cursor-pointer rounded-lg p-1 border border-white text-white hover:text-[#1C1D1D] hover:bg-white`}
                     >
@@ -102,33 +102,31 @@ export const Header = () => {
                     </button>
                 </div>
             </div>
-            {isMobileMenuOpen && (
-                <div className="md:hidden rounded-lg bg-[#1C1D1D] text-white py-2 mt-1 absolute top-full left-0 w-full shadow-md">
-                    <ul className="flex flex-col items-center space-y-2 mx-2">
-                        <Link href='/Pemda' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
+            <div className={`md:hidden rounded-lg bg-[#1C1D1D] text-white py-2 mt-1 absolute top-full left-0 w-full shadow-md transition ease-in-out duration-300 ${isMobileMenuOpen ? "opacity-100" : "opacity-0"}`}>
+                <ul className="flex flex-col items-center space-y-2 mx-2">
+                    <Link href='/Pemda' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
                             ${Pemda ? "text-[#1C1D1D] bg-white" : "hover:text-black text-white hover:bg-white border border-white"}
                         `}
-                        >
-                            <TbBuildingFortress />
-                            Pemda
-                        </Link>
-                        <Link href='/Opd' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
+                    >
+                        <TbBuildingFortress />
+                        Pemda
+                    </Link>
+                    <Link href='/Opd' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
                             ${Opd ? "text-[#1C1D1D] bg-white" : "hover:text-black text-white hover:bg-white border border-white"}
                         `}
-                        >
-                            <TbBuilding />
-                            Perangkat Daerah
-                        </Link>
-                        <Link href='/Individu' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
+                    >
+                        <TbBuilding />
+                        Perangkat Daerah
+                    </Link>
+                    <Link href='/Individu' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
                             ${Individu ? "text-[#1C1D1D] bg-white" : "hover:text-black text-white hover:bg-white border border-white"}
                         `}
-                        >
-                            <TbUserSquareRounded />
-                            Individu
-                        </Link>
-                    </ul>
-                </div>
-            )}
+                    >
+                        <TbUserSquareRounded />
+                        Individu
+                    </Link>
+                </ul>
+            </div>
         </nav>
     )
 }
