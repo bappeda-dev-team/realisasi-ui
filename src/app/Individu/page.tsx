@@ -31,7 +31,7 @@ const Individu = () => {
                     onClick={handleRenja}
                     className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${Renja ? "bg-[#00923F] text-white border-[#00923F]" : "text-[#1C1D1D] hover:bg-green-700 hover:text-white"}`}
                 >
-                    Renja Individu
+                    Rekin Individu
                 </button>
                 <button 
                     onClick={handleRenaksi}

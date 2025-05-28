@@ -8,12 +8,12 @@ const TableIku = () => {
                         <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Indikator Utama</th>
                         <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
                         <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2020</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2021</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2022</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2023</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2024</th>
-                        <th colSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">2025</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2020</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2021</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2022</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2023</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2024</th>
+                        <th colSpan={2} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">2025</th>
                     </tr>
                     <tr className="text-white bg-sky-800">
                         <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import TableTujuan from "./TableTujuan";
 import TableIku from "./TableIku";
+import SasaranBar from "./SasaranBar";
 
 const Pemda = () => {
 
@@ -56,7 +57,7 @@ const Pemda = () => {
                 }
                 {Sasaran &&
                     <div className="transition-all ease-in-out duration-500">
-                        Halaman Sasaran
+                        <SasaranBar />
                     </div>
                 }
                 {Iku &&

@@ -102,7 +102,7 @@ export const Header = () => {
                     </button>
                 </div>
             </div>
-            <div className={`md:hidden rounded-lg bg-[#1C1D1D] text-white py-2 mt-1 absolute top-full left-0 w-full shadow-md transition ease-in-out duration-300 ${isMobileMenuOpen ? "opacity-100" : "opacity-0"}`}>
+            <div className={`md:hidden rounded-lg bg-[#1C1D1D] text-white py-2 mt-1 absolute top-full left-0 w-full shadow-md transition ease-in-out duration-300 ${isMobileMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
                 <ul className="flex flex-col items-center space-y-2 mx-2">
                     <Link href='/Pemda' className={`w-full flex items-center justify-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 
                             ${Pemda ? "text-[#1C1D1D] bg-white" : "hover:text-black text-white hover:bg-white border border-white"}
