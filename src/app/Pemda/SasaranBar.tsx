@@ -29,8 +29,9 @@ const SasaranBar = () => {
                             <tr className="text-xm bg-emerald-500 text-white">
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[50px] text-center">No</td>
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Strategic Pemda</td>
-                                <td rowSpan={2} colSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Sasaran Pemda</td>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Sasaran Pemda</td>
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Indikator</td>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[100px] text-center">Aksi</td>
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[100px]">Rumus Perhitungan</td>
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[100px]">Sumber Data</td>
                                 <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">2020</th>
@@ -42,37 +43,38 @@ const SasaranBar = () => {
                             </tr>
                             <tr className="bg-emerald-500 text-white">
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Pembanding</th>
-                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                                 <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">1</td>
-                                <td className="px-6 py-4 border-r border-emerald-500">Meningkatnya proses produksi beras bulog</td>
-                                <td className="px-6 py-4 border-r border-emerald-500">Realisasi swasembada pangan nasional tahun 2025</td>
-                                <td className="px-6 py-4 border-r border-emerald-500">
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">1</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">Meningkatnya proses produksi beras bulog</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">Realisasi swasembada pangan nasional tahun 2025</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">Tingkat produksi petani setiap daerah</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">
                                     <div className="flex flex-col gap-2">
                                         <ButtonGreenBorder
                                             className="flex items-center gap-1"
@@ -86,41 +88,34 @@ const SasaranBar = () => {
                                             }
                                             Realisasi
                                         </ButtonGreenBorder>
-                                        <ButtonRedBorder
-                                            className="flex items-center gap-1"
-                                        >
-                                            <TbTrash />
-                                            Hapus
-                                        </ButtonRedBorder>
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 border-r border-emerald-500">Tingkat produksi petani setiap daerah</td>
-                                <td className="px-6 py-4 border-r border-emerald-500">Presentase hasil produksi</td>
-                                <td className="px-6 py-4 border-r border-emerald-500">Bulog</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
-                                <td className="px-6 py-4 border-r border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">Presentase hasil produksi</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500">Bulog</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
+                                <td className="px-6 py-4 border-r border-b border-emerald-500 text-center">-</td>
                             </tr>
                         </tbody>
                     </table>
