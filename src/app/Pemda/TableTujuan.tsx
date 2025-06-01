@@ -1,13 +1,17 @@
 'use client'
 
 import { ButtonGreenBorder, ButtonRedBorder } from "@/components/Global/Button/button";
-import { TbPencil, TbTrash } from "react-icons/tb";
+import { TbPencil, TbCircleCheckFilled } from "react-icons/tb";
 import { LoadingButtonClip } from "@/components/Global/Loading/LoadingButton";
+import { ModalTujuanPemda } from "./Modal/ModalTujuan";
 import { useState } from "react";
 
 const TableTujuan = () => {
 
     const [Loading, setLoading] = useState<boolean>(false);
+    
+    // Modal
+    const [OpenModal, setOpenModal] = useState<boolean>(false);
 
     return (
         <div className="overflow-auto mt-2 rounded-t-lg border border-red-400">
@@ -72,14 +76,17 @@ const TableTujuan = () => {
                         <td className="border border-red-400 px-6 py-4 text-center">
                             <div className="flex flex-col gap-2">
                                 <ButtonGreenBorder
-                                    className="flex items-center gap-1"
+                                    className="flex items-center gap-1 cursor-pointer"
                                     // disabled={Loading}
-                                    onClick={() => setLoading((prev) => !prev)}
+                                    onClick={() => {
+                                        setLoading((prev) => !prev);
+                                        setOpenModal(true);
+                                    }}
                                 >
                                     {Loading ?
                                         <LoadingButtonClip />
                                         :
-                                        <TbPencil />
+                                        <TbCircleCheckFilled />
                                     }
                                     Realisasi
                                 </ButtonGreenBorder>
@@ -121,6 +128,13 @@ const TableTujuan = () => {
                     </tr>
                 </tbody>
             </table>
+            <ModalTujuanPemda 
+                isOpen={OpenModal}
+                onClose={() => {
+                    setOpenModal(false);
+                    setLoading(false);
+                }}
+            />
         </div>
     )
 }

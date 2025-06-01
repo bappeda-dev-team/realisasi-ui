@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { TbArrowBadgeDownFilled, TbPencil, TbTrash } from "react-icons/tb";
+import { TbArrowBadgeDownFilled, TbPencil, TbCircleCheckFilled } from "react-icons/tb";
 import { ButtonGreenBorder, ButtonRedBorder } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading/LoadingButton";
 
@@ -84,7 +84,7 @@ const SasaranBar = () => {
                                             {Loading ?
                                                 <LoadingButtonClip />
                                                 :
-                                                <TbPencil />
+                                                <TbCircleCheckFilled />
                                             }
                                             Realisasi
                                         </ButtonGreenBorder>

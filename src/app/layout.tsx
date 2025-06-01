@@ -3,6 +3,7 @@ import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Global/Header/Header";
 import NextTopLoader from "nextjs-toploader";
+import { BrandingProvider } from "@/context/BrandingContext";
 
 const font = Nunito_Sans({
   subsets: ["latin"],
@@ -28,16 +29,18 @@ export default function RootLayout({
         />
       </head>
       <body className={`${font.className} antialiased`}>
-        <NextTopLoader 
-          color="red"
-          showSpinner={false}
-        />
-        <header>
-          <Header />
-        </header>
-        <div className="pt-[90px] px-5 pb-5">
-          {children}
-        </div>
+        <BrandingProvider>
+          <NextTopLoader 
+            color="red"
+            showSpinner={false}
+          />
+          <header>
+            <Header />
+          </header>
+          <div className="pt-[90px] px-5 pb-5">
+            {children}
+          </div>
+        </BrandingProvider>
       </body>
     </html>
   );
