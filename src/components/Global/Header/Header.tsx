@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TbBuildingFortress, TbBuilding, TbUserSquareRounded } from "react-icons/tb";
+import { useBrandingContext } from "@/context/BrandingContext";
 
 export const Header = () => {
 
@@ -17,6 +18,7 @@ export const Header = () => {
     const [Individu, setIndividu] = useState<boolean>(false);
 
     const url = usePathname();
+    const {branding} = useBrandingContext();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -62,7 +64,7 @@ export const Header = () => {
             <div className="mx-auto flex md:justify-start justify-between gap-5 items-center px-4 py-3">
                 <Link href="/">
                     <Image
-                        src="/logo.png"
+                        src={branding.logo}
                         alt="logo"
                         width={40}
                         height={40}
