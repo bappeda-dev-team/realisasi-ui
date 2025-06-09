@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build-image": "docker build -t realisasi-ui:dev --build-arg NEXT_PUBLIC_APP_NAME='KERTASKERJA-REALISASI-DEV' --build-arg NEXT_PUBLIC_CLIENT_NAME='File City' --build-arg NEXT_PUBLIC_LOGO_URL='https://cdnkk.zeabur.app/api/cdn/download/images/universal.png' --build-arg NEXT_PUBLIC_API_URL='http://kertaskerja.local/api/v1' ."
   },
   "dependencies": {
     "next": "15.3.2",

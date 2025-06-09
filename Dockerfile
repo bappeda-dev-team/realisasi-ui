@@ -25,8 +25,16 @@ COPY postcss.config.mjs ./
 # Environment variables must be present at build time
 # https://github.com/vercel/next.js/discussions/14030
 ARG NEXT_PUBLIC_API_URL
-
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+ARG NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
+
+ARG NEXT_PUBLIC_CLIENT_NAME
+ENV NEXT_PUBLIC_CLIENT_NAME=$NEXT_PUBLIC_CLIENT_NAME
+
+ARG NEXT_PUBLIC_LOGO_URL
+ENV NEXT_PUBLIC_LOGO_URL=$NEXT_PUBLIC_LOGO_URL
 
 # Next.js collects completely anonymous telemetry data about general usage. Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line to disable telemetry at build time
@@ -61,8 +69,17 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Environment variables must be redefined at run time
 ARG NEXT_PUBLIC_API_URL
-
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
+ARG NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
+
+ARG NEXT_PUBLIC_CLIENT_NAME
+ENV NEXT_PUBLIC_CLIENT_NAME=$NEXT_PUBLIC_CLIENT_NAME
+
+ARG NEXT_PUBLIC_LOGO_URL
+ENV NEXT_PUBLIC_LOGO_URL=$NEXT_PUBLIC_LOGO_URL
+
 # Uncomment the following line to disable telemetry at run time
 ENV NEXT_TELEMETRY_DISABLED=1
 
