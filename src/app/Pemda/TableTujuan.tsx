@@ -1,16 +1,25 @@
 import React from 'react';
-import useFetch from '@/hooks/useFetchPerencanaanTujuan';
-import { PerencanaanTujuanPemdaResponse } from '@/types';
+import useFetchPerencanaanTujuan from '@/hooks/useFetchPerencanaanTujuan';
+import useFetchRealisasiTujuan from '@/hooks/useFetchRealisasiTujuan';
+import { PerencanaanTujuanPemdaResponse, RealisasiTujuanResponse, TargetRealisasiCapaian } from '@/types';
 import TargetCol from './TargetCol';
 import { LoadingBeat } from '@/components/Global/Loading';
+import { gabunganDataPerencanaanRealisasi } from '@/utils/gabunganDataPerencanaanRealisasi'
 
 const TableTujuan = () => {
-  const { data, loading, error } = useFetch<PerencanaanTujuanPemdaResponse>();
+  const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchPerencanaanTujuan<PerencanaanTujuanPemdaResponse>();
+  const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchRealisasiTujuan<RealisasiTujuanResponse>();
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
 
-  if (loading) return <LoadingBeat loading={loading} />;
-  if (error) return <div>Error: {error}</div>;
 
+  if (perencanaanLoading || realisasiLoading) return <LoadingBeat loading={perencanaanLoading} />;
+  if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
+  if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
+
+  const dataTargetRealisasi: TargetRealisasiCapaian[] = gabunganDataPerencanaanRealisasi(
+    perencanaanData?.data ?? [],
+    realisasiData ?? []
+  );
   return (
     <div className="overflow-auto mt-2 rounded-t-lg border border-red-400">
       <table className="w-full">
@@ -42,13 +51,13 @@ const TableTujuan = () => {
           </tr>
         </thead>
         <tbody>
-          {data?.data.map((item, indexAtas) =>
+          {perencanaanData?.data.map((item, indexAtas) =>
             item.tujuan_pemda.map((tujuan, index) => {
               const indikator = tujuan.indikator?.[0];
 
               return (
                 <tr key={`${item.pokin_id}-${index}`}>
-                  <td className="border-b border-red-400 px-6 py-4 text-center">{index + indexAtas + 1}</td>
+                  <td className="border border-red-400 px-6 py-4 text-center">{index + indexAtas + 1}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan_pemda}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{tujuan.misi}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.indikator ?? '-'}</td>
@@ -56,10 +65,11 @@ const TableTujuan = () => {
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.rumus_perhitungan ?? '-'}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.sumber_data ?? '-'}</td>
                   {periode.map((tahun) => {
-                    const targetData = indikator?.target?.find(target => target.tahun === tahun.toString());
+
+                    const targetData = dataTargetRealisasi.find(r => r.indikatorId === indikator.id.toString() && r.tahun === tahun.toString());
 
                     return targetData ? (
-                      <TargetCol key={targetData.id} target={targetData.target} satuan={targetData.satuan} />
+                      <TargetCol key={targetData.targetRealisasiId} target={targetData.target} satuan={targetData.satuan} realisasi={targetData.realisasi} capaian={targetData.capaian} />
                     ) : (
                       <React.Fragment key={`${item.pokin_id}-${tahun}`}>
                         <td className="border border-red-400 px-6 py-4 text-center" colSpan={4}>-</td>
