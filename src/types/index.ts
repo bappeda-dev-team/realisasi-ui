@@ -80,3 +80,24 @@ export interface TargetRealisasiCapaian {
   satuan: string;
   tahun: string;
 }
+
+export interface TujuanRequest {
+  tujuanId: string;
+  indikatorId: string;
+  target: number;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
+}
+
+export interface Modal<T> {
+  item: T | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export interface FormProps<T, L> {
+  requestValues: T | null;
+  onClose: () => void;
+}

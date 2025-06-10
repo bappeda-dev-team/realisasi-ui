@@ -1,14 +1,20 @@
-import React from 'react';
+import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { LoadingBeat, LoadingButtonClip } from '@/components/Global/Loading';
 import useFetchPerencanaanTujuan from '@/hooks/useFetchPerencanaanTujuan';
 import useFetchRealisasiTujuan from '@/hooks/useFetchRealisasiTujuan';
-import { PerencanaanTujuanPemdaResponse, RealisasiTujuanResponse, TargetRealisasiCapaian } from '@/types';
+import { PerencanaanTujuanPemdaResponse, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda } from '@/types';
+import { gabunganDataPerencanaanRealisasi } from '@/utils/gabunganDataPerencanaanRealisasi';
+import React, { useState } from 'react';
+import { TbCircleCheckFilled } from "react-icons/tb";
+import { ModalTujuanPemda } from "./Modal/ModalTujuan";
 import TargetCol from './TargetCol';
-import { LoadingBeat } from '@/components/Global/Loading';
-import { gabunganDataPerencanaanRealisasi } from '@/utils/gabunganDataPerencanaanRealisasi'
 
 const TableTujuan = () => {
   const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchPerencanaanTujuan<PerencanaanTujuanPemdaResponse>();
   const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchRealisasiTujuan<RealisasiTujuanResponse>();
+  const [OpenModal, setOpenModal] = useState<boolean>(false);
+  const [Loading, setLoading] = useState<boolean>(false);
+  const [selectedTujuan, setSelectedTujuan] = useState<TujuanPemda | null>(null);
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
 
 
@@ -20,6 +26,12 @@ const TableTujuan = () => {
     perencanaanData?.data ?? [],
     realisasiData ?? []
   );
+
+  const handleOpenModal = (tujuan: TujuanPemda) => {
+    setSelectedTujuan(tujuan);
+    setOpenModal(true);
+  };
+
   return (
     <div className="overflow-auto mt-2 rounded-t-lg border border-red-400">
       <table className="w-full">
@@ -61,7 +73,25 @@ const TableTujuan = () => {
                   <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan_pemda}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{tujuan.misi}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.indikator ?? '-'}</td>
-                  <td className="border border-red-400 px-6 py-4 text-center">{/* Add actions if needed */}</td>
+                  <td className="border border-red-400 px-6 py-4 text-center">
+                    <div className="flex flex-col gap-2">
+                      <ButtonGreenBorder
+                        className="flex items-center gap-1 cursor-pointer"
+                        onClick={() => {
+                          setLoading(true);
+                          handleOpenModal(tujuan);
+                          setOpenModal(true);
+                        }}
+                      >
+                        {Loading ?
+                          <LoadingButtonClip />
+                          :
+                          <TbCircleCheckFilled />
+                        }
+                        Realisasi
+                      </ButtonGreenBorder>
+                    </div>
+                  </td>
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.rumus_perhitungan ?? '-'}</td>
                   <td className="border border-red-400 px-6 py-4 text-center">{indikator?.sumber_data ?? '-'}</td>
                   {periode.map((tahun) => {
@@ -83,6 +113,14 @@ const TableTujuan = () => {
           )}
         </tbody>
       </table>
+      <ModalTujuanPemda
+        item={selectedTujuan}
+        isOpen={OpenModal}
+        onClose={() => {
+          setOpenModal(false);
+          setLoading(false);
+        }}
+      />
     </div>
   );
 };
