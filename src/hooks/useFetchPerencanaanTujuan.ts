@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FetchResponse } from '@/types'
 
-const url = `${process.env.NEXT_PUBLIC_API_URL}/perencanaan/tujuan_pemda/findall_with_pokin/2025/2030/rpjmd`
+const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/perencanaan/tujuan_pemda/findall_with_pokin/2025/2030/rpjmd`
 const token = process.env.NEXT_PUBLIC_API_ACCESS_TOKEN
 
 const useFetchPerencanaanTujuan = <T>(): FetchResponse<T> => {

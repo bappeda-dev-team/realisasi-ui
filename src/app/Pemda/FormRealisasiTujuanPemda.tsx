@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { FormProps, TargetRealisasiCapaian, TujuanRequest } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
+import useSubmitRealisasiTujuan from '@/hooks/useSubmitRealisasiTujuan'
 
 const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], TujuanRequest>> = ({ requestValues, onClose }) => {
+  const { submit, loading, error } = useSubmitRealisasiTujuan();
   const [Proses, setProses] = useState(false);
   const [formData, setFormData] = useState<TujuanRequest[]>([]);
 
@@ -26,10 +28,12 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
   }, [requestValues]);
 
   const handleChange = (indikatorId: string, tahun: string, value: string) => {
+    const numericReal = parseFloat(value)
+
     setFormData((prev) =>
       prev.map((item) =>
         item.indikatorId === indikatorId && item.tahun === tahun
-          ? { ...item, realisasi: value }
+          ? { ...item, realisasi: isNaN(numericReal) ? 0 : numericReal }
           : item
       )
     );
@@ -37,14 +41,19 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setProses(true);
-    try {
-      console.log(formData);
-    } finally {
-      setProses(false);
+    setProses(loading);
+
+    const result = await submit(formData)
+
+    if (result) {
+      console.log("Successfully submitted:", result); // Handle success (e.g., notify user, close modal, etc.)
       onClose();
+    } else {
+      console.error("Submission failed:", error); // Handle error
     }
+    setProses(loading);
   };
+
   const indikator = requestValues ? requestValues[0].indikator : ''
 
   return (
@@ -65,10 +74,11 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
                 Realisasi:
               </label>
               <input
-                type="string"
+                type="number"
                 className="w-full border rounded px-2 py-1 text-sm mb-1"
+                step="0.01"
                 value={
-                  formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? ''
+                  formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? 0
                 }
                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, e.target.value)}
               />

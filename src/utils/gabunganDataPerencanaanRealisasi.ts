@@ -29,8 +29,8 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanTujuanP
               indikatorId: indikator.id.toString(),
               indikator: indikator.indikator,
               target: target.target,
-              realisasi: realizationEntry.realisasi.toString(),
-              capaian: '100%',
+              realisasi: realizationEntry.realisasi,
+              capaian: realizationEntry.capaian,
               satuan: target.satuan,
               tahun: target.tahun
             });
@@ -42,8 +42,8 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanTujuanP
               indikatorId: indikator.id.toString(),
               indikator: indikator.indikator,
               target: target.target,
-              realisasi: '',
-              capaian: '-',
+              realisasi: 0,
+              capaian: '',
               satuan: target.satuan,
               tahun: target.tahun
             });
