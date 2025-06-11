@@ -72,8 +72,10 @@ export type FetchResponse<T> = {
 
 export interface TargetRealisasiCapaian {
   targetRealisasiId: string;
+  tujuanPemda: string;
   tujuanId: string;
   indikatorId: string;
+  indikator: string;
   target: string;
   realisasi: string;
   capaian: string;
@@ -84,8 +86,8 @@ export interface TargetRealisasiCapaian {
 export interface TujuanRequest {
   tujuanId: string;
   indikatorId: string;
-  target: number;
-  realisasi: number;
+  target: string;
+  realisasi: string;
   satuan: string;
   tahun: string;
   jenisRealisasi: string;

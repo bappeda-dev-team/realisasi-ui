@@ -14,7 +14,7 @@ const TableTujuan = () => {
   const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchRealisasiTujuan<RealisasiTujuanResponse>();
   const [OpenModal, setOpenModal] = useState<boolean>(false);
   const [Loading, setLoading] = useState<boolean>(false);
-  const [selectedTujuan, setSelectedTujuan] = useState<TujuanPemda | null>(null);
+  const [selectedTujuan, setSelectedTujuan] = useState<TargetRealisasiCapaian[] | null>(null);
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
 
 
@@ -27,8 +27,15 @@ const TableTujuan = () => {
     realisasiData ?? []
   );
 
-  const handleOpenModal = (tujuan: TujuanPemda) => {
-    setSelectedTujuan(tujuan);
+  const handleOpenModal = (tujuan: TujuanPemda, data: TargetRealisasiCapaian[]) => {
+    const targetCapaian = data.filter(tc => tc.tujuanId === tujuan.id.toString())
+
+    if (targetCapaian) {
+      setSelectedTujuan(targetCapaian); // Set the selected purpose to the found target capaian
+    } else {
+      console.warn('No matching target capaian found for the selected tujuan');
+      setSelectedTujuan(null); // Optionally reset if nothing is found to avoid stale data
+    }
     setOpenModal(true);
   };
 
@@ -79,7 +86,7 @@ const TableTujuan = () => {
                         className="flex items-center gap-1 cursor-pointer"
                         onClick={() => {
                           setLoading(true);
-                          handleOpenModal(tujuan);
+                          handleOpenModal(tujuan, dataTargetRealisasi);
                           setOpenModal(true);
                         }}
                       >

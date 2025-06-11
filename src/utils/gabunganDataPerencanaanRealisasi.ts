@@ -21,13 +21,14 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanTujuanP
             r.tujuanId === tujuan.id.toString() // Ensure proper matching
           );
 
-          // If there is a realization entry, create TargetRealisasiCapaian
           if (realizationEntry) {
             hasil.push({
               targetRealisasiId: target.id,
-              tujuanId: tujuan.id.toString(), // Ensure the type is consistent
+              tujuanPemda: tujuan.tujuan_pemda,
+              tujuanId: tujuan.id.toString(),
               indikatorId: indikator.id.toString(),
-              target: target.target,         // Convert to number
+              indikator: indikator.indikator,
+              target: target.target,
               realisasi: realizationEntry.realisasi.toString(),
               capaian: '100%',
               satuan: target.satuan,
@@ -36,10 +37,12 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanTujuanP
           } else {
             hasil.push({
               targetRealisasiId: target.id,
-              tujuanId: tujuan.id.toString(), // Ensure the type is consistent
+              tujuanPemda: tujuan.tujuan_pemda,
+              tujuanId: tujuan.id.toString(),
               indikatorId: indikator.id.toString(),
-              target: target.target,         // Convert to number
-              realisasi: '-',
+              indikator: indikator.indikator,
+              target: target.target,
+              realisasi: '',
               capaian: '-',
               satuan: target.satuan,
               tahun: target.tahun
