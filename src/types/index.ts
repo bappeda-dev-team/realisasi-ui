@@ -65,12 +65,6 @@ export interface RealisasiTujuan {
 
 export type RealisasiTujuanResponse = RealisasiTujuan[];
 
-export type FetchResponse<T> = {
-  data?: T;
-  loading: boolean;
-  error?: string;
-};
-
 export interface TargetRealisasiCapaian {
   targetRealisasiId: string;
   tujuanPemda: string;
@@ -78,7 +72,6 @@ export interface TargetRealisasiCapaian {
   indikatorId: string;
   indikator: string;
   target: string;
-  targetList: number[];
   realisasi: number;
   capaian: string;
   satuan: string;
@@ -105,3 +98,15 @@ export interface FormProps<T, L> {
   requestValues: T | null;
   onClose: () => void;
 }
+
+export type FetchResponse<T> = {
+  data?: T;
+  loading: boolean;
+  error?: string;
+};
+
+export type SubmitResponse<T> = {
+  submit: (payload: any) => Promise<T | undefined>;
+  loading: boolean;
+  error?: string;
+};

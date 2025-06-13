@@ -1,8 +1,9 @@
 'use client'
 
+import React from 'react';
 import { ButtonRed } from "@/components/Global/Button/button";
 import { Modal, TargetRealisasiCapaian } from '@/types';
-import FormRealisasiTujuanPemda from '../FormRealisasiTujuanPemda';
+import FormRealisasiTujuanPemda from './FormRealisasiTujuanPemda';
 
 export const ModalTujuanPemda: React.FC<Modal<TargetRealisasiCapaian[]>> = ({ isOpen, onClose, item }) => {
 

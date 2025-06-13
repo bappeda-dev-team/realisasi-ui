@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react';
 import { FetchResponse } from '@/types'
 
-const url = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/realisasi/tujuans/by-periode/2025/2030/rpjmd`
-const token = process.env.NEXT_PUBLIC_API_ACCESS_TOKEN
+interface useFetchDataProps {
+  url: string;
+  token?: string | undefined;
+}
 
-const useFetchRealisasiTujuan = <T>(): FetchResponse<T> => {
+export const useFetchData = <T>({ url, token }: useFetchDataProps): FetchResponse<T> => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(token && { 'Authorization': `Bearer ${token}` }),
+  }
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
         const response = await fetch(url, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          }
+          headers: headers
         });
         if (!response.ok) {
-          throw new Error('Realisasi response was not ok');
+          throw new Error('response was not ok');
         }
         const responseData: T = await response.json();
         setData(responseData);
@@ -36,5 +40,3 @@ const useFetchRealisasiTujuan = <T>(): FetchResponse<T> => {
 
   return { data, loading, error }
 };
-
-export default useFetchRealisasiTujuan

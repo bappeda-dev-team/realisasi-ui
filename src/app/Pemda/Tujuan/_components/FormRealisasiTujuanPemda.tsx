@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
-import { FormProps, TargetRealisasiCapaian, TujuanRequest } from '@/types';
+import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import useSubmitRealisasiTujuan from '@/hooks/useSubmitRealisasiTujuan'
+import { useSubmitData } from '@/hooks/useSubmitData'
+import { useApiUrlContext } from '@/context/ApiUrlContext';
 
 const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], TujuanRequest>> = ({ requestValues, onClose }) => {
-  const { submit, loading, error } = useSubmitRealisasiTujuan();
+  const { url, token } = useApiUrlContext();
+  const { submit, loading, error } = useSubmitData<RealisasiTujuan>({ url: `${url}/api/v1/realisasi/tujuans/batch`, token });
   const [Proses, setProses] = useState(false);
   const [formData, setFormData] = useState<TujuanRequest[]>([]);
+  const [data, setData] = useState<RealisasiTujuan[]>([]);
 
+  // fill data awal
   useEffect(() => {
     if (requestValues) {
       const generatedFormData: TujuanRequest[] = requestValues.map((indikator) => {
@@ -27,6 +31,7 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
     }
   }, [requestValues]);
 
+  // handle saat berubah ?
   const handleChange = (indikatorId: string, tahun: string, value: string) => {
     const numericReal = parseFloat(value)
 
@@ -39,6 +44,7 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
     );
   };
 
+  // saat submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setProses(loading);
@@ -48,12 +54,14 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
     if (result) {
       console.log("Successfully submitted:", result); // Handle success (e.g., notify user, close modal, etc.)
       onClose();
+      setData((prev) => [...prev, result])
     } else {
       console.error("Submission failed:", error); // Handle error
     }
     setProses(loading);
   };
 
+  // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa
   const indikator = requestValues ? requestValues[0].indikator : ''
 
   return (

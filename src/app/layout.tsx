@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Global/Header/Header";
 import NextTopLoader from "nextjs-toploader";
 import { BrandingProvider } from "@/context/BrandingContext";
+import { ApiUrlProvider } from "@/context/ApiUrlContext";
 
 const font = Nunito_Sans({
   subsets: ["latin"],
@@ -23,23 +24,25 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link 
-          rel="icon" 
-          href="/logo.png" 
+        <link
+          rel="icon"
+          href="/logo.png"
         />
       </head>
       <body className={`${font.className} antialiased`}>
         <BrandingProvider>
-          <NextTopLoader 
+          <NextTopLoader
             color="red"
             showSpinner={false}
           />
           <header>
             <Header />
           </header>
-          <div className="pt-[90px] px-5 pb-5">
-            {children}
-          </div>
+          <ApiUrlProvider>
+            <div className="pt-[90px] px-5 pb-5">
+              {children}
+            </div>
+          </ApiUrlProvider>
         </BrandingProvider>
       </body>
     </html>
