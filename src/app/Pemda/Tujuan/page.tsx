@@ -2,7 +2,7 @@
 
 import { LoadingBeat } from '@/components/Global/Loading';
 import { useFetchData } from '@/hooks/useFetchData';
-import { PerencanaanTujuanPemdaResponse, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda } from '@/types';
+import { PerencanaanTujuanPemdaResponse, PerencanaanTujuanPemda, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda, RealisasiTujuan } from '@/types';
 import React, { useEffect, useState } from 'react';
 import TableTujuan from './_components/TableTujuan';
 import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
@@ -17,13 +17,17 @@ export default function Tujuan() {
   const [dataTargetRealisasi, setDataTargetRealisasi] = useState<TargetRealisasiCapaian[]>([]);
   const [tujuansPemda, setTujuansPemda] = useState<TujuanPemda[]>([])
   const [OpenModal, setOpenModal] = useState<boolean>(false);
-  const [selectedTujuan, setSelectedTujuan] = useState<TargetRealisasiCapaian[] | null>(null);
+  const [selectedTujuan, setSelectedTujuan] = useState<TargetRealisasiCapaian[]>([]);
+  const [perencanaanTujuan, setPerencanaanTujuan] = useState<PerencanaanTujuanPemda[]>([]);
 
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
 
   useEffect(() => {
     if (perencanaanData && realisasiData) {
-      const combinedData = gabunganDataPerencanaanRealisasi(perencanaanData.data, realisasiData);
+      const perencanaan = perencanaanData.data
+      setPerencanaanTujuan(perencanaan)
+
+      const combinedData = gabunganDataPerencanaanRealisasi(perencanaan, realisasiData);
       const tujuans = perencanaanData.data.flatMap((pokin) => pokin.tujuan_pemda);
       setDataTargetRealisasi(combinedData);
       setTujuansPemda(tujuans);
@@ -42,7 +46,7 @@ export default function Tujuan() {
       setSelectedTujuan(targetCapaian); // Set the selected purpose to the found target capaian
     } else {
       console.warn('No matching target capaian found for the selected tujuan');
-      setSelectedTujuan(null); // Optionally reset if nothing is found to avoid stale data
+      setSelectedTujuan([]); // Optionally reset if nothing is found to avoid stale data
     }
     setOpenModal(true);
   };
@@ -62,6 +66,10 @@ export default function Tujuan() {
         isOpen={OpenModal}
         onClose={() => {
           setOpenModal(false);
+        }}
+        onSuccess={(result: RealisasiTujuan[]) => {
+          const updated = gabunganDataPerencanaanRealisasi(perencanaanTujuan, result)
+          setDataTargetRealisasi(updated)
         }}
       />
     </div>

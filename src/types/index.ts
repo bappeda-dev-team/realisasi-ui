@@ -97,6 +97,7 @@ export interface Modal<T> {
 export interface FormProps<T, L> {
   requestValues: T | null;
   onClose: () => void;
+  onSuccess?: (updatedValue: L) => void;
 }
 
 export type FetchResponse<T> = {

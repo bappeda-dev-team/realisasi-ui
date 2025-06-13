@@ -1,18 +1,17 @@
 import React from 'react';
 import { ButtonRed } from "@/components/Global/Button/button";
-import { TargetRealisasiCapaian, SetState } from '@/types';
+import { TargetRealisasiCapaian, RealisasiTujuanResponse } from '@/types';
 import FormRealisasiTujuanPemda from './FormRealisasiTujuanPemda';
 
 interface ModalTujuanPemdaProps {
   isOpen: boolean;
   onClose: () => void;
   item: TargetRealisasiCapaian[];
-  setTargetRealisasiCapaians: SetState<TargetRealisasiCapaian[]>;
-  onUpdate: () => void;
+  onSuccess: (updated: RealisasiTujuanResponse) => void;
 }
 
 export const ModalTujuanPemda: React.FC<ModalTujuanPemdaProps> = ({
-  isOpen, onClose, item, setTargetRealisasiCapaians, onUpdate }) => {
+  isOpen, onClose, item, onSuccess }) => {
 
   if (!isOpen) return null;
   const tujuan = item && item.length > 0 ? item[0].tujuanPemda : 'Tidak ada tujuan';
@@ -24,7 +23,11 @@ export const ModalTujuanPemda: React.FC<ModalTujuanPemdaProps> = ({
         <div className="w-max-[500px] py-2 my-2 border-b">
           <h1 className="text-xl uppercase">Realisasi Tujuan - {tujuan}</h1>
         </div>
-        <FormRealisasiTujuanPemda requestValues={item} onClose={onClose} />
+        <FormRealisasiTujuanPemda
+          requestValues={item}
+          onClose={onClose}
+          onSuccess={onSuccess}
+        />
         <ButtonRed className="w-full mt-5" type="button" onClick={onClose}>
           Batal
         </ButtonRed>

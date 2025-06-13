@@ -5,12 +5,15 @@ import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 
-const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], TujuanRequest>> = ({ requestValues, onClose }) => {
+const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]>> = ({
+  requestValues,
+  onClose,
+  onSuccess
+}) => {
   const { url, token } = useApiUrlContext();
-  const { submit, loading, error } = useSubmitData<RealisasiTujuan>({ url: `${url}/api/v1/realisasi/tujuans/batch`, token });
+  const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `${url}/api/v1/realisasi/tujuans/batch`, token });
   const [Proses, setProses] = useState(false);
   const [formData, setFormData] = useState<TujuanRequest[]>([]);
-  const [data, setData] = useState<RealisasiTujuan[]>([]);
 
   // fill data awal
   useEffect(() => {
@@ -52,10 +55,10 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Tuj
     const result = await submit(formData)
 
     if (result) {
-      console.log("Successfully submitted:", result); // Handle success (e.g., notify user, close modal, etc.)
       onClose();
-      setData((prev) => [...prev, result])
+      onSuccess?.(result)
     } else {
+      alert("Terjadi kesalahan")
       console.error("Submission failed:", error); // Handle error
     }
     setProses(loading);
