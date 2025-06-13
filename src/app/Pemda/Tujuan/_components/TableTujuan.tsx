@@ -1,6 +1,4 @@
-'use client'
-
-import React, { useState } from 'react';
+import React from 'react';
 import RowTujuanComponent from './RowTujuanComponent';
 import { TargetRealisasiCapaian, TujuanPemda } from '@/types';
 

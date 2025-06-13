@@ -7,7 +7,7 @@ type TargetColProps = {
   capaian: string;
 };
 
-const ColTargetTujuan: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian }) => {
 
   return (
     <React.Fragment>
@@ -19,4 +19,4 @@ const ColTargetTujuan: React.FC<TargetColProps> = ({ target, realisasi, satuan, 
   );
 }
 
-export default ColTargetTujuan;
+export default ColTargetTujuanComponent;

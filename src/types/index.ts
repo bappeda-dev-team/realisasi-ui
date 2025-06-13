@@ -110,3 +110,5 @@ export type SubmitResponse<T> = {
   loading: boolean;
   error?: string;
 };
+
+export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;

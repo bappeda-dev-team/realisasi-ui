@@ -1,14 +1,21 @@
-'use client'
-
 import React from 'react';
 import { ButtonRed } from "@/components/Global/Button/button";
-import { Modal, TargetRealisasiCapaian } from '@/types';
+import { TargetRealisasiCapaian, SetState } from '@/types';
 import FormRealisasiTujuanPemda from './FormRealisasiTujuanPemda';
 
-export const ModalTujuanPemda: React.FC<Modal<TargetRealisasiCapaian[]>> = ({ isOpen, onClose, item }) => {
+interface ModalTujuanPemdaProps {
+  isOpen: boolean;
+  onClose: () => void;
+  item: TargetRealisasiCapaian[];
+  setTargetRealisasiCapaians: SetState<TargetRealisasiCapaian[]>;
+  onUpdate: () => void;
+}
+
+export const ModalTujuanPemda: React.FC<ModalTujuanPemdaProps> = ({
+  isOpen, onClose, item, setTargetRealisasiCapaians, onUpdate }) => {
 
   if (!isOpen) return null;
-  const tujuan = item ? item[0].tujuanPemda : ''
+  const tujuan = item && item.length > 0 ? item[0].tujuanPemda : 'Tidak ada tujuan';
 
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
