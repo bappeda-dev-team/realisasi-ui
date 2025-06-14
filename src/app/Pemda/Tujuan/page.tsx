@@ -53,25 +53,27 @@ export default function Tujuan() {
 
 
   return (
-    <div className="overflow-auto mt-2 rounded-t-lg border border-red-400">
+    <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan Pemda</h2>
-      <TableTujuan
-        periode={periode}
-        tujuansPemda={tujuansPemda}
-        targetRealisasiCapaians={dataTargetRealisasi}
-        handleOpenModal={handleOpenModal}
-      />
-      <ModalTujuanPemda
-        item={selectedTujuan}
-        isOpen={OpenModal}
-        onClose={() => {
-          setOpenModal(false);
-        }}
-        onSuccess={(result: RealisasiTujuan[]) => {
-          const updated = gabunganDataPerencanaanRealisasi(perencanaanTujuan, result)
-          setDataTargetRealisasi(updated)
-        }}
-      />
+      <div className="mt-2 rounded-t-lg border border-red-400">
+        <TableTujuan
+          periode={periode}
+          tujuansPemda={tujuansPemda}
+          targetRealisasiCapaians={dataTargetRealisasi}
+          handleOpenModal={handleOpenModal}
+        />
+        <ModalTujuanPemda
+          item={selectedTujuan}
+          isOpen={OpenModal}
+          onClose={() => {
+            setOpenModal(false);
+          }}
+          onSuccess={(result: RealisasiTujuan[]) => {
+            const updated = gabunganDataPerencanaanRealisasi(perencanaanTujuan, result)
+            setDataTargetRealisasi(updated)
+          }}
+        />
+      </div>
     </div>
   )
 }
