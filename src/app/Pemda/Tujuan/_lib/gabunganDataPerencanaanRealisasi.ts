@@ -18,7 +18,8 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanTujuanP
           const realizationEntry = realisasi.find(r =>
             r.tahun === target.tahun &&
             r.indikatorId === indikator.id &&
-            r.tujuanId === tujuan.id.toString() // Ensure proper matching
+            r.tujuanId === tujuan.id.toString() &&
+            r.targetId === target.id
           );
 
           if (realizationEntry) {

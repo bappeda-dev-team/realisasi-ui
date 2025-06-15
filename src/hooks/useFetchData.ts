@@ -3,17 +3,15 @@ import { FetchResponse } from '@/types'
 
 interface useFetchDataProps {
   url: string;
-  token?: string | undefined;
 }
 
-export const useFetchData = <T>({ url, token }: useFetchDataProps): FetchResponse<T> => {
+export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> => {
   const [data, setData] = useState<T | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...(token && { 'Authorization': `Bearer ${token}` }),
   }
 
   useEffect(() => {

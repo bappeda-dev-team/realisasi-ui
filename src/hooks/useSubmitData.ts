@@ -1,18 +1,20 @@
 import { useState } from 'react'
 import { SubmitResponse } from '@/types'
+import { useApiUrlContext } from '@/context/ApiUrlContext';
 
 interface useSubmitDataProps {
   url: string;
-  token: string | undefined;
 }
 
-export const useSubmitData = <T>({ url, token }: useSubmitDataProps): SubmitResponse<T> => {
+export const useSubmitData = <T>({ url }: useSubmitDataProps): SubmitResponse<T> => {
+  const { token, csrf } = useApiUrlContext();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
+    ...(csrf && { 'X-XSRF-TOKEN': csrf })
   }
 
   const submit = async (payload: unknown): Promise<T | undefined> => {
@@ -22,6 +24,7 @@ export const useSubmitData = <T>({ url, token }: useSubmitDataProps): SubmitResp
         {
           method: 'POST',
           headers: headers,
+          credentials: 'include',
           body: JSON.stringify(payload),
         });
 

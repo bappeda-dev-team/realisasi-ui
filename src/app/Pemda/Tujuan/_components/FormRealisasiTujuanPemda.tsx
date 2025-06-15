@@ -10,8 +10,8 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
   onClose,
   onSuccess
 }) => {
-  const { url, token } = useApiUrlContext();
-  const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `${url}/api/v1/realisasi/tujuans/batch`, token });
+  const { url } = useApiUrlContext();
+  const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `${url}/api/v1/realisasi/tujuans/batch` });
   const [Proses, setProses] = useState(false);
   const [formData, setFormData] = useState<TujuanRequest[]>([]);
 
@@ -23,6 +23,7 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
           tujuanId: indikator.tujuanId,
           indikatorId: indikator.indikatorId,
           tahun: indikator.tahun,
+          targetId: indikator.targetRealisasiId,
           target: indikator.target,
           satuan: indikator.satuan,
           realisasi: indikator.realisasi,
@@ -77,25 +78,26 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
               <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
                 {ind.tahun}
               </div>
-              <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="target" >
+              <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                 Target:
-              </label>
+              </p>
               <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">{ind.target ?? ''}</p>
-              <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="target" >
+              <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi" >
                 Realisasi:
               </label>
               <input
                 type="number"
                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                 step="0.01"
+                name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
                 value={
                   formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? 0
                 }
                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, e.target.value)}
               />
-              <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="target" >
+              <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                 Satuan:
-              </label>
+              </p>
               <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">{ind.satuan ?? ''}</p>
             </div>
           ))}

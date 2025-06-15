@@ -11,9 +11,9 @@ import { ModalTujuanPemda } from "./_components/ModalTujuan";
 
 
 export default function Tujuan() {
-  const { url, token } = useApiUrlContext();
-  const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<PerencanaanTujuanPemdaResponse>({ url: `${url}/api/v1/perencanaan/tujuan_pemda/findall_with_pokin/2025/2030/rpjmd`, token });
-  const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiTujuanResponse>({ url: `${url}/api/v1/realisasi/tujuans/by-periode/2025/2030/rpjmd`, token });
+  const { url } = useApiUrlContext();
+  const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<PerencanaanTujuanPemdaResponse>({ url: `${url}/api/v1/perencanaan/tujuan_pemda/findall_with_pokin/2025/2030/rpjmd` });
+  const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiTujuanResponse>({ url: `${url}/api/v1/realisasi/tujuans/by-periode/2025/2030/rpjmd` });
   const [dataTargetRealisasi, setDataTargetRealisasi] = useState<TargetRealisasiCapaian[]>([]);
   const [tujuansPemda, setTujuansPemda] = useState<TujuanPemda[]>([])
   const [OpenModal, setOpenModal] = useState<boolean>(false);

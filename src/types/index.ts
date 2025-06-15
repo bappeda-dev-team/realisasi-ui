@@ -51,6 +51,7 @@ export interface RealisasiTujuan {
   tujuan: string;
   indikatorId: string;
   indikator: string;
+  targetId: string;
   target: string;
   realisasi: number;
   satuan: string;
@@ -81,6 +82,7 @@ export interface TargetRealisasiCapaian {
 export interface TujuanRequest {
   tujuanId: string;
   indikatorId: string;
+  targetId: string;
   target: string;
   realisasi: number;
   satuan: string;
