@@ -15,25 +15,37 @@ export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> =>
   }
 
   useEffect(() => {
+    let active = true;
+
     const fetchData = async () => {
       setLoading(true)
+      setError(undefined)
       try {
         const response = await fetch(url, {
           headers: headers
         });
         if (!response.ok) {
-          throw new Error('response was not ok');
+          throw new Error(`HTTP ${response.status} - ${response.statusText}`);
         }
         const responseData: T = await response.json();
-        setData(responseData);
+        if (active) {
+          setData(responseData);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        if (active) {
+          setError(err instanceof Error ? err.message : 'An error occurred');
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+    return () => {
+      active = false;
+    };
   }, [url]);
 
   return { data, loading, error }

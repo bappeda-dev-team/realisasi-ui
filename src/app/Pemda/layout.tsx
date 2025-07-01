@@ -4,12 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
-const basePath = '/realisasi'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const relativePath = pathname.replace(basePath, '')
-
+  const relativePath = pathname.replace(/^\/realisasi/, '')
   const navItems = [
     {
       label: 'Tujuan',
@@ -35,7 +33,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col">
       <div className="w-full flex flex-wrap items-center justify-start gap-2">
         {navItems.map(({ label, href, activeClass, inactiveClass }) => {
-          const isActive = relativePath === href
+          const isActive = relativePath === href || relativePath.startsWith(href + '/')
           return (
             <Link
               key={href}

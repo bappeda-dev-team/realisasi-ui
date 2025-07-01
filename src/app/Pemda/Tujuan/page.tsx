@@ -23,7 +23,7 @@ export default function Tujuan() {
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
 
   useEffect(() => {
-    if (perencanaanData && realisasiData) {
+    if (perencanaanData?.data && realisasiData) {
       const perencanaan = perencanaanData.data
       setPerencanaanTujuan(perencanaan)
 
@@ -34,7 +34,7 @@ export default function Tujuan() {
     }
   }, [perencanaanData, realisasiData])
 
-
+  /* if (!perencanaanData || !realisasiData) return <LoadingBeat loading={perencanaanLoading} />; */
   if (perencanaanLoading || realisasiLoading) return <LoadingBeat loading={perencanaanLoading} />;
   if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
   if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
