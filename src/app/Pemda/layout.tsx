@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     },
     {
       label: 'IKU',
-      href: '/Pemda/IKU',
+      href: '/Pemda/Iku',
       activeClass: 'bg-sky-600 text-white border-sky-600',
       inactiveClass: 'text-[#1C1D1D] hover:bg-sky-800 hover:text-white',
     },
