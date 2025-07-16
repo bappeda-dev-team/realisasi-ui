@@ -1,3 +1,65 @@
+export interface TargetRealisasiCapaianSasaran {
+  targetRealisasiId: string;
+  sasaranPemda: string;
+  sasaranId: string;
+  indikatorId: string;
+  indikator: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+}
+
+export type RealisasiSasaranResponse = RealisasiSasaran[]
+
+export interface RealisasiSasaran {
+  id: number;
+  sasaranId: string;
+  sasaran: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status: "UNCHECKED" | "CHECKED";
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+  capaian: string;
+}
+
+export interface PerencanaanSasaranPemdaResponse {
+  code: number;
+  status: string;
+  data: Tematik[];
+};
+
+export interface Tematik {
+  tematik_id: number;
+  nama_tematik: string;
+  subtematik: SubTematik[];
+}
+
+export interface SubTematik {
+  subtematik_id: number;
+  nama_subtematk: string;
+  jenis_pohon: string;
+  level_pohon: number;
+  is_active: true;
+  sasaran_pemda: SasaranPemda[];
+}
+
+export interface SasaranPemda {
+  id_sasaran_pemda: number;
+  sasaran_pemda: string;
+  periode: Periode;
+  indikator: Indikator[];
+}
+
 export interface Target {
   id: string;
   target: string;
