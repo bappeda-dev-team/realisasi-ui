@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { FetchResponse } from '@/types'
+import { useApiUrlContext } from '@/context/ApiUrlContext';
 
 interface useFetchDataProps {
   url: string;
 }
 
 export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> => {
+  const { token } = useApiUrlContext();
   const [data, setData] = useState<T | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`,
   }
 
   useEffect(() => {
