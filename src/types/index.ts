@@ -35,7 +35,7 @@ export interface RealisasiSasaran {
 export interface PerencanaanSasaranPemdaResponse {
   code: number;
   status: string;
-  data: Tematik[];
+  data: SasaranPemda[];
 };
 
 export interface Tematik {
@@ -54,9 +54,10 @@ export interface SubTematik {
 }
 
 export interface SasaranPemda {
-  id_sasaran_pemda: number;
+  id: number;
   sasaran_pemda: string;
-  periode: Periode;
+  tahun_awal: string;
+  tahun_akhir: string;
   indikator: Indikator[];
 }
 

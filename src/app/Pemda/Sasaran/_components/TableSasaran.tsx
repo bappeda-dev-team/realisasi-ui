@@ -5,10 +5,9 @@ import RowSasaranComponent from './RowSasaranComponent'
 interface TableSasaranProps {
     tahun: number;
     sasaranPemda: SasaranPemda[];
-    targetRealisasiCapaian: TargetRealisasiCapaianSasaran;
 }
 
-function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian }: TableSasaranProps) {
+function TableSasaran({ tahun, sasaranPemda }: TableSasaranProps) {
     return (
         <table className="w-full">
             <thead>
@@ -34,10 +33,9 @@ function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian }: TableSasa
             <tbody>
                 {sasaranPemda.map((sas, index) => (
                     <RowSasaranComponent
-                        key={sas.id_sasaran_pemda}
+                        key={sas.id}
                         no={index + 1}
                         sasaran={sas}
-                        targetRealisasiCapaian={targetRealisasiCapaian}
                         tahun={tahun}
                     />
                 )
