@@ -1,4 +1,5 @@
 import React from 'react'
+import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { Indikator, SasaranPemda, TargetRealisasiCapaianSasaran } from '@/types'
 
 interface RowTujuanComponentProps {
@@ -6,9 +7,16 @@ interface RowTujuanComponentProps {
     sasaran: SasaranPemda;
     dataTargetRealisasi: TargetRealisasiCapaianSasaran[];
     tahun: number;
+    handleOpenModal: (sasaran: SasaranPemda, dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
 }
 
-export default function RowSasaranComponent({ no, sasaran, dataTargetRealisasi, tahun }: RowTujuanComponentProps) {
+export default function RowSasaranComponent({
+    no,
+    sasaran,
+    dataTargetRealisasi,
+    tahun,
+    handleOpenModal
+}: RowTujuanComponentProps) {
     const indikatorList = sasaran.indikator ?? [];
 
     if (indikatorList.length === 0) {
@@ -18,6 +26,8 @@ export default function RowSasaranComponent({ no, sasaran, dataTargetRealisasi, 
     return (
         <>
             {indikatorList.map((ind, index) => {
+                const targetList = dataTargetRealisasi.filter(r => r.indikatorId === ind.id.toString() && r.tahun === tahun.toString());
+
                 return (
                     <tr key={ind.id || index} >
                         {index === 0 && (
@@ -26,7 +36,36 @@ export default function RowSasaranComponent({ no, sasaran, dataTargetRealisasi, 
                                 <td rowSpan={indikatorList.length} className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaran_pemda}</td>
                             </>
                         )}
-                        <ColIndikator indikator={ind} realisasi={dataTargetRealisasi} tahun={tahun} />
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.indikator ?? '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.rumus_perhitungan ?? '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.sumber_data ?? '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">
+                            <div className="flex flex-col gap-2">
+                                <ButtonGreenBorder
+                                    className="flex items-center gap-1 cursor-pointer"
+                                    onClick={() => {
+                                        handleOpenModal(sasaran, dataTargetRealisasi);
+                                    }} >
+                                    Realisasi
+                                </ButtonGreenBorder>
+                            </div>
+                        </td>
+                        {targetList.length > 0 ? (
+                            targetList.map((target, idx) => (
+                                <ColTargetSasaran
+                                    key={target.targetRealisasiId || idx}
+                                    target={target.target}
+                                    realisasi={target.realisasi}
+                                    satuan={target.satuan}
+                                    capaian={target.capaian}
+                                />
+                            ))
+                        ) : (
+                            <td className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
+                                Tidak ada target
+                            </td>
+                        )}
+                        <td className="border-b border-red-400 px-6 py-4 text-center">Keterangan Realisasi</td>
                     </tr>
                 )
             })}
@@ -52,46 +91,6 @@ const EmptyIndikatorRow: React.FC<{
                 </td>
             </tr>
         )
-    }
-
-const ColIndikator: React.FC<{
-    indikator: Indikator;
-    realisasi: TargetRealisasiCapaianSasaran[];
-    tahun: number
-}> = ({
-    indikator,
-    realisasi,
-    tahun
-}) => {
-        const targetList = realisasi.filter(r => r.indikatorId === indikator.id.toString() && r.tahun === tahun.toString());
-
-        return (
-            <>
-                <td className="border border-red-400 px-6 py-4 text-center">{indikator?.indikator ?? '-'}</td>
-                <td className="border border-red-400 px-6 py-4 text-center">{indikator?.rumus_perhitungan ?? '-'}</td>
-                <td className="border border-red-400 px-6 py-4 text-center">{indikator?.sumber_data ?? '-'}</td>
-                <td className="border border-red-400 px-6 py-4 text-center">
-                    <div className="flex flex-col gap-2">
-                    </div>
-                </td>
-                {targetList.length > 0 ? (
-                    targetList.map((target, idx) => (
-                        <ColTargetSasaran
-                            key={target.targetRealisasiId || idx}
-                            target={target.target}
-                            realisasi={target.realisasi}
-                            satuan={target.satuan}
-                            capaian={target.capaian}
-                        />
-                    ))
-                ) : (
-                    <td className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
-                        Tidak ada target
-                    </td>
-                )}
-                <td className="border-b border-red-400 px-6 py-4 text-center">Keterangan Realisasi</td>
-            </>
-        );
     }
 
 const ColTargetSasaran: React.FC<{

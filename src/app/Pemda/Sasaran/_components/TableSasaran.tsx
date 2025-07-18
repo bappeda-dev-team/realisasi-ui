@@ -6,9 +6,10 @@ interface TableSasaranProps {
     tahun: number;
     sasaranPemda: SasaranPemda[];
     targetRealisasiCapaian: TargetRealisasiCapaianSasaran[];
+    handleOpenModal: (sasaran: SasaranPemda, dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
 }
 
-function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian }: TableSasaranProps) {
+function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian, handleOpenModal }: TableSasaranProps) {
     return (
         <table className="w-full">
             <thead>
@@ -39,6 +40,7 @@ function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian }: TableSasa
                         sasaran={sas}
                         dataTargetRealisasi={targetRealisasiCapaian}
                         tahun={tahun}
+                        handleOpenModal={handleOpenModal}
                     />
                 )
                 )}
