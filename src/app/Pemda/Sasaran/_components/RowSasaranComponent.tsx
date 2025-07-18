@@ -37,11 +37,11 @@ const RowSasaranComponent: React.FC<RowTujuanComponentProps> = ({
     );
 }
 
-const EmptyIndikatorRow: React.FC<{ sasaran: SasaranPemda; no: number; tahun: tahun }> = ({
+const EmptyIndikatorRow: React.FC<{ sasaran: SasaranPemda; no: number; tahun: number; }> = ({
     sasaran, no, tahun
 }) => {
     return (
-        <tr>
+        <tr key={sasaran.id} className="bg-red-300">
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaran_pemda}</td>
             <td colSpan={6} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic">
@@ -92,12 +92,12 @@ type TargetColProps = {
 const ColTargetSasaran: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian }) => {
 
     return (
-        <React.Fragment>
+        <>
             <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{realisasi}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{capaian}</td>
-        </React.Fragment>
+        </>
     );
 }
 
