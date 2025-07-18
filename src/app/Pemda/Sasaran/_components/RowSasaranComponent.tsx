@@ -1,15 +1,17 @@
 import React from 'react'
-import { Indikator, SasaranPemda } from '@/types'
+import { Indikator, SasaranPemda, TargetRealisasiCapaianSasaran } from '@/types'
 
 interface RowTujuanComponentProps {
     no: number;
     sasaran: SasaranPemda;
+    dataTargetRealisasi: TargetRealisasiCapaianSasaran[];
     tahun: number;
 }
 
 const RowSasaranComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     sasaran,
+    dataTargetRealisasi,
     tahun
 }) => {
     const indikatorList = sasaran.indikator ?? [];
@@ -29,7 +31,7 @@ const RowSasaranComponent: React.FC<RowTujuanComponentProps> = ({
                                 <td rowSpan={indikatorList.length} className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaran_pemda}</td>
                             </>
                         )}
-                        <ColIndikator indikator={ind} />
+                        <ColIndikator indikator={ind} realisasi={dataTargetRealisasi} tahun={tahun} />
                     </tr>
                 )
             })}
@@ -51,8 +53,13 @@ const EmptyIndikatorRow: React.FC<{ sasaran: SasaranPemda; no: number; tahun: nu
     )
 }
 
-const ColIndikator: React.FC<{ indikator: Indikator }> = ({ indikator }) => {
-    const targetList = indikator.target ?? []
+const ColIndikator: React.FC<{ indikator: Indikator; realisasi: TargetRealisasiCapaianSasaran[]; tahun: number }> = ({
+    indikator,
+    realisasi,
+    tahun
+}) => {
+    const targetList = realisasi.filter(r => r.indikatorId === indikator.id.toString() && r.tahun === tahun.toString());
+
     return (
         <>
             <td className="border border-red-400 px-6 py-4 text-center">{indikator?.indikator ?? '-'}</td>
@@ -65,11 +72,11 @@ const ColIndikator: React.FC<{ indikator: Indikator }> = ({ indikator }) => {
             {targetList.length > 0 ? (
                 targetList.map((target, idx) => (
                     <ColTargetSasaran
-                        key={target.id || idx}
+                        key={target.targetRealisasiId || idx}
                         target={target.target}
-                        realisasi={"0"}
+                        realisasi={target.realisasi}
                         satuan={target.satuan}
-                        capaian={"0%"}
+                        capaian={target.capaian}
                     />
                 ))
             ) : (
@@ -84,7 +91,7 @@ const ColIndikator: React.FC<{ indikator: Indikator }> = ({ indikator }) => {
 
 type TargetColProps = {
     target: string;
-    realisasi: string;
+    realisasi: number;
     satuan: string;
     capaian: string;
 };

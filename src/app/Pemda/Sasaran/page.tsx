@@ -3,28 +3,33 @@
 import { LoadingBeat } from '@/components/Global/Loading';
 import { useFetchData } from '@/hooks/useFetchData';
 import React, { useEffect, useState } from 'react'
-import { gabunganDataSasaranRealisasi } from './_lib/helper';
+import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataSasaranRealisasi';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
-import { PerencanaanSasaranPemdaResponse, RealisasiSasaranResponse, SasaranPemda, TargetRealisasiCapaian } from '@/types'
+import { PerencanaanSasaranPemdaResponse, RealisasiSasaranResponse, SasaranPemda, TargetRealisasiCapaianSasaran } from '@/types'
 import TableSasaran from './_components/TableSasaran';
 
 const SasaranPage = () => {
     const tahun = 2025
     const { url } = useApiUrlContext();
     const { data: sasaranData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<PerencanaanSasaranPemdaResponse>({ url: `${url}/api/v1/perencanaan/sasaran_pemda/by-tahun/${tahun}` });
-    // const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiSasaranResponse>({ url: `${url}/api/v1/realisasi/sasarans/by-tahun/2025` });
-    // const [targetRealisasiCapaian, setTargetRealisasiCapaian] = useState<TargetRealisasiCapaian>();
+    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiSasaranResponse>({ url: `${url}/api/v1/realisasi/sasarans/by-tahun/${tahun}` });
+    const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<TargetRealisasiCapaianSasaran[]>([]);
     const [PerencanaanSasaran, setPerencanaanSasaran] = useState<SasaranPemda[]>([]);
 
     useEffect(() => {
-        if (sasaranData?.data) {
+        if (sasaranData?.data && realisasiData) {
             const perencanaan = sasaranData.data
             setPerencanaanSasaran(perencanaan)
-        }
-    }, [sasaranData])
 
-    if (perencanaanLoading) return <LoadingBeat loading={perencanaanLoading} />;
+            const combinedData = gabunganDataPerencanaanRealisasi(perencanaan, realisasiData)
+            console.log(realisasiData)
+            setTargetRealisasiCapaian(combinedData)
+        }
+    }, [sasaranData, realisasiData])
+
+    if (perencanaanLoading || realisasiLoading) return <LoadingBeat loading={perencanaanLoading} />;
     if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
+    if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
     return (
         <div className="overflow-auto grid gap-2">
@@ -33,6 +38,7 @@ const SasaranPage = () => {
                 <TableSasaran
                     tahun={tahun}
                     sasaranPemda={PerencanaanSasaran}
+                    targetRealisasiCapaian={TargetRealisasiCapaian}
                 />
             </div>
         </div>
