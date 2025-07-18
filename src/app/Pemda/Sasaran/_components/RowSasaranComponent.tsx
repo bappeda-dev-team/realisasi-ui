@@ -11,6 +11,7 @@ interface RowTujuanComponentProps {
 const RowSasaranComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     sasaran,
+    tahun
 }) => {
     const indikatorList = sasaran.indikator ?? [];
 
