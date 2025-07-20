@@ -23,11 +23,12 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanSasaran
 
                 if (realizationEntry) {
                     hasil.push({
-                        targetRealisasiId: target.id,
+                        targetRealisasiId: realizationEntry.id,
                         sasaranPemda: sasaran.sasaran_pemda,
                         sasaranId: sasaran.id.toString(),
                         indikatorId: indikator.id.toString(),
                         indikator: indikator.indikator,
+                        targetId: target.id,
                         target: target.target,
                         realisasi: realizationEntry.realisasi,
                         capaian: realizationEntry.capaian,
@@ -36,11 +37,12 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanSasaran
                     });
                 } else {
                     hasil.push({
-                        targetRealisasiId: target.id,
+                        targetRealisasiId: null,
                         sasaranPemda: sasaran.sasaran_pemda,
                         sasaranId: sasaran.id.toString(),
                         indikatorId: indikator.id.toString(),
                         indikator: indikator.indikator,
+                        targetId: target.id,
                         target: target.target,
                         realisasi: 0,
                         capaian: '',

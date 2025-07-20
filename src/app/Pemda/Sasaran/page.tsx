@@ -26,7 +26,6 @@ const SasaranPage = () => {
             setPerencanaanSasaran(perencanaan)
 
             const combinedData = gabunganDataPerencanaanRealisasi(perencanaan, realisasiData)
-            console.log(realisasiData)
             setTargetRealisasiCapaian(combinedData)
         }
     }, [sasaranData, realisasiData])
@@ -42,10 +41,9 @@ const SasaranPage = () => {
         const targetCapaian = dataTargetRealisasi.filter(tc => tc.sasaranId === sasaran.id.toString())
 
         if (targetCapaian) {
-            setSelectedSasaran(targetCapaian); // Set the selected purpose to the found target capaian
+            setSelectedSasaran(targetCapaian);
         } else {
-            console.warn('No matching target capaian found for the selected sasaran');
-            setSelectedSasaran([]); // Optionally reset if nothing is found to avoid stale data
+            setSelectedSasaran([]);
         }
         setOpenModal(true);
     };
@@ -65,7 +63,7 @@ const SasaranPage = () => {
                     onClose={() => {
                         setOpenModal(false);
                     }}
-                    title="Realisasi Sasaran"
+                    title={`Realisasi Sasaran Pemda - ${SelectedSasaran[0]?.sasaranPemda && ''}`}
                 >
                     <FormRealisasiSasaranPemda
                         requestValues={SelectedSasaran}

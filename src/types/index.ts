@@ -1,9 +1,10 @@
 export interface TargetRealisasiCapaianSasaran {
-  targetRealisasiId: string;
+  targetRealisasiId: number | null;
   sasaranPemda: string;
   sasaranId: string;
   indikatorId: string;
   indikator: string;
+  targetId: string;
   target: string;
   realisasi: number;
   capaian: string;
@@ -130,11 +131,12 @@ export interface RealisasiTujuan {
 export type RealisasiTujuanResponse = RealisasiTujuan[];
 
 export interface TargetRealisasiCapaian {
-  targetRealisasiId: string;
+  targetRealisasiId: number | null;
   tujuanPemda: string;
   tujuanId: string;
   indikatorId: string;
   indikator: string;
+  targetId: string;
   target: string;
   realisasi: number;
   capaian: string;
@@ -143,7 +145,20 @@ export interface TargetRealisasiCapaian {
 }
 
 export interface TujuanRequest {
+  targetRealisasiId: number | null;
   tujuanId: string;
+  indikatorId: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
+}
+
+export interface SasaranRequest {
+  targetRealisasiId: number | null;
+  sasaranId: string;
   indikatorId: string;
   targetId: string;
   target: string;

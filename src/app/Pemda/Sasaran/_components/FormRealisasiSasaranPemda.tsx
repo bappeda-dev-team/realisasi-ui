@@ -2,7 +2,7 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
-import { FormProps, RealisasiSasaran, RealisasiTujuan, TargetRealisasiCapaianSasaran, TujuanRequest } from '@/types';
+import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
 import React, { useEffect, useState } from 'react';
 
 const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]>> = ({
@@ -11,22 +11,23 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     onSuccess
 }) => {
     const { url } = useApiUrlContext();
-    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `${url}/api/v1/realisasi/tujuans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiSasaran[]>({ url: `${url}/api/v1/realisasi/sasarans/batch` });
     const [Proses, setProses] = useState(false);
-    const [formData, setFormData] = useState<TujuanRequest[]>([]);
+    const [formData, setFormData] = useState<SasaranRequest[]>([]);
 
     // fill data awal
     useEffect(() => {
         if (requestValues) {
-            const generatedFormData: TujuanRequest[] = requestValues.map((indikator) => {
+            const generatedFormData: SasaranRequest[] = requestValues.map((indikator) => {
                 return ({
-                    tujuanId: indikator.tujuanId,
+                    targetRealisasiId: indikator.targetRealisasiId,
+                    sasaranId: indikator.sasaranId,
                     indikatorId: indikator.indikatorId,
-                    tahun: indikator.tahun,
-                    targetId: indikator.targetRealisasiId,
+                    targetId: indikator.targetId,
                     target: indikator.target,
-                    satuan: indikator.satuan,
                     realisasi: indikator.realisasi,
+                    satuan: indikator.satuan,
+                    tahun: indikator.tahun,
                     jenisRealisasi: 'NAIK',
                 })
             }
@@ -72,7 +73,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
             <div className="mb-4">
                 <h3 className="font-bold">Indikator: {indikator}</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
                     {requestValues?.map((ind) => (
                         <div key={ind.targetRealisasiId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
