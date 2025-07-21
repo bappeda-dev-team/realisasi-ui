@@ -1,5 +1,6 @@
 'use client'
 
+import { LoadingBeat } from '@/components/Global/Loading';
 import { useFetchData } from '@/hooks/useFetchData';
 import React, { useEffect, useState } from 'react'
 import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataSasaranRealisasi';
@@ -25,6 +26,10 @@ const IkuPage = () => {
             setTargetRealisasiCapaian(combinedData)
         }
     }, [ikuPerencanaan, ikuRealisasi])
+
+    if (perencanaanLoading || realisasiLoading) return <LoadingBeat loading={perencanaanLoading} />;
+    if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
+    if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
     return (
         <div className="overflow-auto grid gap-2">
