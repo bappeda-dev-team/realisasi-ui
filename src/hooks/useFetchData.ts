@@ -14,7 +14,7 @@ export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> =>
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    ...(token && { Authorization: `Bearer ${token}` }),
   }
 
   useEffect(() => {

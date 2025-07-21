@@ -12,7 +12,6 @@ export const useSubmitData = <T>({ url }: useSubmitDataProps): SubmitResponse<T>
   const [error, setError] = useState<string | undefined>(undefined);
 
   const headers: HeadersInit = {
-    'Access-Control-Allow-Origin': 'http://localhost:3000',
     'Content-Type': 'application/json',
     ...(token && { Authorization: `Bearer ${token}` }),
     ...(csrf && { 'X-XSRF-TOKEN': csrf })
