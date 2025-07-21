@@ -1,13 +1,14 @@
 import React from 'react';
-import { IkuPemda } from '@/types'
+import { IkuPemda, IkuPemdaTargetRealisasiCapaian } from '@/types'
 import RowIkuComponent from './RowIkuComponent';
 
 interface TableIkuProps {
     tahun: number;
     ikuPemda: IkuPemda[];
+    targetRealisasiCapaian: IkuPemdaTargetRealisasiCapaian[];
 }
 
-export default function TableIku({ tahun, ikuPemda }: TableIkuProps) {
+export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian }: TableIkuProps) {
     return (
         <table className="w-full">
             <thead>
@@ -35,6 +36,7 @@ export default function TableIku({ tahun, ikuPemda }: TableIkuProps) {
                         no={index + 1}
                         ikuPemda={iku}
                         tahun={tahun}
+                        dataTargetRealisasi={targetRealisasiCapaian}
                     />
                 ))}
             </tbody>

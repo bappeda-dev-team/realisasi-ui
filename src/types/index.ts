@@ -1,3 +1,33 @@
+export interface IkuPemdaTargetRealisasiCapaian {
+  targetRealisasiId: string | null;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisIku: "TUJUAN" | "SASARAN" | null;
+}
+
+export interface IkuPemdaRealisasi {
+  id: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  tahun: string;
+  realisasi: number;
+  satuan: string;
+  capaian: string;
+  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisIku: "TUJUAN" | "SASARAN" | null;
+}
+
+export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[]
+
 export interface IkuPemda {
   indikator_id: string;
   asal_iku: string;
