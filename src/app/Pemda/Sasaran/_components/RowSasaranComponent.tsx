@@ -1,8 +1,8 @@
 import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { Indikator, SasaranPemda, TargetRealisasiCapaianSasaran } from '@/types'
+import { SasaranPemda, TargetRealisasiCapaianSasaran } from '@/types'
 
-interface RowTujuanComponentProps {
+interface RowSasaranComponentProps {
     no: number;
     sasaran: SasaranPemda;
     dataTargetRealisasi: TargetRealisasiCapaianSasaran[];
@@ -16,7 +16,7 @@ export default function RowSasaranComponent({
     dataTargetRealisasi,
     tahun,
     handleOpenModal
-}: RowTujuanComponentProps) {
+}: RowSasaranComponentProps) {
     const indikatorList = sasaran.indikator ?? [];
 
     if (indikatorList.length === 0) {

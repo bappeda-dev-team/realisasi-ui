@@ -1,3 +1,19 @@
+export interface IkuPemda {
+  indikator_id: string;
+  asal_iku: string;
+  indikator: string;
+  is_active: boolean;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  target: Target[];
+}
+
+export interface IkuPemdaPerencanaanResponse {
+  code: number;
+  status: string;
+  data: IkuPemda[];
+}
+
 export interface TargetRealisasiCapaianSasaran {
   targetRealisasiId: number | null;
   sasaranPemda: string;
