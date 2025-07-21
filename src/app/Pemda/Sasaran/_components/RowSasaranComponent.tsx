@@ -61,11 +61,10 @@ export default function RowSasaranComponent({
                                 />
                             ))
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
+                            <td colSpan={4} className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
                                 Tidak ada target
                             </td>
                         )}
-                        <td className="border-b border-red-400 px-6 py-4 text-center">Keterangan Realisasi</td>
                     </tr>
                 )
             })}
@@ -86,7 +85,7 @@ const EmptyIndikatorRow: React.FC<{
             <tr key={sasaran.id} className="bg-red-300">
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
                 <td className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaran_pemda}</td>
-                <td colSpan={6} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic">
+                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic">
                     Tidak ada indikator dan target tahun {tahun}
                 </td>
             </tr>

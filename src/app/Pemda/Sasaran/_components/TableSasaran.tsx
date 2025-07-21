@@ -23,7 +23,6 @@ function TableSasaran({ tahun, sasaranPemda, targetRealisasiCapaian, handleOpenM
                     <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun}
                     </th>
-                    <th rowSpan={2} className="border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">Keterangan</th>
                 </tr>
                 <tr className="text-white bg-red-500">
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>
