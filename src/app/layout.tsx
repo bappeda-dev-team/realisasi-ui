@@ -11,40 +11,43 @@ import { ApiUrlProvider } from "@/context/ApiUrlContext";
 *   display: 'swap',
 * }); */
 
+const appName = process.env.NEXT_PUBLIC_APP_NAME || "";
+const clientName = process.env.NEXT_PUBLIC_CLIENT_NAME || "";
+
 export const metadata: Metadata = {
-  title: "E-MANER Realisasi",
-  description: "Website Realisasi Kota Semarang",
+    title: appName,
+    description: `${appName} - ${clientName}`,
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{
-  children: React.ReactNode;
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <head>
-        <link
-          rel="icon"
-          href="/logo.png"
-        />
-      </head>
-      <body className={`antialiased`}>
-        <BrandingProvider>
-          <NextTopLoader
-            color="red"
-            showSpinner={false}
-          />
-          <header>
-            <Header />
-          </header>
-          <ApiUrlProvider>
-            <div className="pt-[90px] px-5 pb-5">
-              {children}
-            </div>
-          </ApiUrlProvider>
-        </BrandingProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <head>
+                <link
+                    rel="icon"
+                    href="/logo.png"
+                />
+            </head>
+            <body className={`antialiased`}>
+                <BrandingProvider>
+                    <NextTopLoader
+                        color="red"
+                        showSpinner={false}
+                    />
+                    <header>
+                        <Header />
+                    </header>
+                    <ApiUrlProvider>
+                        <div className="pt-[90px] px-5 pb-5">
+                            {children}
+                        </div>
+                    </ApiUrlProvider>
+                </BrandingProvider>
+            </body>
+        </html>
+    );
 }
