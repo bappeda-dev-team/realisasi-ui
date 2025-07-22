@@ -1,90 +1,3 @@
-export interface IkuPemdaTargetRealisasiCapaian {
-  targetRealisasiId: string | null;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  realisasi: number;
-  capaian: string;
-  satuan: string;
-  tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN" | null;
-  jenisIku: "TUJUAN" | "SASARAN" | null;
-}
-
-export interface IkuPemdaRealisasi {
-  id: string;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  tahun: string;
-  realisasi: number;
-  satuan: string;
-  capaian: string;
-  jenisRealisasi: "NAIK" | "TURUN" | null;
-  jenisIku: "TUJUAN" | "SASARAN" | null;
-}
-
-export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[]
-
-export interface IkuPemda {
-  indikator_id: string;
-  asal_iku: string;
-  indikator: string;
-  is_active: boolean;
-  rumus_perhitungan: string;
-  sumber_data: string;
-  target: Target[];
-}
-
-export interface IkuPemdaPerencanaanResponse {
-  code: number;
-  status: string;
-  data: IkuPemda[];
-}
-
-export interface TargetRealisasiCapaianSasaran {
-  targetRealisasiId: number | null;
-  sasaranPemda: string;
-  sasaranId: string;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  realisasi: number;
-  capaian: string;
-  satuan: string;
-  tahun: string;
-}
-
-export type RealisasiSasaranResponse = RealisasiSasaran[]
-
-export interface RealisasiSasaran {
-  id: number;
-  sasaranId: string;
-  sasaran: string;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  realisasi: number;
-  satuan: string;
-  tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
-  status: "UNCHECKED" | "CHECKED";
-  createdDate: string;
-  lastModifiedDate: string;
-  version: number;
-  capaian: string;
-}
-
-export interface PerencanaanSasaranPemdaResponse {
-  code: number;
-  status: string;
-  data: SasaranPemda[];
-};
-
 export interface Tematik {
   tematik_id: number;
   nama_tematik: string;
@@ -239,3 +152,153 @@ export type SubmitResponse<T> = {
 };
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
+
+export type RealisasiSasaranResponse = RealisasiSasaran[]
+
+export interface RealisasiSasaran {
+  id: number;
+  sasaranId: string;
+  sasaran: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status: "UNCHECKED" | "CHECKED";
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+  capaian: string;
+}
+
+export interface PerencanaanSasaranPemdaResponse {
+  code: number;
+  status: string;
+  data: SasaranPemda[];
+};
+
+export interface IkuPemdaTargetRealisasiCapaian {
+  targetRealisasiId: string | null;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisIku: "TUJUAN" | "SASARAN" | null;
+}
+
+export interface IkuPemdaRealisasi {
+  id: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  tahun: string;
+  realisasi: number;
+  satuan: string;
+  capaian: string;
+  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisIku: "TUJUAN" | "SASARAN" | null;
+}
+
+export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[]
+
+export interface IkuPemda {
+  indikator_id: string;
+  asal_iku: string;
+  indikator: string;
+  is_active: boolean;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  target: Target[];
+}
+
+export interface IkuPemdaPerencanaanResponse {
+  code: number;
+  status: string;
+  data: IkuPemda[];
+}
+
+export interface TargetRealisasiCapaianSasaran {
+  targetRealisasiId: number | null;
+  sasaranPemda: string;
+  sasaranId: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+}
+
+
+export interface TujuanOpd {
+  id_tujuan_opd: number;
+  tujuan: string;
+  tahun_awal: string;
+  tahun_akhir: string;
+  jenis_periode: string;
+  periode: Periode;
+  indikator: Indikator[];
+}
+
+export interface TujuanOpdPerencanaan {
+  kode_urusan: string;
+  urusan: string;
+  kode_bidang_urusan: string;
+  nama_bidang_urusan: string;
+  kode_opd: string;
+  nama_opd: string;
+  tujuan_opd: TujuanOpd[];
+}
+
+export interface TujuanOpdPerencanaanResponse {
+  code: number;
+  status: string;
+  data: TujuanOpdPerencanaan[];
+}
+
+export interface TujuanOpdTargetRealisasiCapaian {
+  targetRealisasiId: number | null;
+  tujuanOpd: string;
+  tujuanId: number;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+  kodeOpd: string;
+}
+
+export interface TujuanOpdRealisasi {
+  id: number;
+  tujuanId: string;
+  tujuan: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: 'NAIK' | 'TURUN';
+  kodeOpd: string;
+  status: 'UNCHECKED' | 'CHECKED';
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+}
+
+export type TujuanOpdRealisasiResponse = TujuanOpdRealisasi[];
