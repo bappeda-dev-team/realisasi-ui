@@ -39,31 +39,38 @@ export default function RowSasaranComponent({
                         <td className="border border-red-400 px-6 py-4 text-center">{ind?.indikator ?? '-'}</td>
                         <td className="border border-red-400 px-6 py-4 text-center">{ind?.rumus_perhitungan ?? '-'}</td>
                         <td className="border border-red-400 px-6 py-4 text-center">{ind?.sumber_data ?? '-'}</td>
-                        <td className="border border-red-400 px-6 py-4 text-center">
-                            <div className="flex flex-col gap-2">
-                                <ButtonGreenBorder
-                                    className="flex items-center gap-1 cursor-pointer"
-                                    onClick={() => {
-                                        handleOpenModal(sasaran, dataTargetRealisasi);
-                                    }} >
-                                    Realisasi
-                                </ButtonGreenBorder>
-                            </div>
-                        </td>
                         {targetList.length > 0 ? (
-                            targetList.map((target, idx) => (
-                                <ColTargetSasaran
-                                    key={target.targetRealisasiId || idx}
-                                    target={target.target}
-                                    realisasi={target.realisasi}
-                                    satuan={target.satuan}
-                                    capaian={target.capaian}
-                                />
-                            ))
+                            <>
+                                <td className="border border-red-400 px-6 py-4 text-center">
+                                    <div className="flex flex-col gap-2">
+                                        <ButtonGreenBorder
+                                            className="flex items-center gap-1 cursor-pointer"
+                                            onClick={() => {
+                                                handleOpenModal(sasaran, dataTargetRealisasi);
+                                            }}
+                                        >
+                                            Realisasi
+                                        </ButtonGreenBorder>
+                                    </div>
+                                </td>
+                                {targetList.map((target, idx) => (
+                                    <ColTargetSasaran
+                                        key={target.targetRealisasiId || idx}
+                                        target={target.target}
+                                        realisasi={target.realisasi}
+                                        satuan={target.satuan}
+                                        capaian={target.capaian}
+                                    />
+                                ))}
+                            </>
                         ) : (
-                            <td colSpan={4} className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
-                                Tidak ada target
-                            </td>
+                            <>
+                                <td className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
+                                </td>
+                                <td colSpan={4} className="border border-red-400 px-6 py-4 text-center text-gray-400 italic">
+                                    Tidak ada target
+                                </td>
+                            </>
                         )}
                     </tr>
                 )

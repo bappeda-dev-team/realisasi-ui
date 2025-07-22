@@ -10,9 +10,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: PerencanaanSasaran
     perencanaan.forEach(sasaran => {
         sasaran.indikator.forEach(indikator => {
             // Look for targets in the current indicator
-            const targets = indikator.target;
-
-            targets.forEach(target => {
+            indikator.target?.forEach(target => {
                 // Find corresponding realization for the target year and tujuanId
                 const realizationEntry = realisasi.find(r =>
                     r.tahun === target.tahun &&
