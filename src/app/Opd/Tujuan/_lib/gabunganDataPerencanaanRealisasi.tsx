@@ -27,7 +27,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: TujuanOpdPerencana
                         targetId: target.id,
                         target: target.target,
                         realisasi: realizationEntry.realisasi,
-                        capaian: "-",
+                        capaian: realizationEntry.capaian,
                         satuan: target.satuan,
                         tahun: target.tahun,
                         kodeOpd: tujuan.kode_opd

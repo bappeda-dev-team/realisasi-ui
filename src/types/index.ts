@@ -291,6 +291,7 @@ export interface TujuanOpdRealisasi {
   createdDate: string;
   lastModifiedDate: string;
   version: number;
+  capaian: string;
 }
 
 export type TujuanOpdRealisasiResponse = TujuanOpdRealisasi[];
