@@ -2,26 +2,26 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
-import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
+import { FormProps, TujuanOpdTargetRealisasiCapaian, TujuanOpdRealisasi, TujuanOpdRealisasiRequest } from '@/types';
 import React, { useEffect, useState } from 'react';
 
-const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]>> = ({
+const FormRealisasiTujuanOpd: React.FC<FormProps<TujuanOpdTargetRealisasiCapaian[], TujuanOpdRealisasi[]>> = ({
     requestValues,
     onClose,
     onSuccess
 }) => {
     const { url } = useApiUrlContext();
-    const { submit, loading, error } = useSubmitData<RealisasiSasaran[]>({ url: `${url}/api/v1/realisasi/sasarans/batch` });
+    const { submit, loading, error } = useSubmitData<TujuanOpdRealisasi[]>({ url: `${url}/api/v1/realisasi/tujuan_opd/batch` });
     const [Proses, setProses] = useState(false);
-    const [formData, setFormData] = useState<SasaranRequest[]>([]);
+    const [formData, setFormData] = useState<TujuanOpdRealisasiRequest[]>([]);
 
     // fill data awal
     useEffect(() => {
         if (requestValues) {
-            const generatedFormData: SasaranRequest[] = requestValues.map((indikator) => {
+            const generatedFormData: TujuanOpdRealisasiRequest[] = requestValues.map((indikator) => {
                 return ({
                     targetRealisasiId: indikator.targetRealisasiId,
-                    sasaranId: indikator.sasaranId,
+                    tujuanId: indikator.tujuanId,
                     indikatorId: indikator.indikatorId,
                     targetId: indikator.targetId,
                     target: indikator.target,
@@ -29,6 +29,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
                     satuan: indikator.satuan,
                     tahun: indikator.tahun,
                     jenisRealisasi: 'NAIK',
+                    kodeOpd: indikator.kodeOpd
                 })
             }
             );
@@ -118,4 +119,4 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     );
 };
 
-export default FormRealisasiSasaranPemda;
+export default FormRealisasiTujuanOpd;

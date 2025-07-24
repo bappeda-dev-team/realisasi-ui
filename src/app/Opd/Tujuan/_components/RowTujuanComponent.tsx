@@ -7,6 +7,7 @@ interface RowTujuanComponentProps {
     tujuan: TujuanOpd;
     dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[];
     periode: number[];
+    handleOpenModal: (tujuan: any, dataTargetRealisasi: any) => void;
 }
 
 const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
@@ -14,6 +15,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     tujuan,
     dataTargetRealisasi,
     periode,
+    handleOpenModal
 }) => {
     const indikatorList = tujuan.indikator ?? [];
     const indikator = tujuan.indikator?.[0];
@@ -39,7 +41,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 <ButtonGreenBorder
                                     className="flex items-center gap-1 cursor-pointer"
                                     onClick={() => {
-                                        console.log('modal-tujuan-opd-clicked');
+                                        handleOpenModal(tujuan, dataTargetRealisasi);
                                     }} >
                                     Realisasi
                                 </ButtonGreenBorder>

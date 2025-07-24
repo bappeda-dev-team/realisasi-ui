@@ -242,7 +242,7 @@ export interface TargetRealisasiCapaianSasaran {
 
 
 export interface TujuanOpd {
-  id_tujuan_opd: number;
+  id_tujuan_opd: string;
   tujuan: string;
   tahun_awal: string;
   tahun_akhir: string;
@@ -270,7 +270,7 @@ export interface TujuanOpdPerencanaanResponse {
 export interface TujuanOpdTargetRealisasiCapaian {
   targetRealisasiId: number | null;
   tujuanOpd: string;
-  tujuanId: number;
+  tujuanId: string;
   indikatorId: string;
   indikator: string;
   targetId: string;
@@ -302,3 +302,16 @@ export interface TujuanOpdRealisasi {
 }
 
 export type TujuanOpdRealisasiResponse = TujuanOpdRealisasi[];
+
+export interface TujuanOpdRealisasiRequest {
+  targetRealisasiId: number | null;
+  tujuanId: string;
+  indikatorId: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
+  kodeOpd: string;
+}

@@ -3,10 +3,12 @@
 import { LoadingBeat } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useFetchData } from '@/hooks/useFetchData';
-import { TujuanOpd, TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian } from '@/types';
+import { TujuanOpd, TujuanOpdPerencanaan, TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian, TujuanOpdRealisasi } from '@/types';
 import React, { useEffect, useState } from 'react';
 import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
 import TableTujuanOpd from './_components/TableTujuanOpd';
+import { FormModal } from "@/components/Global/Modal";
+import FormRealisasiTujuanOpd from './_components/FormRealisasiTujuanOpd';
 
 const TujuanPage = () => {
     const kodeOpd = "5.03.5.04.0.00.01.0000"
@@ -17,14 +19,15 @@ const TujuanPage = () => {
     const { data: tujuanOpdData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<TujuanOpdPerencanaanResponse>({ url: `${url}/api/v1/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunawal}/tahunakhir/${tahunakhir}/jenisperiode/rpjmd` });
     const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<TujuanOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd/${kodeOpd}/by-periode/${tahunawal}/${tahunakhir}/rpjmd` });
     const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<TujuanOpdTargetRealisasiCapaian[]>([]);
-    const [PerencanaanTujuanOpd, setPerencanaanTujuanOpd] = useState<TujuanOpd[]>([]);
+    const [PerencanaanTujuanOpd, setPerencanaanTujuanOpd] = useState<TujuanOpdPerencanaan[]>([]);
     const [NamaOpd, setNamaOpd] = useState<string>("");
+    const [OpenModal, setOpenModal] = useState<boolean>(false);
+    const [TujuanOpdSelected, setTujuanOpdSelected] = useState<TujuanOpdTargetRealisasiCapaian[]>([]);
 
     useEffect(() => {
         if (tujuanOpdData?.data && realisasiData) {
             const perencanaan = tujuanOpdData.data
-            const tujuanOpds: TujuanOpd[] = perencanaan.flatMap(tj => tj.tujuan_opd)
-            setPerencanaanTujuanOpd(tujuanOpds)
+            setPerencanaanTujuanOpd(perencanaan)
 
             setNamaOpd(perencanaan[0].nama_opd)
 
@@ -42,17 +45,18 @@ const TujuanPage = () => {
     if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
     if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
-    /* const handleOpenModal = (tujuan: TujuanPemda, data: TargetRealisasiCapaian[]) => { // tujuan -> buat text diatas sama filter
-*     const targetCapaian = data.filter(tc => tc.tujuanId === tujuan.id.toString())
+    const handleOpenModal = (tujuan: TujuanOpd, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => { // tujuan -> buat text diatas sama filter
+        const targetCapaian = dataTargetRealisasi.filter(tc => tc.tujuanId === tujuan.id_tujuan_opd)
 
-*     if (targetCapaian) {
-*         setSelectedTujuan(targetCapaian); // Set the selected purpose to the found target capaian
-*     } else {
-*         console.warn('No matching target capaian found for the selected tujuan');
-*         setSelectedTujuan([]); // Optionally reset if nothing is found to avoid stale data
-*     }
-*     setOpenModal(true);
-* }; */
+        if (targetCapaian) {
+            console.log(targetCapaian)
+            setTujuanOpdSelected(targetCapaian); // Set the selected purpose to the found target capaian
+        } else {
+            console.warn('No matching target capaian found for the selected tujuan');
+            setTujuanOpdSelected([]); // Optionally reset if nothing is found to avoid stale data
+        }
+        setOpenModal(true);
+    };
 
     return (
         <div className="transition-all ease-in-out duration-500">
@@ -61,7 +65,26 @@ const TujuanPage = () => {
                 periode={periode}
                 tujuanOpd={PerencanaanTujuanOpd}
                 targetRealisasiCapaians={TargetRealisasiCapaian}
+                handleOpenModal={handleOpenModal}
             />
+            <FormModal
+                isOpen={OpenModal}
+                onClose={() => {
+                    setOpenModal(false);
+                }}
+                title={`Realisasi Tujuan OPD - ${TujuanOpdSelected[0]?.tujuanOpd ?? ''}`}
+            >
+                <FormRealisasiTujuanOpd
+                    requestValues={TujuanOpdSelected}
+                    onClose={() => {
+                        setOpenModal(false);
+                    }}
+                    onSuccess={(result: TujuanOpdRealisasi[]) => {
+                        const updated = gabunganDataPerencanaanRealisasi(PerencanaanTujuanOpd, result)
+                        setTargetRealisasiCapaian(updated)
+                    }}
+                />
+            </FormModal>
         </div>
     )
 }

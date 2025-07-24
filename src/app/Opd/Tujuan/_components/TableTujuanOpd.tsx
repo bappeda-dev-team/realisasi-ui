@@ -1,15 +1,17 @@
 import React from 'react';
 import RowTujuanComponent from './RowTujuanComponent';
-import { TujuanOpd, TujuanOpdTargetRealisasiCapaian } from '@/types';
+import { TujuanOpd, TujuanOpdPerencanaan, TujuanOpdTargetRealisasiCapaian } from '@/types';
 
 interface TableTujuanProps {
     periode: number[];
-    tujuanOpd: TujuanOpd[];
+    tujuanOpd: TujuanOpdPerencanaan[];
     targetRealisasiCapaians: TujuanOpdTargetRealisasiCapaian[];
-    /* handleOpenModal: (tujuan: TujuanPemda, data: TargetRealisasiCapaian[]) => void; */
+    handleOpenModal: (tujuan: TujuanOpd, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => void;
 }
 
-function TableTujuan({ periode, tujuanOpd, targetRealisasiCapaians }: TableTujuanProps) {
+function TableTujuan({ periode, tujuanOpd, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {
+
+    const tujuanOpdReal = tujuanOpd.flatMap(tj => tj.tujuan_opd)
 
     return (
         <table className="w-full">
@@ -39,13 +41,14 @@ function TableTujuan({ periode, tujuanOpd, targetRealisasiCapaians }: TableTujua
                 </tr>
             </thead>
             <tbody>
-                {tujuanOpd.map((tuj, index) => (
+                {tujuanOpdReal.map((tuj, index) => (
                     <RowTujuanComponent
                         key={tuj.id_tujuan_opd}
                         no={index + 1}
                         tujuan={tuj}
                         dataTargetRealisasi={targetRealisasiCapaians}
                         periode={periode}
+                        handleOpenModal={handleOpenModal}
                     />
                 )
                 )}

@@ -63,7 +63,7 @@ const SasaranPage = () => {
                     onClose={() => {
                         setOpenModal(false);
                     }}
-                    title={`Realisasi Sasaran Pemda - ${SelectedSasaran[0]?.sasaranPemda && ''}`}
+                    title={`Realisasi Sasaran Pemda - ${SelectedSasaran[0]?.sasaranPemda ?? ''}`}
                 >
                     <FormRealisasiSasaranPemda
                         requestValues={SelectedSasaran}

@@ -1,5 +1,5 @@
 import {
-    TujuanOpdPerencanaan, TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian
+    TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian
 } from '@/types';
 
 export function gabunganDataPerencanaanRealisasi(perencanaan: TujuanOpdPerencanaanResponse['data'], realisasi: TujuanOpdRealisasiResponse): TujuanOpdTargetRealisasiCapaian[] {
