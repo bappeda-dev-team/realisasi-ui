@@ -241,24 +241,16 @@ export interface TargetRealisasiCapaianSasaran {
 }
 
 
-export interface TujuanOpd {
+export interface TujuanOpdPerencanaan {
   id_tujuan_opd: string;
+  kode_bidang_urusan: string;
+  kode_opd: string;
+  nama_opd: string;
   tujuan: string;
   tahun_awal: string;
   tahun_akhir: string;
   jenis_periode: string;
-  periode: Periode;
   indikator: Indikator[];
-}
-
-export interface TujuanOpdPerencanaan {
-  kode_urusan: string;
-  urusan: string;
-  kode_bidang_urusan: string;
-  nama_bidang_urusan: string;
-  kode_opd: string;
-  nama_opd: string;
-  tujuan_opd: TujuanOpd[];
 }
 
 export interface TujuanOpdPerencanaanResponse {

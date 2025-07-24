@@ -12,12 +12,10 @@ import FormRealisasiTujuanOpd from './_components/FormRealisasiTujuanOpd';
 
 const TujuanPage = () => {
     const kodeOpd = "5.03.5.04.0.00.01.0000"
-    const tahunawal = 2025
-    const tahunakhir = 2030
-    const periode = [2025]
+    const tahun = 2025
     const { url } = useApiUrlContext();
-    const { data: tujuanOpdData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<TujuanOpdPerencanaanResponse>({ url: `${url}/api/v1/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunawal}/tahunakhir/${tahunakhir}/jenisperiode/rpjmd` });
-    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<TujuanOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd/${kodeOpd}/by-periode/${tahunawal}/${tahunakhir}/rpjmd` });
+    const { data: tujuanOpdData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<TujuanOpdPerencanaanResponse>({ url: `${url}/api/v1/perencanaan/tujuan_opd/opd/${kodeOpd}/by-tahun/${tahun}` });
+    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<TujuanOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${tahun}` });
     const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<TujuanOpdTargetRealisasiCapaian[]>([]);
     const [PerencanaanTujuanOpd, setPerencanaanTujuanOpd] = useState<TujuanOpdPerencanaan[]>([]);
     const [NamaOpd, setNamaOpd] = useState<string>("");
@@ -62,7 +60,7 @@ const TujuanPage = () => {
         <div className="transition-all ease-in-out duration-500">
             <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan {NamaOpd}</h2>
             <TableTujuanOpd
-                periode={periode}
+                tahun={tahun}
                 tujuanOpd={PerencanaanTujuanOpd}
                 targetRealisasiCapaians={TargetRealisasiCapaian}
                 handleOpenModal={handleOpenModal}
