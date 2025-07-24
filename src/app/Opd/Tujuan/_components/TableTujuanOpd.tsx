@@ -1,12 +1,12 @@
 import React from 'react';
 import RowTujuanComponent from './RowTujuanComponent';
-import { TujuanOpd, TujuanOpdPerencanaan, TujuanOpdTargetRealisasiCapaian } from '@/types';
+import { TujuanOpdPerencanaan, TujuanOpdTargetRealisasiCapaian } from '@/types';
 
 interface TableTujuanProps {
     tahun: number;
     tujuanOpd: TujuanOpdPerencanaan[];
     targetRealisasiCapaians: TujuanOpdTargetRealisasiCapaian[];
-    handleOpenModal: (tujuan: TujuanOpd, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => void;
+    handleOpenModal: (tujuan: TujuanOpdPerencanaan, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => void;
 }
 
 function TableTujuan({ tahun, tujuanOpd, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {

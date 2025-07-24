@@ -1,13 +1,13 @@
 import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { TujuanOpd, TujuanOpdTargetRealisasiCapaian } from '@/types';
+import { TujuanOpdPerencanaan, TujuanOpdTargetRealisasiCapaian } from '@/types';
 
 interface RowTujuanComponentProps {
     no: number;
-    tujuan: TujuanOpd;
+    tujuan: TujuanOpdPerencanaan;
     dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[];
     tahun: number;
-    handleOpenModal: (tujuan: any, dataTargetRealisasi: any) => void;
+    handleOpenModal: (tujuan: TujuanOpdPerencanaan, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => void;
 }
 
 const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({

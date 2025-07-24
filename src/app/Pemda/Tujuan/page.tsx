@@ -1,13 +1,13 @@
 'use client'
 
 import { LoadingBeat } from '@/components/Global/Loading';
+import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useFetchData } from '@/hooks/useFetchData';
-import { PerencanaanTujuanPemdaResponse, PerencanaanTujuanPemda, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda, RealisasiTujuan } from '@/types';
+import { PerencanaanTujuanPemda, PerencanaanTujuanPemdaResponse, RealisasiTujuan, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda } from '@/types';
 import React, { useEffect, useState } from 'react';
+import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from './_components/TableTujuan';
 import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
-import { ModalTujuanPemda } from "./_components/ModalTujuan";
 
 
 export default function Tujuan() {

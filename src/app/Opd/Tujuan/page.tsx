@@ -1,16 +1,16 @@
 'use client'
 
 import { LoadingBeat } from '@/components/Global/Loading';
+import { FormModal } from "@/components/Global/Modal";
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useFetchData } from '@/hooks/useFetchData';
-import { TujuanOpd, TujuanOpdPerencanaan, TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian, TujuanOpdRealisasi } from '@/types';
+import { TujuanOpdPerencanaan, TujuanOpdPerencanaanResponse, TujuanOpdRealisasi, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian } from '@/types';
 import React, { useEffect, useState } from 'react';
-import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
-import TableTujuanOpd from './_components/TableTujuanOpd';
-import { FormModal } from "@/components/Global/Modal";
 import FormRealisasiTujuanOpd from './_components/FormRealisasiTujuanOpd';
+import TableTujuanOpd from './_components/TableTujuanOpd';
+import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
 
-const TujuanPage = () => {
+export default function TujuanPage() {
     const kodeOpd = "5.03.5.04.0.00.01.0000"
     const tahun = 2025
     const { url } = useApiUrlContext();
@@ -43,7 +43,7 @@ const TujuanPage = () => {
     if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
     if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
-    const handleOpenModal = (tujuan: TujuanOpd, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => { // tujuan -> buat text diatas sama filter
+    const handleOpenModal = (tujuan: TujuanOpdPerencanaan, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => { // tujuan -> buat text diatas sama filter
         const targetCapaian = dataTargetRealisasi.filter(tc => tc.tujuanId === tujuan.id_tujuan_opd)
 
         if (targetCapaian) {
@@ -57,8 +57,8 @@ const TujuanPage = () => {
     };
 
     return (
-        <div className="transition-all ease-in-out duration-500">
-            <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan {NamaOpd}</h2>
+        <div className="overflow-auto grid gap-2">
+            <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan OPD - {NamaOpd} Tahun {tahun}</h2>
             <TableTujuanOpd
                 tahun={tahun}
                 tujuanOpd={PerencanaanTujuanOpd}
@@ -86,5 +86,3 @@ const TujuanPage = () => {
         </div>
     )
 }
-
-export default TujuanPage

@@ -18,7 +18,7 @@ export const Header = () => {
     const [Individu, setIndividu] = useState<boolean>(false);
 
     const url = usePathname();
-    const {branding} = useBrandingContext();
+    const { branding } = useBrandingContext();
 
     useEffect(() => {
         const handleScroll = () => {
