@@ -21,7 +21,7 @@ function TableTujuan({ tahun, tujuanOpd, targetRealisasiCapaians, handleOpenModa
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">Aksi</th>
-                    <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
+                    <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun}
                     </th>
                 </tr>

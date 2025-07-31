@@ -35,9 +35,9 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 <td rowSpan={indikatorList.length} className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan}</td>
                             </>
                         )}
-                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.indikator ?? '-'}</td>
-                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.rumus_perhitungan ?? '-'}</td>
-                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.sumber_data ?? '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.indikator || '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.rumus_perhitungan || '-'}</td>
+                        <td className="border border-red-400 px-6 py-4 text-center">{ind?.sumber_data || '-'}</td>
                         {targetList.length > 0 ? (
                             <React.Fragment key={`${ind.id || index}-target-${tahun}`}>
                                 <td className="border border-red-400 px-6 py-4 text-center">
@@ -89,11 +89,10 @@ const EmptyIndikatorRow: React.FC<{
     tahun
 }) => {
         return (
-            <tr key={tujuan.id} className="bg-red-300">
+            <tr key={tujuan.id}>
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-                <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan_pemda}</td>
-                <td className="border border-red-400 px-6 py-4 text-center">{tujuan.misi}</td>
-                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic">
+                <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan}</td>
+                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
                 </td>
             </tr>

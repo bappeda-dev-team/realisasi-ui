@@ -308,3 +308,21 @@ export interface TujuanOpdRealisasiRequest {
   jenisRealisasi: string;
   kodeOpd: string;
 }
+
+export interface SasaranOpdPerencanaanResponse {
+  code: number;
+  status: string;
+  data: SasaranOpdPerencanaan[]
+}
+
+export interface SasaranOpdPerencanaan {
+  id: number;
+  kode_opd: string;
+  nama_opd: string;
+  sasaran_opd: string;
+  tahun_awal: string;
+  tahun_akhir: string;
+  jenis_periode: string;
+  pohon_aktif: boolean;
+  indikator: Indikator[]
+}
