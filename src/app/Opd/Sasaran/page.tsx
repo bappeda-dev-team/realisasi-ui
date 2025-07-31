@@ -54,7 +54,7 @@ export default function SasaranPage() {
     };
 
     return (
-        <div className="transition-all ease-in-out duration-500">
+        <div className="overflow-auto grid gap-2">
             <h2 className="text-lg font-semibold mb-2">Realisasi Sasaran OPD - {NamaOpd} Tahun {tahun}</h2>
             <TableSasaranOpd
                 tahun={tahun}
