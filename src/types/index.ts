@@ -363,3 +363,16 @@ export interface SasaranOpdTargetRealisasiCapaian {
   tahun: string;
   kodeOpd: string;
 }
+
+export interface SasaranOpdRealisasiRequest {
+  targetRealisasiId: number | null;
+  sasaranId: string;
+  indikatorId: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
+  kodeOpd: string;
+}

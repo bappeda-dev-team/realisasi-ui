@@ -4,10 +4,11 @@ import { LoadingBeat } from '@/components/Global/Loading';
 import { FormModal } from "@/components/Global/Modal";
 import React, { useEffect, useState } from 'react';
 import { useFetchData } from '@/hooks/useFetchData';
-import { SasaranOpdPerencanaanResponse, SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian } from '@/types'
+import { SasaranOpdPerencanaanResponse, SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian, SasaranOpdRealisasi } from '@/types'
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import TableSasaranOpd from './_components/TableSasaranOpd';
 import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
+import FormRealisasiSasaranOpd from './_components/FormRealisasiSasaranOpd';
 
 export default function SasaranPage() {
     const kodeOpd = "5.03.5.04.0.00.01.0000"
@@ -68,6 +69,16 @@ export default function SasaranPage() {
                 }}
                 title={`Realisasi Sasaran OPD - ${SasaranOpdSelected[0]?.sasaranOpd || ''}`}
             >
+                <FormRealisasiSasaranOpd
+                    requestValues={SasaranOpdSelected}
+                    onClose={() => {
+                        setOpenModal(false);
+                    }}
+                    onSuccess={(result: SasaranOpdRealisasi[]) => {
+                        const updated = gabunganDataPerencanaanRealisasi(PerencanaanSasaranOpd, result)
+                        setTargetRealisasiCapaian(updated)
+                    }}
+                />
             </FormModal>
         </div>
     )
