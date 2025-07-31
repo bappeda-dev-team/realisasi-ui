@@ -3,32 +3,39 @@
 import { LoadingBeat } from '@/components/Global/Loading';
 import React, { useEffect, useState } from 'react';
 import { useFetchData } from '@/hooks/useFetchData';
-import { SasaranOpdPerencanaanResponse, SasaranOpdPerencanaan } from '@/types'
+import { SasaranOpdPerencanaanResponse, SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian } from '@/types'
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import TableSasaranOpd from './_components/TableSasaranOpd';
+import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaanRealisasi';
 
 export default function SasaranPage() {
     const kodeOpd = "5.03.5.04.0.00.01.0000"
     const tahun = 2025
     const { url } = useApiUrlContext();
     const { data: sasaranOpdData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<SasaranOpdPerencanaanResponse>({ url: `${url}/api/v1/perencanaan/sasaran_opd/opd/${kodeOpd}/by-tahun/${tahun}` });
+    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<SasaranOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${tahun}` });
+    const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<SasaranOpdTargetRealisasiCapaian[]>([]);
     const [PerencanaanSasaranOpd, setPerencanaanSasaranOpd] = useState<SasaranOpdPerencanaan[]>([]);
     const [NamaOpd, setNamaOpd] = useState<string>("");
 
     useEffect(() => {
-        if (sasaranOpdData?.data) {
+        if (sasaranOpdData?.data && realisasiData) {
             const perencanaan = sasaranOpdData.data
             setPerencanaanSasaranOpd(perencanaan)
 
             setNamaOpd(perencanaan[0].nama_opd)
+            const combinedData = gabunganDataPerencanaanRealisasi(perencanaan, realisasiData)
+            setTargetRealisasiCapaian(combinedData)
         } else {
             setNamaOpd('')
+            setTargetRealisasiCapaian([])
             setPerencanaanSasaranOpd([])
         }
-    }, [sasaranOpdData])
+    }, [sasaranOpdData, realisasiData])
 
-    if (perencanaanLoading) return <LoadingBeat loading={perencanaanLoading} />;
+    if (perencanaanLoading || realisasiLoading) return <LoadingBeat loading={perencanaanLoading} />;
     if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
+    if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
     return (
         <div className="transition-all ease-in-out duration-500">
@@ -36,6 +43,7 @@ export default function SasaranPage() {
             <TableSasaranOpd
                 tahun={tahun}
                 sasaranOpd={PerencanaanSasaranOpd}
+                targetRealisasiCapaians={TargetRealisasiCapaian}
             />
         </div>
     )

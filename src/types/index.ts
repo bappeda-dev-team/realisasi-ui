@@ -326,3 +326,40 @@ export interface SasaranOpdPerencanaan {
   pohon_aktif: boolean;
   indikator: Indikator[]
 }
+
+export interface SasaranOpdRealisasi {
+  id: number;
+  sasaranId: string;
+  sasaran: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: 'NAIK' | 'TURUN';
+  kodeOpd: string;
+  status: 'UNCHECKED' | 'CHECKED';
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+  capaian: string;
+}
+
+export type SasaranOpdRealisasiResponse = SasaranOpdRealisasi[];
+
+export interface SasaranOpdTargetRealisasiCapaian {
+  targetRealisasiId: number | null;
+  sasaranOpd: string;
+  sasaranId: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  capaian: string;
+  satuan: string;
+  tahun: string;
+  kodeOpd: string;
+}

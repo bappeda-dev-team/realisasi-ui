@@ -1,14 +1,15 @@
 import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { SasaranOpdPerencanaan } from '@/types'
+import { SasaranOpdPerencanaan, SasaranOpdTargetRealisasiCapaian } from '@/types'
 
 interface RowSasaranOpdComponentProps {
     no: number;
     sasaranOpd: SasaranOpdPerencanaan;
+    dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[];
     tahun: number;
 }
 
-export default function RowSasaranComponent({ no, sasaranOpd, tahun }: RowSasaranOpdComponentProps) {
+export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun }: RowSasaranOpdComponentProps) {
     const indikatorList = sasaranOpd.indikator ?? [];
 
     if (indikatorList.length === 0) {
@@ -18,7 +19,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun }: RowSasara
     return (
         <>
             {indikatorList.map((ind, index) => {
-                const targetList = ind.target
+                const targetList = dataTargetRealisasi.filter(r => r.indikatorId === ind.id.toString() && r.tahun === tahun.toString())
                 return (
                     <tr key={ind.id || index}>
                         {index === 0 && (
@@ -43,11 +44,11 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun }: RowSasara
                                 </td>
                                 {targetList.map((target, idx) => (
                                     <ColTargetSasaranComponent
-                                        key={target.id || idx}
+                                        key={target.targetRealisasiId || idx}
                                         target={target.target}
-                                        realisasi={0}
+                                        realisasi={target.realisasi}
                                         satuan={target.satuan}
-                                        capaian={'0%'}
+                                        capaian={target.capaian}
                                     />
                                 ))}
                             </React.Fragment>

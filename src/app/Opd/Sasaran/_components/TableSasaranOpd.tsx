@@ -1,14 +1,15 @@
 import React from 'react'
 import RowSasaranComponent from './RowSasaranComponent';
-import { SasaranOpdPerencanaan } from '@/types'
+import { SasaranOpdPerencanaan, SasaranOpdTargetRealisasiCapaian } from '@/types'
 
 
 interface TableSasaranOpdProps {
     tahun: number;
     sasaranOpd: SasaranOpdPerencanaan[];
+    targetRealisasiCapaians: SasaranOpdTargetRealisasiCapaian[];
 }
 
-export default function TableSasaranOpd({ tahun, sasaranOpd }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapaians }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -35,6 +36,7 @@ export default function TableSasaranOpd({ tahun, sasaranOpd }: TableSasaranOpdPr
                         key={sasOpd.id}
                         no={index + 1}
                         sasaranOpd={sasOpd}
+                        dataTargetRealisasi={targetRealisasiCapaians}
                         tahun={tahun}
                     />
                 ))}
