@@ -47,7 +47,6 @@ export default function TujuanPage() {
         const targetCapaian = dataTargetRealisasi.filter(tc => tc.tujuanId === tujuan.id_tujuan_opd)
 
         if (targetCapaian) {
-            console.log(targetCapaian)
             setTujuanOpdSelected(targetCapaian); // Set the selected purpose to the found target capaian
         } else {
             console.warn('No matching target capaian found for the selected tujuan');
@@ -70,7 +69,7 @@ export default function TujuanPage() {
                 onClose={() => {
                     setOpenModal(false);
                 }}
-                title={`Realisasi Tujuan OPD - ${TujuanOpdSelected[0]?.tujuanOpd ?? ''}`}
+                title={`Realisasi Tujuan OPD - ${TujuanOpdSelected[0]?.tujuanOpd || ''}`}
             >
                 <FormRealisasiTujuanOpd
                     requestValues={TujuanOpdSelected}

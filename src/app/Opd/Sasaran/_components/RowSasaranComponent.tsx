@@ -7,9 +7,10 @@ interface RowSasaranOpdComponentProps {
     sasaranOpd: SasaranOpdPerencanaan;
     dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[];
     tahun: number;
+    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => void;
 }
 
-export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun }: RowSasaranOpdComponentProps) {
+export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun, handleOpenModal }: RowSasaranOpdComponentProps) {
     const indikatorList = sasaranOpd.indikator ?? [];
 
     if (indikatorList.length === 0) {
@@ -37,7 +38,9 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                                     <div className="flex flex-col gap-2">
                                         <ButtonGreenBorder
                                             className="flex items-center gap-1 cursor-pointer"
-                                        >
+                                            onClick={() => {
+                                                handleOpenModal(sasaranOpd, dataTargetRealisasi);
+                                            }} >
                                             Realisasi
                                         </ButtonGreenBorder>
                                     </div>

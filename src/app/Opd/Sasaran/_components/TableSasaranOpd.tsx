@@ -7,9 +7,10 @@ interface TableSasaranOpdProps {
     tahun: number;
     sasaranOpd: SasaranOpdPerencanaan[];
     targetRealisasiCapaians: SasaranOpdTargetRealisasiCapaian[];
+    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => void;
 }
 
-export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapaians }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapaians, handleOpenModal }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -38,6 +39,7 @@ export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapa
                         sasaranOpd={sasOpd}
                         dataTargetRealisasi={targetRealisasiCapaians}
                         tahun={tahun}
+                        handleOpenModal={handleOpenModal}
                     />
                 ))}
             </tbody>

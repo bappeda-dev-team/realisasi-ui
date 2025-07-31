@@ -1,6 +1,7 @@
 'use client'
 
 import { LoadingBeat } from '@/components/Global/Loading';
+import { FormModal } from "@/components/Global/Modal";
 import React, { useEffect, useState } from 'react';
 import { useFetchData } from '@/hooks/useFetchData';
 import { SasaranOpdPerencanaanResponse, SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian } from '@/types'
@@ -17,6 +18,8 @@ export default function SasaranPage() {
     const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<SasaranOpdTargetRealisasiCapaian[]>([]);
     const [PerencanaanSasaranOpd, setPerencanaanSasaranOpd] = useState<SasaranOpdPerencanaan[]>([]);
     const [NamaOpd, setNamaOpd] = useState<string>("");
+    const [SasaranOpdSelected, setSasaranOpdSelected] = useState<SasaranOpdTargetRealisasiCapaian[]>([]);
+    const [OpenModal, setOpenModal] = useState<boolean>(false);
 
     useEffect(() => {
         if (sasaranOpdData?.data && realisasiData) {
@@ -37,6 +40,18 @@ export default function SasaranPage() {
     if (perencanaanError) return <div>Error fetching perencanaan: {perencanaanError}</div>;
     if (realisasiError) return <div>Error fetching realisasi: {realisasiError}</div>;
 
+    const handleOpenModal = (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => { // sasaran -> buat text diatas sama filter
+        const targetCapaian = dataTargetRealisasi.filter(tc => tc.sasaranId === sasaran.id.toString())
+
+        if (targetCapaian) {
+            setSasaranOpdSelected(targetCapaian); // Set the selected purpose to the found target capaian
+        } else {
+            console.warn('No matching target capaian found for the selected tujuan');
+            setSasaranOpdSelected([]); // Optionally reset if nothing is found to avoid stale data
+        }
+        setOpenModal(true);
+    };
+
     return (
         <div className="transition-all ease-in-out duration-500">
             <h2 className="text-lg font-semibold mb-2">Realisasi Sasaran OPD - {NamaOpd} Tahun {tahun}</h2>
@@ -44,7 +59,16 @@ export default function SasaranPage() {
                 tahun={tahun}
                 sasaranOpd={PerencanaanSasaranOpd}
                 targetRealisasiCapaians={TargetRealisasiCapaian}
+                handleOpenModal={handleOpenModal}
             />
+            <FormModal
+                isOpen={OpenModal}
+                onClose={() => {
+                    setOpenModal(false);
+                }}
+                title={`Realisasi Sasaran OPD - ${SasaranOpdSelected[0]?.sasaranOpd || ''}`}
+            >
+            </FormModal>
         </div>
     )
 }
