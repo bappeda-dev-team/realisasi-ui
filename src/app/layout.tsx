@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 /* import { Nunito_Sans } from "next/font/google"; */
 import "./globals.css";
 import { Header } from "@/components/Global/Header/Header";
+import TopNavbar from '@/components/Global/Navbar/TopNavbar'
 import NextTopLoader from "nextjs-toploader";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { ApiUrlProvider } from "@/context/ApiUrlContext";
@@ -38,10 +39,8 @@ export default function RootLayout({
                         color="red"
                         showSpinner={false}
                     />
-                    <header>
-                        <Header />
-                    </header>
                     <ApiUrlProvider>
+                        <TopNavbar />
                         <div className="pt-[90px] px-5 pb-5">
                             {children}
                         </div>

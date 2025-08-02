@@ -1,3 +1,11 @@
+export type User = {
+  id: string;
+  username: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
+}
+
 export interface Tematik {
   tematik_id: number;
   nama_tematik: string;

@@ -60,7 +60,7 @@ export const Header = () => {
     };
 
     return (
-        <nav className={`inset-x-1 m-1 ml-2 bg-[#1C1D1D] shadow-lg shadow-slate-300 rounded-xl fixed left-0 top-0 z-50 transition duration-300 ${visible ? 'translate-y-0' : '-translate-y-full'}`}>
+        <nav className={`inset-x-1 m-1 ml-2 bg-[#1C1D1D] shadow-lg shadow-slate-300 rounded-xl fixed left-0 top-0 z-50 transition duration-300`}>
             <div className="mx-auto flex md:justify-start justify-between gap-5 items-center px-4 py-3">
                 <Link href="/">
                     <Image
