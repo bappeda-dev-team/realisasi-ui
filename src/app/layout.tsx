@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 /* import { Nunito_Sans } from "next/font/google"; */
-import "./globals.css";
 import { Header } from "@/components/Global/Header/Header";
-import TopNavbar from '@/components/Global/Navbar/TopNavbar'
-import NextTopLoader from "nextjs-toploader";
-import { BrandingProvider } from "@/context/BrandingContext";
+import TopNavbar from '@/components/Global/Navbar/TopNavbar';
 import { ApiUrlProvider } from "@/context/ApiUrlContext";
+import { BrandingProvider } from "@/context/BrandingContext";
+import { UserProvider } from "@/context/UserContext";
+import NextTopLoader from "nextjs-toploader";
+import "./globals.css";
 
 /* const font = Nunito_Sans({
 *   subsets: ["latin"],
@@ -40,10 +41,13 @@ export default function RootLayout({
                         showSpinner={false}
                     />
                     <ApiUrlProvider>
-                        <TopNavbar />
-                        <div className="pt-[90px] px-5 pb-5">
-                            {children}
-                        </div>
+                        <UserProvider>
+                            <TopNavbar />
+                            <Header />
+                            <div className="pt-[90px] px-5 pb-5">
+                                {children}
+                            </div>
+                        </UserProvider>
                     </ApiUrlProvider>
                 </BrandingProvider>
             </body>
