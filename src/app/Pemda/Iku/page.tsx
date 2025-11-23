@@ -13,14 +13,17 @@ import {
 } from "@/types";
 
 const IkuPage = () => {
-  const periode = [2025, 2030];
+  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
+  const tahunAwal = periode[0];
+  const tahunAkhir = periode[periode.length - 1];
+  const jenisPeriode = "rpjmd";
   const tahun = periode[0];
   const {
     data: ikuPerencanaan,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<IkuPemdaPerencanaanResponse>({
-    url: `/api/perencanaan/indikator_utama/periode/${periode[0]}/${periode[1]}/rpjmd`,
+    url: `/api/perencanaan/indikator_utama/periode/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`,
   });
   const {
     data: ikuRealisasi,
