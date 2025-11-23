@@ -1,15 +1,34 @@
+import React, { useState, useEffect } from "react";
 import Login from './Login';
 import { useUserContext } from "@/context/UserContext"
+import { ToastError } from "@/components/Global/Alert";
 
 export default function () {
+    const [ShowToast, setShowToast] = useState(false);
     const { user: user, loading: loading, error: error } = useUserContext();
+
+    useEffect(() => {
+        if (error) {
+            setShowToast(true);
+        }
+    }, [error]);
 
     if (loading) {
         return <div className="p-5">Loading...</div>;
     }
 
     if (error) {
-        return <Login />;
+        return (
+            <>
+                <Login autoOpen={true} />
+
+                <ToastError
+                    isOpen={ShowToast}
+                    onClose={() => setShowToast(false)}
+                    message="Silakan login kembali."
+                />
+            </>
+        );
     }
 
     const roleColors: Record<string, string> = {

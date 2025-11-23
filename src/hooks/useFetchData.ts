@@ -1,31 +1,36 @@
 import { useEffect, useState } from 'react';
 import { FetchResponse } from '@/types'
-import { useApiUrlContext } from '@/context/ApiUrlContext';
+import Cookies from "js-cookie";
 
 interface useFetchDataProps {
   url: string;
 }
 
 export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> => {
-  const { token } = useApiUrlContext();
   const [data, setData] = useState<T | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-  }
 
   useEffect(() => {
     let active = true;
 
     const fetchData = async () => {
+      const sessionId = Cookies.get("sessionId")
+
+      if (!sessionId) {
+        setError("Silakan login.");
+        setLoading(false);
+        return; // ⛔ STOP sampai sini, tidak lanjut fetch
+      }
+
       setLoading(true)
       setError(undefined)
+
       try {
         const response = await fetch(url, {
-          headers: headers
+          method: 'GET',
+          headers: { 'X-Session-Id': sessionId },
         });
         if (!response.ok) {
           throw new Error(`HTTP ${response.status} - ${response.statusText}`);

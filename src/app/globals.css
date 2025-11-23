@@ -1,11 +1,35 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1C1D1D;
+    --background: #ffffff;
+    --foreground: #1c1d1d;
 }
 
-/* 1C1D1D warna BG Semarang */
-/* FFFF00 warna kuning */
-/* D42S1D warna merah */
-/* 00923F warna hijau */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(120%);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(120%);
+    }
+}
+
+.animate-slideIn {
+    animation: slideIn 0.4s ease-out forwards;
+}
+.animate-slideOut {
+    animation: slideOut 0.4s ease-in forwards;
+}

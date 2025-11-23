@@ -4,7 +4,7 @@ export type User = {
   firstName: string;
   lastName: string;
   roles: string[];
-}
+};
 
 export interface Tematik {
   tematik_id: number;
@@ -21,12 +21,12 @@ export interface SubTematik {
   sasaran_pemda: SasaranPemda[];
 }
 
-export interface SasaranPemda {
-  id: number;
-  sasaran_pemda: string;
-  tahun_awal: string;
-  tahun_akhir: string;
-  indikator: Indikator[];
+export interface Indikator {
+  id: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  target: Target[];
 }
 
 export interface Target {
@@ -34,21 +34,13 @@ export interface Target {
   target: string;
   satuan: string;
   tahun: string;
-};
-
-export interface Indikator {
-  id: string;
-  indikator: string;
-  rumus_perhitungan: string;
-  sumber_data: string;
-  target: Target[];
-};
+}
 
 export interface Periode {
   tahun_awal: string;
   tahun_akhir: string;
   jenis_periode: string;
-};
+}
 
 export interface TujuanPemda {
   id: number;
@@ -57,7 +49,7 @@ export interface TujuanPemda {
   tujuan_pemda: string;
   periode: Periode;
   indikator: Indikator[];
-};
+}
 
 export interface PerencanaanTujuanPemda {
   pokin_id: number;
@@ -68,13 +60,13 @@ export interface PerencanaanTujuanPemda {
   keterangan: string;
   tahun_pokin: string;
   tujuan_pemda: TujuanPemda[];
-};
+}
 
 export interface PerencanaanTujuanPemdaResponse {
   code: number;
   status: string;
   data: PerencanaanTujuanPemda[];
-};
+}
 
 export interface RealisasiTujuan {
   id: number;
@@ -157,11 +149,12 @@ export type SubmitResponse<T> = {
   submit: (payload: any) => Promise<T | undefined>;
   loading: boolean;
   error?: string;
+  data?: T;
 };
 
 export type SetState<T> = React.Dispatch<React.SetStateAction<T>>;
 
-export type RealisasiSasaranResponse = RealisasiSasaran[]
+export type RealisasiSasaranResponse = RealisasiSasaran[];
 
 export interface RealisasiSasaran {
   id: number;
@@ -185,8 +178,30 @@ export interface RealisasiSasaran {
 export interface PerencanaanSasaranPemdaResponse {
   code: number;
   status: string;
-  data: SasaranPemda[];
-};
+  data: TematikSasaranPemda[];
+}
+
+export interface TematikSasaranPemda {
+  tematik_id: number;
+  nama_tematik: string;
+  subtematik: SubTematikSasaranPemda[];
+}
+
+export interface SubTematikSasaranPemda {
+  subtematik_id: number;
+  nama_subtematik: string;
+  jenis_pohon: string;
+  level_pohon: number;
+  is_active: boolean;
+  sasaran_pemda: SasaranPemda[];
+}
+
+export interface SasaranPemda {
+  id_sasaran_pemda: number;
+  sasaran_pemda: string;
+  periode: Periode;
+  indikator: Indikator[];
+}
 
 export interface IkuPemdaTargetRealisasiCapaian {
   targetRealisasiId: string | null;
@@ -216,7 +231,7 @@ export interface IkuPemdaRealisasi {
   jenisIku: "TUJUAN" | "SASARAN" | null;
 }
 
-export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[]
+export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[];
 
 export interface IkuPemda {
   indikator_id: string;
@@ -247,7 +262,6 @@ export interface TargetRealisasiCapaianSasaran {
   satuan: string;
   tahun: string;
 }
-
 
 export interface TujuanOpdPerencanaan {
   id_tujuan_opd: string;
@@ -293,9 +307,9 @@ export interface TujuanOpdRealisasi {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: 'NAIK' | 'TURUN';
+  jenisRealisasi: "NAIK" | "TURUN";
   kodeOpd: string;
-  status: 'UNCHECKED' | 'CHECKED';
+  status: "UNCHECKED" | "CHECKED";
   createdDate: string;
   lastModifiedDate: string;
   version: number;
@@ -320,7 +334,7 @@ export interface TujuanOpdRealisasiRequest {
 export interface SasaranOpdPerencanaanResponse {
   code: number;
   status: string;
-  data: SasaranOpdPerencanaan[]
+  data: SasaranOpdPerencanaan[];
 }
 
 export interface SasaranOpdPerencanaan {
@@ -332,7 +346,7 @@ export interface SasaranOpdPerencanaan {
   tahun_akhir: string;
   jenis_periode: string;
   pohon_aktif: boolean;
-  indikator: Indikator[]
+  indikator: Indikator[];
 }
 
 export interface SasaranOpdRealisasi {
@@ -346,9 +360,9 @@ export interface SasaranOpdRealisasi {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: 'NAIK' | 'TURUN';
+  jenisRealisasi: "NAIK" | "TURUN";
   kodeOpd: string;
-  status: 'UNCHECKED' | 'CHECKED';
+  status: "UNCHECKED" | "CHECKED";
   createdDate: string;
   lastModifiedDate: string;
   version: number;
