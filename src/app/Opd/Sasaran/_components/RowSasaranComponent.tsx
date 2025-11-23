@@ -82,7 +82,7 @@ const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, ta
     return (
         <tr key={sasaranOpd.id}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.sasaran_opd}</td>
+            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.nama_sasaran_opd}</td>
             <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                 Tidak ada indikator dan target tahun {tahun}
             </td>

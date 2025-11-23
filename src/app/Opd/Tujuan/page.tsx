@@ -53,7 +53,7 @@ export default function TujuanPage() {
       setNamaOpd(perencanaan[0].nama_opd);
 
       const combinedData = gabunganDataPerencanaanRealisasi(
-        perencanaan[0],
+        perencanaan[0].tujuan_opd,
         realisasiData,
       );
       setTargetRealisasiCapaian(combinedData);

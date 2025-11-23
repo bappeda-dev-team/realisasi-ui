@@ -2,24 +2,23 @@ import {
   InfoOpd,
   TujuanOpdRealisasiResponse,
   TujuanOpdTargetRealisasiCapaian,
+  TujuanOpdPerencanaan,
 } from "@/types";
 
 export function gabunganDataPerencanaanRealisasi(
-  perencanaan: InfoOpd,
+  perencanaan: TujuanOpdPerencanaan[],
   realisasi: TujuanOpdRealisasiResponse,
 ): TujuanOpdTargetRealisasiCapaian[] {
   const hasil: TujuanOpdTargetRealisasiCapaian[] = [];
 
   // Safety check
-  if (!perencanaan?.tujuan_opd) {
-    console.log(perencanaan.kode_opd)
+  if (perencanaan.length === 0) {
     return hasil;
   }
 
   // --- OPTIMASI ---
   // Buat map untuk lookup realisasi O(1)
   const realisasiMap = new Map<string, (typeof realisasi)[number]>();
-  console.log('here')
 
   realisasi.forEach((r) => {
     const key = `${r.tahun}-${r.tujuanId}-${r.indikatorId}-${r.targetId}`;
@@ -27,7 +26,7 @@ export function gabunganDataPerencanaanRealisasi(
   });
 
   // --- PROSES GABUNGAN ---
-  perencanaan.tujuan_opd.forEach((tujuan) => {
+  perencanaan.forEach((tujuan) => {
     tujuan.indikator?.forEach((indikator) => {
       indikator.target?.forEach((target) => {
         const key = `${target.tahun}-${tujuan.id_tujuan_opd}-${indikator.id}-${target.id}`;
@@ -45,7 +44,7 @@ export function gabunganDataPerencanaanRealisasi(
           capaian: real?.capaian ?? "-",
           satuan: target.satuan,
           tahun: target.tahun,
-          kodeOpd: perencanaan.kode_opd,
+          kodeOpd: "-",
         });
       });
     });

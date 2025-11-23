@@ -76,7 +76,7 @@ const SasaranPage = () => {
   ) => {
     // sasaran -> buat text diatas sama filter
     const targetCapaian = dataTargetRealisasi.filter(
-      (tc) => tc.sasaranId === sasaran.id.toString(),
+      (tc) => tc.sasaranId === sasaran.id_sasaran_pemda.toString(),
     );
 
     if (targetCapaian) {
