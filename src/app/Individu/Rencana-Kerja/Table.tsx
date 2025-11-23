@@ -19,7 +19,7 @@ interface PemdaStrategicGoal {
 const data = [
     {
         "id": 1,
-        "rekin": "Meningkatnya Kualitas Pelayanan Publik Perangkat Daerah",
+        "rekin": "_DUMMY_ Meningkatnya Kualitas Pelayanan Publik Perangkat Daerah",
         "nama_pegawai": "akun_test_level_3",
         "nip": "102741020",
         "subKegiatan": "1.02 - PERENCANAAN",

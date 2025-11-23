@@ -1,11 +1,11 @@
 import {
-    SasaranOpdPerencanaanResponse, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian
+    SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian
 } from '@/types';
 
-export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencanaanResponse['data'], realisasi: SasaranOpdRealisasiResponse): SasaranOpdTargetRealisasiCapaian[] {
+export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencanaan[], realisasi: SasaranOpdRealisasiResponse): SasaranOpdTargetRealisasiCapaian[] {
     const hasil: SasaranOpdTargetRealisasiCapaian[] = [];
     // Iterate through each planning item
-    perencanaan.forEach(sasaran => {
+  perencanaan.forEach(sasaran => {
         sasaran.indikator.forEach(indikator => {
             // Look for targets in the current indicator
             indikator.target?.forEach(target => {
@@ -20,7 +20,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                 if (realizationEntry) {
                     hasil.push({
                         targetRealisasiId: realizationEntry.id,
-                        sasaranOpd: sasaran.sasaran_opd,
+                        sasaranOpd: sasaran.nama_sasaran_opd,
                         sasaranId: sasaran.id.toString(),
                         indikatorId: indikator.id.toString(),
                         indikator: indikator.indikator,
@@ -30,12 +30,12 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         capaian: realizationEntry.capaian,
                         satuan: target.satuan,
                         tahun: target.tahun,
-                        kodeOpd: sasaran.kode_opd
+                        kodeOpd: '-blank-'
                     });
                 } else {
                     hasil.push({
                         targetRealisasiId: null,
-                        sasaranOpd: sasaran.sasaran_opd,
+                        sasaranOpd: sasaran.nama_sasaran_opd,
                         sasaranId: sasaran.id.toString(),
                         indikatorId: indikator.id.toString(),
                         indikator: indikator.indikator,
@@ -45,7 +45,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         capaian: "-",
                         satuan: target.satuan,
                         tahun: target.tahun,
-                        kodeOpd: sasaran.kode_opd
+                        kodeOpd: '-blank-'
                     });
                 }
             });

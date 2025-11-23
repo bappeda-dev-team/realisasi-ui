@@ -20,7 +20,7 @@ const IkuPage = () => {
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<IkuPemdaPerencanaanResponse>({
-    url: `/api/perencanaan/indikator_utama/periode/${periode[0]}/${periode[-1]}/rpjmd`,
+    url: `/api/perencanaan/indikator_utama/periode/${periode[0]}/${periode[1]}/rpjmd`,
   });
   const {
     data: ikuRealisasi,
