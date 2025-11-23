@@ -26,7 +26,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                         {index === 0 && (
                             <>
                                 <td rowSpan={indikatorList.length} className="border-x border-b border-emerald-500 py-4 px-3 text-center">{no}</td>
-                                <td rowSpan={indikatorList.length} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.sasaran_opd}</td>
+                                <td rowSpan={indikatorList.length} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.nama_sasaran_opd}</td>
                             </>
                         )}
                         <td className="border-r border-b border-emerald-500 px-6 py-4">{ind.indikator || '-'}</td>

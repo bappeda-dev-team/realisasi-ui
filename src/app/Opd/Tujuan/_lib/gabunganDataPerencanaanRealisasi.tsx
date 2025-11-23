@@ -1,56 +1,55 @@
 import {
-    TujuanOpdPerencanaanResponse, TujuanOpdRealisasiResponse, TujuanOpdTargetRealisasiCapaian
-} from '@/types';
+  InfoOpd,
+  TujuanOpdRealisasiResponse,
+  TujuanOpdTargetRealisasiCapaian,
+} from "@/types";
 
-export function gabunganDataPerencanaanRealisasi(perencanaan: TujuanOpdPerencanaanResponse['data'], realisasi: TujuanOpdRealisasiResponse): TujuanOpdTargetRealisasiCapaian[] {
-    const hasil: TujuanOpdTargetRealisasiCapaian[] = [];
-    // Iterate through each planning item
-    perencanaan.forEach(tujuan => {
-        tujuan.indikator.forEach(indikator => {
-            // Look for targets in the current indicator
-            indikator.target?.forEach(target => {
-                // Find corresponding realization for the target year and tujuanId
-                const realizationEntry = realisasi.find(r =>
-                    r.tahun === target.tahun &&
-                    r.tujuanId === tujuan.id_tujuan_opd.toString() &&
-                    r.indikatorId === indikator.id &&
-                    r.targetId === target.id
-                );
+export function gabunganDataPerencanaanRealisasi(
+  perencanaan: InfoOpd,
+  realisasi: TujuanOpdRealisasiResponse,
+): TujuanOpdTargetRealisasiCapaian[] {
+  const hasil: TujuanOpdTargetRealisasiCapaian[] = [];
 
-                if (realizationEntry) {
-                    hasil.push({
-                        targetRealisasiId: realizationEntry.id,
-                        tujuanOpd: tujuan.tujuan,
-                        tujuanId: tujuan.id_tujuan_opd,
-                        indikatorId: indikator.id.toString(),
-                        indikator: indikator.indikator,
-                        targetId: target.id,
-                        target: target.target,
-                        realisasi: realizationEntry.realisasi,
-                        capaian: realizationEntry.capaian,
-                        satuan: target.satuan,
-                        tahun: target.tahun,
-                        kodeOpd: tujuan.kode_opd
-                    });
-                } else {
-                    hasil.push({
-                        targetRealisasiId: null,
-                        tujuanOpd: tujuan.tujuan,
-                        tujuanId: tujuan.id_tujuan_opd,
-                        indikatorId: indikator.id.toString(),
-                        indikator: indikator.indikator,
-                        targetId: target.id,
-                        target: target.target,
-                        realisasi: 0,
-                        capaian: "-",
-                        satuan: target.satuan,
-                        tahun: target.tahun,
-                        kodeOpd: tujuan.kode_opd
-                    });
-                }
-            });
-        });
-    });
-
+  // Safety check
+  if (!perencanaan?.tujuan_opd) {
+    console.log(perencanaan.kode_opd)
     return hasil;
+  }
+
+  // --- OPTIMASI ---
+  // Buat map untuk lookup realisasi O(1)
+  const realisasiMap = new Map<string, (typeof realisasi)[number]>();
+  console.log('here')
+
+  realisasi.forEach((r) => {
+    const key = `${r.tahun}-${r.tujuanId}-${r.indikatorId}-${r.targetId}`;
+    realisasiMap.set(key, r);
+  });
+
+  // --- PROSES GABUNGAN ---
+  perencanaan.tujuan_opd.forEach((tujuan) => {
+    tujuan.indikator?.forEach((indikator) => {
+      indikator.target?.forEach((target) => {
+        const key = `${target.tahun}-${tujuan.id_tujuan_opd}-${indikator.id}-${target.id}`;
+        const real = realisasiMap.get(key);
+
+        hasil.push({
+          targetRealisasiId: real?.id ?? null,
+          tujuanOpd: tujuan.tujuan,
+          tujuanId: tujuan.id_tujuan_opd,
+          indikatorId: indikator.id.toString(),
+          indikator: indikator.indikator,
+          targetId: target.id,
+          target: target.target,
+          realisasi: real?.realisasi ?? 0,
+          capaian: real?.capaian ?? "-",
+          satuan: target.satuan,
+          tahun: target.tahun,
+          kodeOpd: perencanaan.kode_opd,
+        });
+      });
+    });
+  });
+
+  return hasil;
 }

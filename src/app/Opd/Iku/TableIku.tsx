@@ -25,7 +25,7 @@ const IKU: IndikatorPemda[] = [
         indikator_id: "IND-SAS-PMD-2025-59d0b",
         asal_iku: "Sasaran Pemda",
         is_active: true,
-        indikator: "Nilai Evaluasi Penyelenggaraan Mal Pelayanan Publik",
+        indikator: "_DUMMY_ Nilai Evaluasi Penyelenggaraan Mal Pelayanan Publik",
         rumus_perhitungan: "Nilai evaluasi penyelenggaraan Mal Pelayanan Publik (MPP) diukur oleh Kementerian Pendayagunaan Aparatur Negara dan Reformasi Birokrasi (PANRB), dan formulasinya didasarkan pada beberapa aspek yang diatur dalam peraturan perundang-undangan. Evaluasi ini bertujuan untuk menilai efektivitas, efisiensi, dan kualitas pelayanan publik yang diberikan melalui MPP",
         sumber_data: "Kemenpan RB",
         created_at: "2025-06-17T08:51:52Z",

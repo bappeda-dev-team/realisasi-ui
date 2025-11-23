@@ -31,9 +31,9 @@ export interface Indikator {
 
 export interface Target {
   id: string;
+  tahun: string;
   target: string;
   satuan: string;
-  tahun: string;
 }
 
 export interface Periode {
@@ -265,20 +265,44 @@ export interface TargetRealisasiCapaianSasaran {
 
 export interface TujuanOpdPerencanaan {
   id_tujuan_opd: string;
-  kode_bidang_urusan: string;
-  kode_opd: string;
-  nama_opd: string;
   tujuan: string;
   tahun_awal: string;
   tahun_akhir: string;
   jenis_periode: string;
-  indikator: Indikator[];
+  indikator: IndikatorTujuanOpd[];
+}
+
+export interface IndikatorTujuanOpd {
+  id: string;
+  id_tujuan_opd: number;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  target: TargetIndikatorTujuanOpd[];
+}
+
+export interface TargetIndikatorTujuanOpd {
+  id: string;
+  indikator_id: string;
+  tahun: string;
+  target: string;
+  satuan: string;
+}
+
+export interface InfoOpd {
+  kode_urusan: string;
+  urusan: string;
+  kode_bidang_urusan: string;
+  nama_bidang_urusan: string;
+  kode_opd: string;
+  nama_opd: string;
+  tujuan_opd: TujuanOpdPerencanaan[];
 }
 
 export interface TujuanOpdPerencanaanResponse {
   code: number;
   status: string;
-  data: TujuanOpdPerencanaan[];
+  data: InfoOpd[];
 }
 
 export interface TujuanOpdTargetRealisasiCapaian {
@@ -334,18 +358,26 @@ export interface TujuanOpdRealisasiRequest {
 export interface SasaranOpdPerencanaanResponse {
   code: number;
   status: string;
-  data: SasaranOpdPerencanaan[];
+  data: PohonSasaranOpd[];
+}
+
+interface PohonSasaranOpd {
+  id_pohon: number;
+  nama_pohon: string;
+  jenis_pohon: string;
+  tahun_pohon: string;
+  level_pohon: number;
+  sasaran_opd: SasaranOpdPerencanaan[];
 }
 
 export interface SasaranOpdPerencanaan {
   id: number;
-  kode_opd: string;
-  nama_opd: string;
-  sasaran_opd: string;
+  nama_sasaran_opd: string;
+  id_tujuan_opd: number;
+  nama_tujuan_opd: string;
   tahun_awal: string;
   tahun_akhir: string;
   jenis_periode: string;
-  pohon_aktif: boolean;
   indikator: Indikator[];
 }
 
