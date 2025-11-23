@@ -3,15 +3,13 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 
 const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]>> = ({
     requestValues,
     onClose,
     onSuccess
 }) => {
-    const { url } = useApiUrlContext();
-    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `${url}/api/v1/realisasi/tujuans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `/api/realisasi/tujuans/batch` });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<TujuanRequest[]>([]);
 

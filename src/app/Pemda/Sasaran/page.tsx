@@ -17,20 +17,23 @@ import FormRealisasiSasaranPemda from "./_components/FormRealisasiSasaranPemda";
 
 const SasaranPage = () => {
   const periode = [2025, 2030];
+  const tahunAwal = periode[0];
+  const tahunAkhir = periode[periode.length - 1];
+  const jenisPeriode = "rpjmd";
   const tahun = periode[0];
   const {
     data: sasaranData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<PerencanaanSasaranPemdaResponse>({
-    url: `/api/perencanaan/sasaran_pemda/findall/tahun_awal/${periode[0]}/tahun_akhir/${periode[1]}/jenis_periode/rpjmd`,
+    url: `/api/perencanaan/sasaran_pemda/findall/tahun_awal/${tahunAwal}/tahun_akhir/${tahunAkhir}/jenis_periode/${jenisPeriode}`,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<RealisasiSasaranResponse>({
-    url: `/api/realisasi/sasarans/by-tahun/${periode[0]}`,
+    url: `/api/realisasi/sasarans/by-tahun/${tahun}`,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TargetRealisasiCapaianSasaran[]
