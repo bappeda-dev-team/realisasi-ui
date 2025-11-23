@@ -1,11 +1,12 @@
 import { User } from '@/types';
 
-export async function authenticate(): Promise<User> {
-    const res = await fetch('/user', {
+// digunakan di UserContext untuk sign in dan mendapatkan user info
+export async function authenticate(sessionId: string): Promise<User> {
+    const res = await fetch(`/auth-api/user-info`, {
         method: 'GET',
-        credentials: 'include', // if you use cookies
         headers: {
             'Content-Type': 'application/json',
+            'X-Session-Id': sessionId
         },
     });
 

@@ -1,6 +1,5 @@
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { FormProps, TujuanOpdTargetRealisasiCapaian, TujuanOpdRealisasi, TujuanOpdRealisasiRequest } from '@/types';
 import React, { useEffect, useState } from 'react';
@@ -10,7 +9,7 @@ const FormRealisasiTujuanOpd: React.FC<FormProps<TujuanOpdTargetRealisasiCapaian
     onClose,
     onSuccess
 }) => {
-    const { url } = useApiUrlContext();
+    const url = '/api';
     const { submit, loading, error } = useSubmitData<TujuanOpdRealisasi[]>({ url: `${url}/api/v1/realisasi/tujuan_opd/batch` });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<TujuanOpdRealisasiRequest[]>([]);

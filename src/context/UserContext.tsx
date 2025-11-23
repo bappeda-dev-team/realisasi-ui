@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react"
 import { authenticate } from '@/lib/auth';
 import { User } from '@/types'
+import Cookies from "js-cookie";
 
 interface UserContextType {
     user: User | null;
@@ -22,10 +23,19 @@ export function UserProvider({ children }: Readonly<{ children: React.ReactNode 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+
     useEffect(() => {
         const fetchUser = async () => {
+           const sessionId = Cookies.get("sessionId")
+            if (!sessionId) {
+                setUser(null);
+                setError("Silakan login.");
+                setLoading(false);
+                return; // ⛔ STOP sampai sini, tidak lanjut fetch
+            }
             try {
-                const user = await authenticate();
+                // why i source out this ??
+                const user = await authenticate(sessionId);
                 setUser(user);
             } catch (err) {
                 setError('Gagal autentikasi');

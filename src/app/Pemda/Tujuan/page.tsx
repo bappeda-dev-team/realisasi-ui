@@ -1,7 +1,6 @@
 'use client'
 
 import { LoadingBeat } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useFetchData } from '@/hooks/useFetchData';
 import { PerencanaanTujuanPemda, PerencanaanTujuanPemdaResponse, RealisasiTujuan, RealisasiTujuanResponse, TargetRealisasiCapaian, TujuanPemda } from '@/types';
 import React, { useEffect, useState } from 'react';
@@ -11,10 +10,9 @@ import { gabunganDataPerencanaanRealisasi } from './_lib/gabunganDataPerencanaan
 
 
 export default function Tujuan() {
-    const periode = [2025];
-    const { url } = useApiUrlContext();
-    const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<PerencanaanTujuanPemdaResponse>({ url: `${url}/api/v1/perencanaan/tujuan_pemda/findall_with_pokin/2025/2030/rpjmd` });
-    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiTujuanResponse>({ url: `${url}/api/v1/realisasi/tujuans/by-periode/2025/2030/rpjmd` });
+    const periode = [2025, 2030];
+    const { data: perencanaanData, loading: perencanaanLoading, error: perencanaanError } = useFetchData<PerencanaanTujuanPemdaResponse>({ url: `/api/perencanaan/tujuan_pemda/findall_with_pokin/${periode[0]}/${periode[1]}/rpjmd` });
+    const { data: realisasiData, loading: realisasiLoading, error: realisasiError } = useFetchData<RealisasiTujuanResponse>({ url: `/api/realisasi/tujuans/by-periode/2025/2030/rpjmd` });
     const [dataTargetRealisasi, setDataTargetRealisasi] = useState<TargetRealisasiCapaian[]>([]);
     const [tujuansPemda, setTujuansPemda] = useState<TujuanPemda[]>([])
     const [OpenModal, setOpenModal] = useState<boolean>(false);
