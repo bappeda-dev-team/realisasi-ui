@@ -15,6 +15,7 @@ import "./globals.css";
 
 const appName = process.env.NEXT_PUBLIC_APP_NAME || "";
 const clientName = process.env.NEXT_PUBLIC_CLIENT_NAME || "";
+const logo = process.env.NEXT_PUBLIC_LOGO_URL || "/logo.ico";
 
 export const metadata: Metadata = {
     title: appName,
@@ -31,7 +32,7 @@ export default function RootLayout({
             <head>
                 <link
                     rel="icon"
-                    href="/logo.png"
+                    href={logo}
                 />
             </head>
             <body className={`antialiased`}>
