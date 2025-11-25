@@ -17,21 +17,24 @@ import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
 
 export default function SasaranPage() {
   const kodeOpd = "5.03.5.04.0.00.01.0000";
-  const periode = [2025, 2030];
-  const tahun = periode[0];
+  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
+  const tahunAwal = periode[0];
+  const tahunAkhir = periode[periode.length - 1];
+  const selectedTahun = 2025;
+  const jenisPeriode = "rpjmd";
   const {
     data: sasaranOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<SasaranOpdPerencanaanResponse>({
-    url: `/api/perencanaan/sasaran_opd/findall/${kodeOpd}/${periode[0]}/${periode[1]}/rpjmd`,
+    url: `/api/perencanaan/sasaran_opd/renja/${kodeOpd}/${selectedTahun}/${jenisPeriode}`,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<SasaranOpdRealisasiResponse>({
-    url: `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${tahun}`,
+    url: `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     SasaranOpdTargetRealisasiCapaian[]
@@ -92,10 +95,10 @@ export default function SasaranPage() {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Sasaran OPD - {NamaOpd} Tahun {tahun}
+        Realisasi Sasaran OPD - {NamaOpd} Tahun {selectedTahun}
       </h2>
       <TableSasaranOpd
-        tahun={tahun}
+        tahun={selectedTahun}
         sasaranOpd={PerencanaanSasaranOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}

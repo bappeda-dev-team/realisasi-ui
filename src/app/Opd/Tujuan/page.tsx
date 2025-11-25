@@ -17,21 +17,24 @@ import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaan
 
 export default function TujuanPage() {
   const kodeOpd = "5.03.5.04.0.00.01.0000";
-  const periode = [2025, 2030];
-  const tahun = periode[0];
+  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
+  const tahunAwal = periode[0];
+  const tahunAkhir = periode[periode.length - 1];
+  const selectedTahun = 2025;
+  const jenisPeriode = "rpjmd";
   const {
     data: tujuanOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<TujuanOpdPerencanaanResponse>({
-    url: `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${periode[0]}/tahunakhir/${periode[1]}/jenisperiode/rpjmd`,
+    url: `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunAwal}/tahunakhir/${tahunAkhir}/jenisperiode/${jenisPeriode}`,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<TujuanOpdRealisasiResponse>({
-    url: `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${tahun}`,
+    url: `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TujuanOpdTargetRealisasiCapaian[]
@@ -92,10 +95,10 @@ export default function TujuanPage() {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Tujuan OPD - {NamaOpd} Tahun {tahun}
+        Realisasi Tujuan OPD - {NamaOpd} Tahun {selectedTahun}
       </h2>
       <TableTujuanOpd
-        tahun={tahun}
+        tahun={selectedTahun}
         tujuanOpd={PerencanaanTujuanOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}

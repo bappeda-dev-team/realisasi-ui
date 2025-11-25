@@ -17,6 +17,7 @@ import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaan
 
 export default function Tujuan() {
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
+  const selectedTahun = 2025;
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
   const jenisPeriode = "rpjmd";
@@ -32,7 +33,7 @@ export default function Tujuan() {
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<RealisasiTujuanResponse>({
-    url: `/api/realisasi/tujuans/by-periode/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`,
+    url: `/api/realisasi/tujuans/by-tahun/${selectedTahun}`,
   });
   const [dataTargetRealisasi, setDataTargetRealisasi] = useState<
     TargetRealisasiCapaian[]
@@ -55,9 +56,11 @@ export default function Tujuan() {
         perencanaan,
         realisasiData,
       );
-      const tujuans = perencanaanData.data.flatMap(
+
+      const tujuans: TujuanPemda[] = perencanaanData.data.flatMap(
         (pokin) => pokin.tujuan_pemda,
       );
+
       setDataTargetRealisasi(combinedData);
       setTujuansPemda(tujuans);
     }
@@ -89,12 +92,16 @@ export default function Tujuan() {
     setOpenModal(true);
   };
 
+  // here's the magic
+  // filter the fkin periode
+  const periodeTampil = periode.filter((p) => p === selectedTahun);
+
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan Pemda</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableTujuan
-          periode={periode}
+          periode={periodeTampil}
           tujuansPemda={tujuansPemda}
           targetRealisasiCapaians={dataTargetRealisasi}
           handleOpenModal={handleOpenModal}

@@ -17,7 +17,7 @@ const IkuPage = () => {
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
   const jenisPeriode = "rpjmd";
-  const tahun = periode[0];
+  const selectedTahun = 2025;
   const {
     data: ikuPerencanaan,
     loading: perencanaanLoading,
@@ -30,7 +30,7 @@ const IkuPage = () => {
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<IkuPemdaRealisasiResponse>({
-    url: `/api/realisasi/ikus/by-tahun/${tahun}`,
+    url: `/api/realisasi/ikus/by-tahun/${selectedTahun}`,
   });
   const [PerencanaanIku, setPerencanaanIku] = useState<IkuPemda[]>([]);
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
@@ -62,7 +62,7 @@ const IkuPage = () => {
       <h2 className="text-lg font-semibold mb-2">Realisasi IKU Pemda</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableIku
-          tahun={tahun}
+          tahun={selectedTahun}
           ikuPemda={PerencanaanIku}
           targetRealisasiCapaian={TargetRealisasiCapaian}
         />

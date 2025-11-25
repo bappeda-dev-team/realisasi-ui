@@ -16,11 +16,11 @@ import { FormModal } from "@/components/Global/Modal";
 import FormRealisasiSasaranPemda from "./_components/FormRealisasiSasaranPemda";
 
 const SasaranPage = () => {
-  const periode = [2025, 2030];
+  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
   const jenisPeriode = "rpjmd";
-  const tahun = periode[0];
+  const selectedTahun = 2025;
   const {
     data: sasaranData,
     loading: perencanaanLoading,
@@ -33,7 +33,7 @@ const SasaranPage = () => {
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<RealisasiSasaranResponse>({
-    url: `/api/realisasi/sasarans/by-tahun/${tahun}`,
+    url: `/api/realisasi/sasarans/by-tahun/${selectedTahun}`,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TargetRealisasiCapaianSasaran[]
@@ -92,7 +92,7 @@ const SasaranPage = () => {
       <h2 className="text-lg font-semibold mb-2">Realisasi Sasaran Pemda</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableSasaran
-          tahun={tahun}
+          tahun={selectedTahun}
           sasaranPemda={PerencanaanSasaran}
           targetRealisasiCapaian={TargetRealisasiCapaian}
           handleOpenModal={handleOpenModal}
