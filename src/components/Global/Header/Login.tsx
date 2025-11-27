@@ -16,7 +16,7 @@ export default function LoginButton({ autoOpen = false }) {
     return (
         <div>
             <button
-                className="flex items-center gap-3 border border-blue-300 p-3 rounded-md cursor-pointer"
+                className="flex items-center gap-2 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white"
                 onClick={() => setModalLogin(true)}
             >
                 <TbLogin />
