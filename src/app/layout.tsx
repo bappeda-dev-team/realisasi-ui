@@ -41,7 +41,7 @@ export default function RootLayout({
               <FilterProvider>
                 <TopNavbar />
                 <Header />
-                <div className="pt-[90px] px-5 pb-5">{children}</div>
+                <div className="pt-5 px-5 pb-5">{children}</div>
               </FilterProvider>
             </UserProvider>
           </ApiUrlProvider>

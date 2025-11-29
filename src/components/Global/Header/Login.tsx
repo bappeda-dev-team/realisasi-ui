@@ -3,7 +3,11 @@ import FormLogin from "./FormLogin";
 import { TbLogin } from "react-icons/tb";
 import { ToastSuccess } from "@/components/Global/Alert";
 
-export default function LoginButton({ autoOpen = false }) {
+interface LoginButtonProps {
+  autoOpen: boolean;
+}
+
+export default function LoginButton({ autoOpen = false }: LoginButtonProps) {
   const [ModalLogin, setModalLogin] = useState(false);
   const [ShowToast, setShowToast] = useState(false);
 

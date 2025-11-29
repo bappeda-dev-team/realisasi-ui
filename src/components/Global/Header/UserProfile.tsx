@@ -29,11 +29,11 @@ export default function () {
     return <div className="p-5">Loading...</div>;
   }
 
-  if (error) {
+  // LOGIN STATE
+  if (!user) {
     return (
       <>
         <Login autoOpen={true} />
-
         <ToastError
           isOpen={ShowToast}
           onClose={() => setShowToast(false)}
