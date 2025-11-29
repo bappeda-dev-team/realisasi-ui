@@ -5,99 +5,99 @@ import { TbEye, TbEyeClosed } from "react-icons/tb";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 
 interface FormLoginProps {
-    onClose: () => void;
-    onSuccess: () => void;
+  onClose: () => void;
+  onSuccess: () => void;
 }
 
 interface LoginRequest {
-    username: string;
-    password: string;
+  username: string;
+  password: string;
 }
 
 const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
-    const { submit, loading, error } = useAuthUser<{ sessionId: string }>({
-        url: `/auth-api/auth/login`
-    });
+  const { submit, loading, error } = useAuthUser<{ sessionId: string }>({
+    url: `/auth-api/auth/login`,
+  });
 
-    const [formData, setFormData] = useState<LoginRequest>({
-        username: "",
-        password: ""
-    });
+  const [formData, setFormData] = useState<LoginRequest>({
+    username: "",
+    password: "",
+  });
 
-    const [ShowPassword, setShowPassword] = useState(false);
+  const [ShowPassword, setShowPassword] = useState(false);
 
-    const handleChange = (field: keyof LoginRequest, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+  const handleChange = (field: keyof LoginRequest, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
-    const handleLogin = async (e: React.FormEvent) => {
-        e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-        const result = await submit(formData);
+    const result = await submit(formData);
 
-        if (result?.sessionId) {
-            onSuccess();
-            onClose();
-        }
-    };
+    if (result?.sessionId) {
+      onSuccess();
+      onClose();
+    }
+  };
 
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="fixed inset-0 bg-black opacity-70"></div>
 
-    return (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="fixed inset-0 bg-black opacity-70"></div>
+      <div className="relative bg-white p-5 rounded-lg w-[350px]">
+        <h1 className="text-xl mb-4 text-blue-500 font-semibold text-center">
+          LOGIN
+        </h1>
 
-            <div className="relative bg-white p-5 rounded-lg w-[350px]">
-                <h1 className="text-xl mb-4 text-blue-500 font-semibold text-center">LOGIN</h1>
+        {/* ERROR MESSAGE */}
+        {error && (
+          <p className="text-red-500 text-sm text-center mb-2">{error}</p>
+        )}
 
-                {/* ERROR MESSAGE */}
-                {error && (
-                    <p className="text-red-500 text-sm text-center mb-2">{error}</p>
-                )}
+        <form onSubmit={handleLogin} className="flex flex-col gap-3">
+          <input
+            type="text"
+            placeholder="Username"
+            className="w-full border border-blue-500 rounded-lg p-2"
+            value={formData.username}
+            onChange={(e) => handleChange("username", e.target.value)}
+          />
 
-                <form onSubmit={handleLogin} className="flex flex-col gap-3">
+          <div className="relative">
+            <input
+              type={ShowPassword ? "text" : "password"}
+              placeholder="Password"
+              className="w-full border border-blue-500 rounded-lg p-2"
+              value={formData.password}
+              onChange={(e) => handleChange("password", e.target.value)}
+            />
 
-                    <input
-                        type="text"
-                        placeholder="Username"
-                        className="w-full border border-blue-500 rounded-lg p-2"
-                        value={formData.username}
-                        onChange={(e) => handleChange("username", e.target.value)}
-                    />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-2 flex items-center"
+              onClick={() => setShowPassword(!ShowPassword)}
+            >
+              <span className="p-1 rounded-full text-blue-600 hover:bg-blue-400 hover:text-white">
+                {ShowPassword ? <TbEye /> : <TbEyeClosed />}
+              </span>
+            </button>
+          </div>
 
-                    <div className="relative">
-                        <input
-                            type={ShowPassword ? "text" : "password"}
-                            placeholder="Password"
-                            className="w-full border border-blue-500 rounded-lg p-2"
-                            value={formData.password}
-                            onChange={(e) => handleChange("password", e.target.value)}
-                        />
-
-                        <button
-                            type="button"
-                            className="absolute inset-y-0 right-2 flex items-center"
-                            onClick={() => setShowPassword(!ShowPassword)}
-                        >
-                            <span className="p-1 rounded-full text-blue-600 hover:bg-blue-400 hover:text-white">
-                                {ShowPassword ? <TbEye /> : <TbEyeClosed />}
-                            </span>
-                        </button>
-                    </div>
-
-                    <ButtonSky type="submit" className="w-full" disabled={loading}>
-                        {loading ? (
-                            <span className="flex items-center justify-center gap-2">
-                                <LoadingButtonClip color="white" />
-                                Login...
-                            </span>
-                        ) : (
-                            "Login"
-                        )}
-                    </ButtonSky>
-                </form>
-            </div>
-        </div>
-    );
+          <ButtonSky type="submit" className="w-full" disabled={loading}>
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <LoadingButtonClip color="white" />
+                Login...
+              </span>
+            ) : (
+              "Login"
+            )}
+          </ButtonSky>
+        </form>
+      </div>
+    </div>
+  );
 };
 
 export default FormLogin;
