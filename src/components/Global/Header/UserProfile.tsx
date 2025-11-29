@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from "react";
 import Login from "./Login";
 import { useUserContext } from "@/context/UserContext";
-import { ToastError } from "@/components/Global/Alert";
 
+// TODO: map this with user profile
 // const roleColors: Record<string, string> = {
 //   super_admin: "bg-amber-100 text-amber-700",
 //   admin_opd: "bg-sky-100 text-sky-700",
@@ -16,14 +15,7 @@ import { ToastError } from "@/components/Global/Alert";
 // };
 
 export default function UserProfile() {
-  const [ShowToast, setShowToast] = useState(false);
-  const { user: user, loading: loading, error: error } = useUserContext();
-
-  useEffect(() => {
-    if (error) {
-      setShowToast(true);
-    }
-  }, [error]);
+  const { user: user, loading: loading } = useUserContext();
 
   if (loading) {
     return <div className="p-5">Loading...</div>;
@@ -34,15 +26,11 @@ export default function UserProfile() {
     return (
       <>
         <Login autoOpen={true} />
-        <ToastError
-          isOpen={ShowToast}
-          onClose={() => setShowToast(false)}
-          message="Silakan login kembali."
-        />
       </>
     );
   }
 
+  // TODO: make dropdown with user profile and logout
   return (
     <div className="flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white">
       {user?.firstName}

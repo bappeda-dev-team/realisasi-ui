@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   TbBuildingFortress,
   TbBuilding,
@@ -11,20 +10,22 @@ import {
 import UserProfile from "@/components/Global/Header/UserProfile";
 import TopFilter from "@/components/Global/Header/TopFilter";
 import { useUserContext } from "@/context/UserContext";
+import { ToastSuccess, ToastError } from "@/components/Global/Alert";
 
 export const Header = () => {
-  // const [MenuPemdaOpen, setMenuPemdaOpen] = useState<boolean>(false);
-  const { user } = useUserContext();
+  const { user, error } = useUserContext();
+  const [ShowToastSuccess, setShowToastSuccess] = useState(false);
+  const [ShowToastError, setShowToastError] = useState(false);
 
-  // const url = usePathname();
+  useEffect(() => {
+    if (error) {
+      setShowToastError(true);
+    }
 
-  // const PathNameRegex = /^\/PerencanaanOpd\/.*/;
-
-  // function useIsOpened(currentPath: string): boolean {
-  //   return PathNameRegex.test(currentPath);
-  // }
-
-  // useEffect(() => {}, [url]);
+    if (user) {
+      setShowToastSuccess(true);
+    }
+  }, [user, error]);
 
   return (
     <>
@@ -62,6 +63,16 @@ export const Header = () => {
             <UserProfile />
           </div>
         </div>
+        <ToastSuccess
+          isOpen={ShowToastSuccess}
+          onClose={() => setShowToastSuccess(false)}
+          message="Login berhasil! Selamat datang 👋"
+        />
+        <ToastError
+          isOpen={ShowToastError}
+          onClose={() => setShowToastError(false)}
+          message="Silakan login kembali."
+        />
       </nav>
     </>
   );

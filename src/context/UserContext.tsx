@@ -4,12 +4,14 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { authenticate } from "@/lib/auth";
 import { User } from "@/types";
 import Cookies from "js-cookie";
+import { useRouter } from "next/navigation";
 
 interface UserContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
   setUser: (user: User | null) => void;
+  setError: (err: string | null) => void;
 }
 
 // context
@@ -18,6 +20,7 @@ const UserContext = createContext<UserContextType>({
   loading: true,
   error: null,
   setUser: () => {},
+  setError: () => {},
 });
 
 export function UserProvider({
@@ -39,8 +42,10 @@ export function UserProvider({
       try {
         // why i source out this ??
         const user = await authenticate(sessionId);
+        const router = useRouter();
         setUser(user);
         setError(null);
+        router.refresh();
       } catch (err) {
         setError("Gagal autentikasi");
       } finally {
@@ -52,7 +57,7 @@ export function UserProvider({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, setUser }}>
+    <UserContext.Provider value={{ user, loading, error, setUser, setError }}>
       {children}
     </UserContext.Provider>
   );

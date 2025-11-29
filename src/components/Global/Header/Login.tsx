@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import FormLogin from "./FormLogin";
 import { TbLogin } from "react-icons/tb";
-import { ToastSuccess } from "@/components/Global/Alert";
 
 interface LoginButtonProps {
   autoOpen: boolean;
@@ -9,7 +8,6 @@ interface LoginButtonProps {
 
 export default function LoginButton({ autoOpen = false }: LoginButtonProps) {
   const [ModalLogin, setModalLogin] = useState(false);
-  const [ShowToast, setShowToast] = useState(false);
 
   useEffect(() => {
     if (autoOpen) {
@@ -30,15 +28,9 @@ export default function LoginButton({ autoOpen = false }: LoginButtonProps) {
       {ModalLogin && (
         <FormLogin
           onClose={() => setModalLogin(false)}
-          onSuccess={() => setShowToast(true)}
+          onSuccess={() => {}}
         />
       )}
-
-      <ToastSuccess
-        isOpen={ShowToast}
-        onClose={() => setShowToast(false)}
-        message="Login berhasil! Selamat datang 👋"
-      />
     </div>
   );
 }

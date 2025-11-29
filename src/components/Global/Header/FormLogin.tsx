@@ -17,10 +17,10 @@ interface LoginRequest {
 }
 
 const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
-  const { submit, loading, error } = useAuthUser<{ sessionId: string }>({
+  const { submit, loading, error } = useAuthUser({
     url: `/auth-api/auth/login`,
   });
-  const { setUser } = useUserContext();
+  const { setUser, setError } = useUserContext();
 
   const [formData, setFormData] = useState<LoginRequest>({
     username: "",
@@ -42,9 +42,10 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
       // ambil data user setelah sukses
       // karena di submit atas itu cuma kembalikan
       // sessionId
+      setError(null);
+      onSuccess();
       const user = await authenticate(result.sessionId);
       setUser(user);
-      onSuccess();
       onClose();
     }
   };
@@ -60,7 +61,9 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
 
         {/* ERROR MESSAGE */}
         {error && (
-          <p className="text-red-500 text-sm text-center mb-2">{error}</p>
+          <p className="text-red-500 text-sm text-center mb-2">
+            username atau password tidak ditemukan
+          </p>
         )}
 
         <form onSubmit={handleLogin} className="flex flex-col gap-3">

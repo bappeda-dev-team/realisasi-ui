@@ -7,16 +7,22 @@ interface useAuthDataProps {
   storeCookies?: boolean;
 }
 
+interface AuthResponse {
+  sessionId: string;
+}
+
 // send login and store the keys
-export const useAuthUser = <T extends Record<string, any>>({
+export const useAuthUser = ({
   url,
   storeCookies = true,
-}: useAuthDataProps): SubmitResponse<T> => {
+}: useAuthDataProps): SubmitResponse<AuthResponse> => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  const [data, setData] = useState<T | undefined>(undefined);
+  const [data, setData] = useState<AuthResponse | undefined>(undefined);
 
-  const submit = async (payload: unknown): Promise<T | undefined> => {
+  const submit = async (
+    payload: unknown,
+  ): Promise<AuthResponse | undefined> => {
     setLoading(true);
     setError(undefined);
 
@@ -37,12 +43,10 @@ export const useAuthUser = <T extends Record<string, any>>({
       }
 
       const json = await response.json().catch(() => ({}));
-      const result = json as T;
+      const result = json as AuthResponse;
 
-      if (storeCookies) {
-        if (result.sessionId) {
-          Cookies.set("sessionId", result.sessionId);
-        }
+      if (storeCookies && result?.sessionId) {
+        Cookies.set("sessionId", result.sessionId);
       }
 
       setData(result);
