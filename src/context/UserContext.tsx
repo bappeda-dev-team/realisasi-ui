@@ -4,7 +4,6 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { authenticate } from "@/lib/auth";
 import { User } from "@/types";
 import Cookies from "js-cookie";
-import { useRouter } from "next/navigation";
 
 interface UserContextType {
   user: User | null;
@@ -12,6 +11,8 @@ interface UserContextType {
   error: string | null;
   setUser: (user: User | null) => void;
   setError: (err: string | null) => void;
+  lastLoginAt: number | null;
+  setLastLoginAt: (n: number | null) => void;
 }
 
 // context
@@ -21,6 +22,8 @@ const UserContext = createContext<UserContextType>({
   error: null,
   setUser: () => {},
   setError: () => {},
+  lastLoginAt: null,
+  setLastLoginAt: () => {},
 });
 
 export function UserProvider({
@@ -29,25 +32,27 @@ export function UserProvider({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastLoginAt, setLastLoginAt] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
       const sessionId = Cookies.get("sessionId");
+
       if (!sessionId) {
         setUser(null);
         setError("Silakan login.");
         setLoading(false);
-        return; // ⛔ STOP sampai sini, tidak lanjut fetch
+        return;
       }
+
       try {
-        // why i source out this ??
         const user = await authenticate(sessionId);
-        const router = useRouter();
         setUser(user);
         setError(null);
-        router.refresh();
-      } catch (err) {
-        setError("Gagal autentikasi");
+      } catch (_) {
+        setError(
+          "Gagal autentikasi, pastikan username dan password sudah benar.",
+        );
       } finally {
         setLoading(false);
       }
@@ -57,7 +62,17 @@ export function UserProvider({
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, error, setUser, setError }}>
+    <UserContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        setUser,
+        setError,
+        lastLoginAt,
+        setLastLoginAt,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

@@ -11,21 +11,32 @@ import UserProfile from "@/components/Global/Header/UserProfile";
 import TopFilter from "@/components/Global/Header/TopFilter";
 import { useUserContext } from "@/context/UserContext";
 import { ToastSuccess, ToastError } from "@/components/Global/Alert";
+import Login from "@/components/Global/Header/Login";
+import FormLogin from "@/components/Global/Header/FormLogin";
 
 export const Header = () => {
-  const { user, error } = useUserContext();
+  const { user, loading, error, lastLoginAt } = useUserContext();
   const [ShowToastSuccess, setShowToastSuccess] = useState(false);
   const [ShowToastError, setShowToastError] = useState(false);
+  const [ModalLogin, setModalLogin] = useState(false);
 
+  // SUCCESS: hanya ketika login baru
   useEffect(() => {
-    if (error) {
-      setShowToastError(true);
-    }
-
-    if (user) {
+    if (lastLoginAt) {
       setShowToastSuccess(true);
+      setShowToastError(false);
+      setModalLogin(false);
     }
-  }, [user, error]);
+  }, [lastLoginAt]);
+
+  // ERROR: hanya ketika user sudah login lalu session invalid
+  useEffect(() => {
+    if (error && user === null) {
+      setShowToastError(true);
+      setModalLogin(true);
+      setShowToastSuccess(false);
+    }
+  }, [error]);
 
   return (
     <>
@@ -60,7 +71,11 @@ export const Header = () => {
             </ul>
           )}
           <div className="flex items-center gap-6 ml-auto">
-            <UserProfile />
+            {loading && <div className="p-5">Loading...</div>}
+
+            {!loading && !user && <Login onClick={() => setModalLogin(true)} />}
+
+            {!loading && user && <UserProfile user={user} />}
           </div>
         </div>
         <ToastSuccess
@@ -73,6 +88,13 @@ export const Header = () => {
           onClose={() => setShowToastError(false)}
           message="Silakan login kembali."
         />
+
+        {ModalLogin && (
+          <FormLogin
+            onClose={() => setModalLogin(false)}
+            onSuccess={() => setModalLogin(false)}
+          />
+        )}
       </nav>
     </>
   );
