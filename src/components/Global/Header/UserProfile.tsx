@@ -15,7 +15,7 @@ import { ToastError } from "@/components/Global/Alert";
 //   staff: "bg-stone-100 text-stone-700",
 // };
 
-export default function () {
+export default function UserProfile() {
   const [ShowToast, setShowToast] = useState(false);
   const { user: user, loading: loading, error: error } = useUserContext();
 

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 /* import { Nunito_Sans } from "next/font/google"; */
 import { Header } from "@/components/Global/Header/Header";
-import TopNavbar from "@/components/Global/Navbar/TopNavbar";
 import { ApiUrlProvider } from "@/context/ApiUrlContext";
 import { BrandingProvider } from "@/context/BrandingContext";
 import { UserProvider } from "@/context/UserContext";
@@ -39,7 +38,6 @@ export default function RootLayout({
           <ApiUrlProvider>
             <UserProvider>
               <FilterProvider>
-                <TopNavbar />
                 <Header />
                 <div className="pt-5 px-5 pb-5">{children}</div>
               </FilterProvider>

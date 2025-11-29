@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useBrandingContext } from "@/context/BrandingContext";
 import { useFilterContext } from "@/context/FilterContext";
-import { useUserContext } from "@/context/UserContext";
 import Select from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
+import { User } from "@/types";
 
 interface LabelDropdown {
   value: string;
@@ -21,8 +21,11 @@ interface SelectedCookie {
   bulan: LabelDropdown | null;
 }
 
-export default function TopNavbar() {
-  const { user } = useUserContext();
+interface FilterProps {
+  user: User | null;
+}
+
+export default function TopFilter({ user }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
     dinas,
