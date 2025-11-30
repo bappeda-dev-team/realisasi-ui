@@ -61,6 +61,7 @@ export default function Tujuan() {
   >([]);
 
   useEffect(() => {
+    if (selectedTahun === null || periode.length === 0) return;
     if (perencanaanData?.data && realisasiData) {
       const perencanaan = perencanaanData.data;
       setPerencanaanTujuan(perencanaan);
@@ -77,8 +78,14 @@ export default function Tujuan() {
       setDataTargetRealisasi(combinedData);
       setTujuansPemda(tujuans);
     }
-  }, [perencanaanData, realisasiData]);
+  }, [perencanaanData, realisasiData, selectedTahun, periode]);
 
+  if (selectedTahun === null || periode.length === 0)
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih periode dan tahun dahulu
+      </div>
+    );
   /* if (!perencanaanData || !realisasiData) return <LoadingBeat loading={perencanaanLoading} />; */
   if (perencanaanLoading || realisasiLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
@@ -107,7 +114,7 @@ export default function Tujuan() {
 
   // here's the magic
   // filter the fkin periode
-  const periodeTampil = periode.filter((p) => p === selectedTahun);
+  const periodeTampil = years.filter((p) => p === parseInt(selectedTahun));
 
   return (
     <div className="overflow-auto grid gap-2">
