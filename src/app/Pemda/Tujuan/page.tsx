@@ -14,10 +14,23 @@ import React, { useEffect, useState } from "react";
 import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from "./_components/TableTujuan";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
+import { useFilterContext } from "@/context/FilterContext";
 
 export default function Tujuan() {
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const selectedTahun = 2025;
+  const { periode: selectedPeriode, tahun: selectedTahun } = useFilterContext();
+
+  const years: number[] = [];
+  if (selectedPeriode) {
+    const [awalStr, akhirStr] = selectedPeriode.split("-").map((t) => t.trim());
+    const awal = parseInt(awalStr);
+    const akhir = parseInt(akhirStr);
+
+    for (let y = awal; y <= akhir; y++) {
+      years.push(y);
+    }
+  }
+
+  const periode = years;
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
   const jenisPeriode = "rpjmd";

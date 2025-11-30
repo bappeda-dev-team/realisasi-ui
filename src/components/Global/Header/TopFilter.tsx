@@ -8,10 +8,18 @@ import Select from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
+import { useFetchData } from "@/hooks/useFetchData";
 
 interface LabelDropdown {
   value: string;
   label: string;
+}
+
+interface PeriodeDropdown {
+  value: string;
+  label: string;
+  tahun_awal: number;
+  tahun_akhir: number;
 }
 
 interface SelectedCookie {
@@ -23,6 +31,28 @@ interface SelectedCookie {
 
 interface FilterProps {
   user: User | null;
+}
+
+interface DinasResponse {
+  code: number;
+  status: string;
+  data: ListDinas[];
+}
+
+interface ListDinas {
+  kode_opd: string;
+  nama_opd: string;
+}
+
+interface PeriodeResponse {
+  code: number;
+  status: string;
+  data: ListPeriode[];
+}
+
+interface ListPeriode {
+  tahun_awal: number;
+  tahun_akhir: number;
 }
 
 export default function TopFilter({ user }: FilterProps) {
@@ -40,48 +70,90 @@ export default function TopFilter({ user }: FilterProps) {
   const [ShowToast, setShowToast] = useState(false);
 
   const [dinasOptions, setDinasOptions] = useState<LabelDropdown[]>([]);
-  const [periodeOptions, setPeriodeOptions] = useState<LabelDropdown[]>([]);
+  const [periodeOptions, setPeriodeOptions] = useState<PeriodeDropdown[]>([]);
   const [tahunOptions, setTahunOptions] = useState<LabelDropdown[]>([]);
   const [bulanOptions, setBulanOptions] = useState<LabelDropdown[]>([]);
 
-  // loading dropdown
-  const [loadingDinas, setLoadingDinas] = useState<boolean>(false);
-  const [loadingPeriode, setLoadingPeriode] = useState<boolean>(false);
   const [loadingTahun, setLoadingTahun] = useState<boolean>(false);
 
+  const {
+    data: dataDinas,
+    loading: loadingDinas,
+    error: errorDinas,
+  } = useFetchData<DinasResponse>({
+    url: `/api/periode/list_opd`,
+  });
+
+  const {
+    data: dataPeriode,
+    loading: loadingPeriode,
+    error: errorPeriode,
+  } = useFetchData<PeriodeResponse>({
+    url: `/api/periode/periode`,
+  });
   // ----------------------------
   // FETCH AWAL (DINAS, PERIODE, TAHUN)
   // ----------------------------
   useEffect(() => {
-    loadDinas();
-    loadPeriode();
-    loadTahun();
     loadBulan();
   }, []);
 
-  async function loadDinas() {
-    const resp = [
-      { value: "dinas1", label: "Dinas Pendidikan" },
-      { value: "dinas2", label: "Dinas Kesehatan" },
-    ];
-    setDinasOptions(resp);
-  }
+  // ----------------------------
+  // DROPDOWN DINAS (OPD)
+  // ----------------------------
+  useEffect(() => {
+    if (dataDinas?.data) {
+      setDinasOptions(
+        dataDinas.data.map((d) => ({
+          value: d.kode_opd,
+          label: d.nama_opd,
+        })),
+      );
+    }
+  }, [dataDinas]);
 
-  async function loadPeriode() {
-    const resp = [
-      { value: "2021-2026", label: "Periode 2021–2026" },
-      { value: "2026-2031", label: "Periode 2026–2031" },
-    ];
-    setPeriodeOptions(resp);
-  }
+  // ----------------------------
+  // DROPDOWN PERIODE
+  // ----------------------------
+  useEffect(() => {
+    if (dataPeriode?.data) {
+      setPeriodeOptions(
+        dataPeriode.data
+          .sort((a, b) => a.tahun_awal - b.tahun_awal)
+          .map((d) => {
+            const tahunAwalAkhir = `${d.tahun_awal}-${d.tahun_akhir}`;
+            return {
+              value: tahunAwalAkhir,
+              label: tahunAwalAkhir,
+              tahun_awal: d.tahun_awal,
+              tahun_akhir: d.tahun_akhir,
+            };
+          }),
+      );
+    }
+  }, [dataPeriode]);
 
-  async function loadTahun() {
-    const resp = [2021, 2022, 2023, 2024, 2025].map((y) => ({
-      value: y.toString(),
-      label: `Tahun ${y}`,
-    }));
-    setTahunOptions(resp);
-  }
+  // ----------------------------
+  // DROPDOWN TAHUN
+  // ----------------------------
+  useEffect(() => {
+    if (!periode) return;
+
+    const selected = periodeOptions.find((p) => p.value === periode);
+    if (!selected) return;
+
+    // generate tahun sesuai periode
+    const tahunList = [];
+    for (let t = selected.tahun_awal; t <= selected.tahun_akhir; t++) {
+      tahunList.push({
+        value: t.toString(),
+        label: `Tahun ${t}`,
+      });
+    }
+
+    setTahunOptions(tahunList);
+    setTahun(null);
+  }, [periode, periodeOptions]);
 
   async function loadBulan() {
     const resp = [
@@ -116,7 +188,7 @@ export default function TopFilter({ user }: FilterProps) {
       setTahun(cookie.tahun?.value ?? null);
       setBulan(cookie.bulan?.value ?? null);
     } catch {}
-  }, []);
+  }, [periodeOptions]);
 
   // ----------------------------
   // SIMPAN COOKIE
