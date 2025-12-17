@@ -78,7 +78,7 @@ export default function Tujuan() {
       setDataTargetRealisasi(combinedData);
       setTujuansPemda(tujuans);
     }
-  }, [perencanaanData, realisasiData, selectedTahun, periode]);
+  }, [selectedTahun]);
 
   if (selectedTahun === null || periode.length === 0)
     return (
