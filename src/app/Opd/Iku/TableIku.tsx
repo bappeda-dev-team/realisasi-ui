@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
-import { useBrandingContext } from "@/context/BrandingContext";
+import React, { useState } from "react";
 
 interface IndikatorPemda {
     indikator_id: string;
@@ -39,9 +38,7 @@ const IKU: IndikatorPemda[] = [
     }
 ]
 
-const Table = () => {
-
-    const { branding } = useBrandingContext();
+const Table = ({ tahun }: { tahun: string }) => {
     const [Error, setError] = useState<boolean | null>(null);
     const [DataNull, setDataNull] = useState<boolean | null>(null);
 
@@ -57,7 +54,7 @@ const Table = () => {
                             <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator Utama</th>
                             <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Rumus Perhitungan</th>
                             <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Sumber Data</th>
-                            <th colSpan={2} className="border-l border-b px-6 py-3 min-w-[100px]">2025</th>
+                            <th colSpan={2} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun}</th>
                         </tr>
                         <tr className="bg-sky-500 text-white">
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>

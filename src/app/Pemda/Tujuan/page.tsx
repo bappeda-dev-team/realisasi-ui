@@ -15,34 +15,15 @@ import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from "./_components/TableTujuan";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 import { useFilterContext } from "@/context/FilterContext";
+import { parsePeriodeRange } from "@/lib/filter";
 
 export default function Tujuan() {
-    const { periode: selectedPeriode, tahun: selectedTahun } = useFilterContext();
-    const periode = useMemo<number[]>(() => {
-        if (!selectedPeriode) return [];
-
-        const [awalStr, akhirStr] = selectedPeriode.split("-").map(t => t.trim());
-        const awal = Number(awalStr);
-        const akhir = Number(akhirStr);
-
-        if (Number.isNaN(awal) || Number.isNaN(akhir)) return [];
-
-        return Array.from({ length: akhir - awal + 1 }, (_, i) => awal + i);
-    }, [selectedPeriode]);
-
-    const years: number[] = [];
-    if (selectedPeriode) {
-        const [awalStr, akhirStr] = selectedPeriode.split("-").map((t) => t.trim());
-        const awal = parseInt(awalStr);
-        const akhir = parseInt(akhirStr);
-
-        for (let y = awal; y <= akhir; y++) {
-            years.push(y);
-        }
-    }
-
-    const tahunAwal = periode[0];
-    const tahunAkhir = periode[periode.length - 1];
+    const { activeFilter } = useFilterContext();
+    const { tahunAwal, tahunAkhir, tahunList } = useMemo(
+        () => parsePeriodeRange(activeFilter.periode),
+        [activeFilter.periode],
+    );
+    const selectedTahun = activeFilter.tahun;
     const jenisPeriode = "rpjmd";
 
     const canFetchPerencanaan =
@@ -99,7 +80,7 @@ export default function Tujuan() {
         );
     }, [perencanaanData, realisasiData]);
 
-    if (selectedTahun === null || periode.length === 0)
+    if (selectedTahun === null || tahunList.length === 0)
         return (
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
                 Harap pilih periode dan tahun dahulu
@@ -133,7 +114,7 @@ export default function Tujuan() {
 
     // here's the magic
     // filter the fkin periode
-    const periodeTampil = years.filter((p) => p === parseInt(selectedTahun));
+    const periodeTampil = tahunList.filter((p) => p === Number(selectedTahun));
 
     return (
         <div className="overflow-auto grid gap-2">

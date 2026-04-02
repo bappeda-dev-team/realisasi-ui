@@ -1,18 +1,28 @@
 import { User } from '@/types';
 
 // digunakan di UserContext untuk sign in dan mendapatkan user info
-export async function authenticate(sessionId: string): Promise<User> {
-    const res = await fetch(`/auth-api/user-info`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-Session-Id': sessionId
-        },
-    });
+export async function authenticate(sessionId?: string): Promise<User> {
+  const url = sessionId ? `/auth-api/user-info` : `/api/auth/user-info`;
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (sessionId) headers["X-Session-Id"] = sessionId;
 
-    if (!res.ok) {
-        throw new Error('Failed to authenticate');
-    }
+  const res = await fetch(url, {
+    method: "GET",
+    headers,
+    credentials: "include",
+    cache: "no-store",
+  });
 
-    return res.json();
+  if (!res.ok) {
+    let errMsg = "Failed to authenticate";
+    try {
+      const errJson = (await res.json()) as { message?: string };
+      if (errJson?.message) errMsg = errJson.message;
+    } catch (_) {}
+    throw new Error(errMsg);
+  }
+
+  return res.json();
 }

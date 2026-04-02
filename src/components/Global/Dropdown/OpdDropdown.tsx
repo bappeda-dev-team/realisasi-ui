@@ -1,8 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
 import AsyncSelect from 'react-select/async';
-import { SingleValue } from 'react-select';
 
 interface OpdOptions {
     value: string;
@@ -27,10 +25,6 @@ const loadOpdOptions = async (inputValue: string): Promise<OpdOptions[]> => {
 }
 
 export default function () {
-    const handleChange = (selected: SingleValue<OpdOptions>) => {
-        console.log('Selected:', selected);
-    };
-
     return (
         <div style={{ maxWidth: 800 }}>
             <AsyncSelect

@@ -3,7 +3,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authenticate } from "@/lib/auth";
 import { User } from "@/types";
-import Cookies from "js-cookie";
 
 interface UserContextType {
   user: User | null;
@@ -36,23 +35,20 @@ export function UserProvider({
 
   useEffect(() => {
     const fetchUser = async () => {
-      const sessionId = Cookies.get("sessionId");
-
-      if (!sessionId) {
-        setUser(null);
-        setError("Silakan login.");
-        setLoading(false);
-        return;
-      }
-
       try {
-        const user = await authenticate(sessionId);
+        const user = await authenticate();
         setUser(user);
         setError(null);
       } catch (_) {
-        setError(
-          "Gagal autentikasi, pastikan username dan password sudah benar.",
-        );
+        const msg = _ instanceof Error ? _.message : "Unknown error occurred";
+        if (msg.toLowerCase().includes("silakan login")) {
+          setError("Silakan login.");
+        } else {
+          setError(
+            "Gagal autentikasi, pastikan username dan password sudah benar.",
+          );
+        }
+        setUser(null);
       } finally {
         setLoading(false);
       }

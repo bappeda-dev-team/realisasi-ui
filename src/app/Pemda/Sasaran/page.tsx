@@ -14,26 +14,35 @@ import {
 import TableSasaran from "./_components/TableSasaran";
 import { FormModal } from "@/components/Global/Modal";
 import FormRealisasiSasaranPemda from "./_components/FormRealisasiSasaranPemda";
+import { useFilterContext } from "@/context/FilterContext";
+import { parsePeriodeRange } from "@/lib/filter";
 
 const SasaranPage = () => {
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
+  const { activeFilter } = useFilterContext();
+  const { tahunAwal, tahunAkhir } = parsePeriodeRange(activeFilter.periode);
   const jenisPeriode = "rpjmd";
-  const selectedTahun = 2025;
+  const selectedTahun = activeFilter.tahun;
+  const canFetchPerencanaan =
+    typeof tahunAwal === "number" && typeof tahunAkhir === "number";
+  const canFetchRealisasi = Boolean(selectedTahun);
+
   const {
     data: sasaranData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<PerencanaanSasaranPemdaResponse>({
-    url: `/api/perencanaan/sasaran_pemda/findall/tahun_awal/${tahunAwal}/tahun_akhir/${tahunAkhir}/jenis_periode/${jenisPeriode}`,
+    url: canFetchPerencanaan
+      ? `/api/perencanaan/sasaran_pemda/findall/tahun_awal/${tahunAwal}/tahun_akhir/${tahunAkhir}/jenis_periode/${jenisPeriode}`
+      : null,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<RealisasiSasaranResponse>({
-    url: `/api/realisasi/sasarans/by-tahun/${selectedTahun}`,
+    url: canFetchRealisasi
+      ? `/api/realisasi/sasarans/by-tahun/${selectedTahun}`
+      : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TargetRealisasiCapaianSasaran[]
@@ -64,6 +73,13 @@ const SasaranPage = () => {
 
   if (perencanaanLoading || realisasiLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
+  if (!selectedTahun || !canFetchPerencanaan) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih periode dan tahun dahulu
+      </div>
+    );
+  }
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
   if (realisasiError)
@@ -92,7 +108,7 @@ const SasaranPage = () => {
       <h2 className="text-lg font-semibold mb-2">Realisasi Sasaran Pemda</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableSasaran
-          tahun={selectedTahun}
+          tahun={Number(selectedTahun)}
           sasaranPemda={PerencanaanSasaran}
           targetRealisasiCapaian={TargetRealisasiCapaian}
           handleOpenModal={handleOpenModal}

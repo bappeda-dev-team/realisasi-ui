@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { SubmitResponse } from "@/types";
-import Cookies from "js-cookie";
 
 interface useAuthDataProps {
   url: string;
-  storeCookies?: boolean;
 }
 
 interface AuthResponse {
@@ -14,7 +12,6 @@ interface AuthResponse {
 // send login and store the keys
 export const useAuthUser = ({
   url,
-  storeCookies = true,
 }: useAuthDataProps): SubmitResponse<AuthResponse> => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -30,6 +27,7 @@ export const useAuthUser = ({
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -44,10 +42,6 @@ export const useAuthUser = ({
 
       const json = await response.json().catch(() => ({}));
       const result = json as AuthResponse;
-
-      if (storeCookies && result?.sessionId) {
-        Cookies.set("sessionId", result.sessionId);
-      }
 
       setData(result);
       return result;

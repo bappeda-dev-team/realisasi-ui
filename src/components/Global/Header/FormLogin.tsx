@@ -38,12 +38,21 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
 
     const result = await submit(formData);
 
-    if (result?.sessionId) {
+    if (result) {
       onClose();
       // ambil data user setelah sukses
       // karena di submit atas itu cuma kembalikan
       // sessionId
-      const user = await authenticate(result.sessionId);
+      let user;
+      try {
+        user = await authenticate();
+      } catch (err) {
+        if (result?.sessionId) {
+          user = await authenticate(result.sessionId);
+        } else {
+          throw err;
+        }
+      }
       setUser(user);
       setError(null);
       setLastLoginAt(Date.now());

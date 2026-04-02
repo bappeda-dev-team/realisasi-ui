@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
-import { useBrandingContext } from "@/context/BrandingContext";
+import React from "react";
 
 interface PemdaStrategicGoal {
     id: number;
@@ -33,9 +32,7 @@ const data = [
     }
 ]
 
-const Table = () => {
-
-    const { branding } = useBrandingContext();
+const Table = ({ tahun }: { tahun: string }) => {
 
     return (
         <>
@@ -47,7 +44,7 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Rencana Kinerja</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">2025</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun}</th>
                         </tr>
                         <tr className="bg-emerald-500 text-white">
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>

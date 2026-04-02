@@ -1,43 +1,47 @@
 import { useEffect, useState } from 'react';
-import { FetchResponse } from '@/types'
-import Cookies from "js-cookie";
+import { FetchResponse } from '@/types';
 
 interface useFetchDataProps {
     url: string | null;
+    requireSession?: boolean;
+    withCredentials?: boolean;
 }
 
-export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> => {
+export const useFetchData = <T>({
+    url,
+    requireSession = true,
+    withCredentials = false,
+}: useFetchDataProps): FetchResponse<T> => {
     const [data, setData] = useState<T | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | undefined>(undefined);
 
-
     useEffect(() => {
         if (!url) {
-            setLoading(false)
+            setLoading(false);
             return;
         }
         let active = true;
 
         const fetchData = async () => {
-            const sessionId = Cookies.get("sessionId")
-
-            if (!sessionId) {
-                setError("Silakan login.");
-                setLoading(false);
-                return; // ⛔ STOP sampai sini, tidak lanjut fetch
-            }
-
-            setLoading(true)
-            setError(undefined)
+            setLoading(true);
+            setError(undefined);
 
             try {
                 const response = await fetch(url, {
                     method: 'GET',
-                    headers: { 'X-Session-Id': sessionId },
+                    credentials: withCredentials ? 'include' : 'same-origin',
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                    let errMsg = `HTTP ${response.status} - ${response.statusText}`;
+                    try {
+                        const errJson = await response.json();
+                        if (errJson?.message) errMsg = errJson.message;
+                    } catch (_) {}
+                    if (requireSession && response.status === 401) {
+                        errMsg = "Silakan login.";
+                    }
+                    throw new Error(errMsg);
                 }
                 const responseData: T = await response.json();
                 if (active) {
@@ -58,7 +62,7 @@ export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> =>
         return () => {
             active = false;
         };
-    }, [url]);
+    }, [url, requireSession, withCredentials]);
 
-    return { data, loading, error }
+    return { data, loading, error };
 };

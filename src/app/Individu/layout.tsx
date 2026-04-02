@@ -3,11 +3,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
+import FilterActivationGate from '@/components/Global/FilterActivationGate'
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const relativePath = pathname.replace(/^\/realisasi/, '')
+  const relativePath = (pathname ?? '').replace(/^\/realisasi/, '')
   const navItems = [
     {
       label: 'Rekin Individu',
@@ -47,7 +48,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         })}
       </div>
       <div className="mt-2 transition-all ease-in-out duration-500">
-        {children}
+        <FilterActivationGate>{children}</FilterActivationGate>
       </div>
     </div>
   )

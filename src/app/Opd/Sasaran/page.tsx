@@ -14,27 +14,32 @@ import {
 import TableSasaranOpd from "./_components/TableSasaranOpd";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
+import { useFilterContext } from "@/context/FilterContext";
 
 export default function SasaranPage() {
-  const kodeOpd = "5.03.5.04.0.00.01.0000";
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
-  const selectedTahun = 2025;
+  const { activeFilter } = useFilterContext();
+  const kodeOpd = activeFilter.dinas;
+  const selectedTahun = activeFilter.tahun;
   const jenisPeriode = "rpjmd";
+  const canFetch = Boolean(kodeOpd && selectedTahun);
+
   const {
     data: sasaranOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<SasaranOpdPerencanaanResponse>({
-    url: `/api/perencanaan/sasaran_opd/renja/${kodeOpd}/${selectedTahun}/${jenisPeriode}`,
+    url: canFetch
+      ? `/api/perencanaan/sasaran_opd/renja/${kodeOpd}/${selectedTahun}/${jenisPeriode}`
+      : null,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<SasaranOpdRealisasiResponse>({
-    url: `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
+    url: canFetch
+      ? `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahun}`
+      : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     SasaranOpdTargetRealisasiCapaian[]
@@ -69,6 +74,13 @@ export default function SasaranPage() {
 
   if (perencanaanLoading || realisasiLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
+  if (!canFetch || !selectedTahun) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih dinas dan tahun dahulu
+      </div>
+    );
+  }
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
   if (realisasiError)
@@ -98,7 +110,7 @@ export default function SasaranPage() {
         Realisasi Sasaran OPD - {NamaOpd} Tahun {selectedTahun}
       </h2>
       <TableSasaranOpd
-        tahun={selectedTahun}
+        tahun={Number(selectedTahun)}
         sasaranOpd={PerencanaanSasaranOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}

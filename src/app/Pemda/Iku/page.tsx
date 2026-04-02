@@ -11,26 +11,35 @@ import {
   IkuPemda,
   IkuPemdaTargetRealisasiCapaian,
 } from "@/types";
+import { useFilterContext } from "@/context/FilterContext";
+import { parsePeriodeRange } from "@/lib/filter";
 
 const IkuPage = () => {
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
+  const { activeFilter } = useFilterContext();
+  const { tahunAwal, tahunAkhir } = parsePeriodeRange(activeFilter.periode);
   const jenisPeriode = "rpjmd";
-  const selectedTahun = 2025;
+  const selectedTahun = activeFilter.tahun;
+  const canFetchPerencanaan =
+    typeof tahunAwal === "number" && typeof tahunAkhir === "number";
+  const canFetchRealisasi = Boolean(selectedTahun);
+
   const {
     data: ikuPerencanaan,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<IkuPemdaPerencanaanResponse>({
-    url: `/api/perencanaan/indikator_utama/periode/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`,
+    url: canFetchPerencanaan
+      ? `/api/perencanaan/indikator_utama/periode/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`
+      : null,
   });
   const {
     data: ikuRealisasi,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<IkuPemdaRealisasiResponse>({
-    url: `/api/realisasi/ikus/by-tahun/${selectedTahun}`,
+    url: canFetchRealisasi
+      ? `/api/realisasi/ikus/by-tahun/${selectedTahun}`
+      : null,
   });
   const [PerencanaanIku, setPerencanaanIku] = useState<IkuPemda[]>([]);
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
@@ -52,6 +61,13 @@ const IkuPage = () => {
 
   if (perencanaanLoading || realisasiLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
+  if (!selectedTahun || !canFetchPerencanaan) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih periode dan tahun dahulu
+      </div>
+    );
+  }
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
   if (realisasiError)
@@ -62,7 +78,7 @@ const IkuPage = () => {
       <h2 className="text-lg font-semibold mb-2">Realisasi IKU Pemda</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableIku
-          tahun={selectedTahun}
+          tahun={Number(selectedTahun)}
           ikuPemda={PerencanaanIku}
           targetRealisasiCapaian={TargetRealisasiCapaian}
         />

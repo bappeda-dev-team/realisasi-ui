@@ -14,27 +14,38 @@ import React, { useEffect, useState } from "react";
 import FormRealisasiTujuanOpd from "./_components/FormRealisasiTujuanOpd";
 import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
+import { useFilterContext } from "@/context/FilterContext";
+import { parsePeriodeRange } from "@/lib/filter";
 
 export default function TujuanPage() {
-  const kodeOpd = "5.03.5.04.0.00.01.0000";
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
-  const selectedTahun = 2025;
+  const { activeFilter } = useFilterContext();
+  const kodeOpd = activeFilter.dinas;
+  const selectedTahun = activeFilter.tahun;
+  const { tahunAwal, tahunAkhir } = parsePeriodeRange(activeFilter.periode);
   const jenisPeriode = "rpjmd";
+  const canFetchPerencanaan =
+    Boolean(kodeOpd) &&
+    typeof tahunAwal === "number" &&
+    typeof tahunAkhir === "number";
+  const canFetchRealisasi = Boolean(kodeOpd && selectedTahun);
+
   const {
     data: tujuanOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<TujuanOpdPerencanaanResponse>({
-    url: `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunAwal}/tahunakhir/${tahunAkhir}/jenisperiode/${jenisPeriode}`,
+    url: canFetchPerencanaan
+      ? `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunAwal}/tahunakhir/${tahunAkhir}/jenisperiode/${jenisPeriode}`
+      : null,
   });
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<TujuanOpdRealisasiResponse>({
-    url: `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
+    url: canFetchRealisasi
+      ? `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahun}`
+      : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TujuanOpdTargetRealisasiCapaian[]
@@ -69,6 +80,13 @@ export default function TujuanPage() {
 
   if (perencanaanLoading || realisasiLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
+  if (!canFetchPerencanaan || !canFetchRealisasi || !selectedTahun) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih dinas, periode, dan tahun dahulu
+      </div>
+    );
+  }
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
   if (realisasiError)
@@ -98,7 +116,7 @@ export default function TujuanPage() {
         Realisasi Tujuan OPD - {NamaOpd} Tahun {selectedTahun}
       </h2>
       <TableTujuanOpd
-        tahun={selectedTahun}
+        tahun={Number(selectedTahun)}
         tujuanOpd={PerencanaanTujuanOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}
