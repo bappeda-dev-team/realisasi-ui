@@ -16,12 +16,29 @@ import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaan
 import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
 import { useFilterContext } from "@/context/FilterContext";
 
+interface DinasResponse {
+  code: number;
+  status: string;
+  data: ListDinas[];
+}
+
+interface ListDinas {
+  kode_opd: string;
+  nama_opd: string;
+}
+
 export default function SasaranPage() {
   const { activeFilter } = useFilterContext();
   const kodeOpd = activeFilter.dinas;
   const selectedTahun = activeFilter.tahun;
   const jenisPeriode = "rpjmd";
   const canFetch = Boolean(kodeOpd && selectedTahun);
+
+  // Ambil nama OPD dari endpoint periode (dipakai juga oleh TopFilter)
+  const { data: dinasData } = useFetchData<DinasResponse>({
+    url: kodeOpd ? "/api/periode/list_opd" : null,
+    requireSession: false,
+  });
 
   const {
     data: sasaranOpdData,
@@ -54,19 +71,26 @@ export default function SasaranPage() {
   const [OpenModal, setOpenModal] = useState<boolean>(false);
 
   useEffect(() => {
+    if (!kodeOpd || !dinasData?.data) {
+      setNamaOpd("");
+      return;
+    }
+
+    const found = dinasData.data.find((d) => d.kode_opd === kodeOpd);
+    setNamaOpd(found?.nama_opd ?? "");
+  }, [kodeOpd, dinasData]);
+
+  useEffect(() => {
     if (sasaranOpdData?.data && realisasiData) {
       const perencanaan = sasaranOpdData.data
         .flatMap(pohon => pohon.sasaran_opd);
       setPerencanaanSasaranOpd(perencanaan);
-
-      setNamaOpd('-');
       const combinedData = gabunganDataPerencanaanRealisasi(
         perencanaan,
         realisasiData,
       );
       setTargetRealisasiCapaian(combinedData);
     } else {
-      setNamaOpd("");
       setTargetRealisasiCapaian([]);
       setPerencanaanSasaranOpd([]);
     }
@@ -107,7 +131,7 @@ export default function SasaranPage() {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Sasaran OPD - {NamaOpd} Tahun {selectedTahun}
+        Realisasi Sasaran OPD{NamaOpd ? ` - ${NamaOpd}` : ""} Tahun {selectedTahun}
       </h2>
       <TableSasaranOpd
         tahun={Number(selectedTahun)}
