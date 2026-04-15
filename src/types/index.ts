@@ -614,6 +614,11 @@ export interface RenjaTarget {
   jenisRealisasi: "NAIK" | "TURUN";
   capaian?: string;
   keteranganCapaian?: string;
+  pagu?: number | null;
+  realisasiPagu?: number | null;
+  satuanPagu?: string;
+  capaianPagu?: string;
+  keteranganCapaianPagu?: string;
 }
 
 export interface RenjaBatchRequest {

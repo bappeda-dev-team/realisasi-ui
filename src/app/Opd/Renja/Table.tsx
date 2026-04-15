@@ -1,10 +1,13 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
+import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { RenjaTarget } from "@/types";
+import FormRealisasiRenjaTarget from "@/app/Individu/Renja/_components/FormRealisasiRenjaTarget";
+import FormRealisasiRenjaPagu from "@/app/Individu/Renja/_components/FormRealisasiRenjaPagu";
 
 interface RenjaRow {
     id: number;
@@ -44,6 +47,11 @@ const dummyData: RenjaRow[] = [
                 jenisRealisasi: "NAIK",
                 capaian: "66.67",
                 keteranganCapaian: "Sedang dalam proses",
+                pagu: 150000000,
+                realisasiPagu: 75000000,
+                satuanPagu: "Rupiah",
+                capaianPagu: "50",
+                keteranganCapaianPagu: "Sedang dalam proses",
             },
         ],
     },
@@ -51,20 +59,45 @@ const dummyData: RenjaRow[] = [
 
 const Table = () => {
     const [rows, setRows] = useState<RenjaRow[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [selectedRow, setSelectedRow] = useState<RenjaRow | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState<'target' | 'pagu'>('target');
+
     const { activatedTahun } = useFilterContext();
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setRows(dummyData);
-            setLoading(false);
         }, 500);
 
         return () => clearTimeout(timer);
     }, []);
 
+    const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
+        setSelectedRow(row);
+        setModalType(type);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setSelectedRow(null);
+        setModalType('target');
+    };
+
+    const handleRealisasiSuccess = (updatedTargets: RenjaTarget[]) => {
+        if (!selectedRow) return;
+        setRows((previous) =>
+            previous.map((row) =>
+                row.id === selectedRow.id ? { ...row, targets: updatedTargets } : row
+            )
+        );
+        setIsModalOpen(false);
+        setSelectedRow(null);
+    };
+
     const infoMessage = !activatedTahun
-        ? "Pilih dan aktifkan tahun agar data renja target OPD muncul."
+        ? "Pilih dan aktifkan tahun agar data renja OPD muncul."
         : undefined;
 
     if (infoMessage) {
@@ -75,21 +108,13 @@ const Table = () => {
         );
     }
 
-    if (loading) {
+    if (!rows.length) {
         return (
             <div className="rounded border border-sky-200 px-4 py-6 text-center">
                 <LoadingBeat loading={true} />
                 <p className="text-sm text-gray-600 mt-2">
-                    Memuat data renja target OPD...
+                    Memuat data renja OPD...
                 </p>
-            </div>
-        );
-    }
-
-    if (!rows.length) {
-        return (
-            <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data renja target OPD untuk tahun {activatedTahun} belum tersedia.
             </div>
         );
     }
@@ -105,9 +130,17 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Jenis Renja</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{activatedTahun || "2025"}</th>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"}`}</th>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"}`}</th>
                         </tr>
                         <tr className="bg-sky-600 text-white">
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
@@ -139,6 +172,16 @@ const Table = () => {
                                         {row.indikator || "-"}
                                     </td>
                                     <td className="border-r border-b border-sky-600 px-6 py-4">
+                                        <div className="flex flex-col gap-2">
+                                            <ButtonGreenBorder
+                                                className="flex items-center gap-1 justify-center"
+                                                onClick={() => openModal(row, 'target')}
+                                            >
+                                                Realisasi
+                                            </ButtonGreenBorder>
+                                        </div>
+                                    </td>
+                                    <td className="border-r border-b border-sky-600 px-6 py-4">
                                         {target?.target || "-"}
                                     </td>
                                     <td className="border-r border-b border-sky-600 px-6 py-4">
@@ -153,12 +196,56 @@ const Table = () => {
                                     <td className="border-r border-b border-sky-600 px-6 py-4">
                                         {target?.keteranganCapaian || "-"}
                                     </td>
+                                    <td className="border-x border-b border-sky-600 px-6 py-4">
+                                        <div className="flex flex-col gap-2">
+                                            <ButtonGreenBorder
+                                                className="flex items-center gap-1 justify-center"
+                                                onClick={() => openModal(row, 'pagu')}
+                                            >
+                                                Realisasi
+                                            </ButtonGreenBorder>
+                                        </div>
+                                    </td>
+                                    <td className="border-r border-b border-sky-600 px-6 py-4">
+                                        {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                    </td>
+                                    <td className="border-r border-b border-sky-600 px-6 py-4">
+                                        {target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}
+                                    </td>
+                                    <td className="border-r border-b border-sky-600 px-6 py-4">
+                                        {target?.satuanPagu || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-sky-600 px-6 py-4">
+                                        {target?.capaianPagu || "-"}
+                                    </td>
+                                    <td className="border-x border-b border-sky-600 px-6 py-4">
+                                        {target?.keteranganCapaianPagu || "-"}
+                                    </td>
                                 </tr>
                             );
                         })}
                     </tbody>
                 </table>
             </div>
+            <FormModal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
+            >
+                {modalType === 'pagu' ? (
+                    <FormRealisasiRenjaPagu
+                        requestValues={selectedRow?.targets ?? []}
+                        onClose={closeModal}
+                        onSuccess={handleRealisasiSuccess}
+                    />
+                ) : (
+                    <FormRealisasiRenjaTarget
+                        requestValues={selectedRow?.targets ?? []}
+                        onClose={closeModal}
+                        onSuccess={handleRealisasiSuccess}
+                    />
+                )}
+            </FormModal>
         </>
     );
 };

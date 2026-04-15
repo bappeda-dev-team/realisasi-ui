@@ -3,15 +3,15 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenjaPaguTarget, RenjaPaguBatchRequest, RenjaPaguIndividuResponse } from "@/types";
+import { FormProps, RenjaTarget, RenjaPaguBatchRequest, RenjaPaguIndividuResponse } from "@/types";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 
-type FormRealisasiRenjaPaguProps = FormProps<RenjaPaguTarget[], RenjaPaguTarget[]>;
+type FormRealisasiRenjaPaguProps = FormProps<RenjaTarget[], RenjaTarget[]>;
 
 const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ requestValues, onClose, onSuccess }) => {
-    const [formData, setFormData] = useState<RenjaPaguTarget[]>([]);
+    const [formData, setFormData] = useState<RenjaTarget[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { tahun: selectedTahun } = useFilterContext();
@@ -41,7 +41,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(parsedValue) ? 0 : parsedValue }
+                    ? { ...item, realisasiPagu: isNaN(parsedValue) ? 0 : parsedValue }
                     : item
             )
         );
@@ -65,11 +65,11 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
             nip: item.nip,
             idIndikator: item.idIndikator,
             indikator: item.indikator,
-            pagu: item.pagu,
-            realisasi: item.realisasi,
-            satuan: item.satuan,
+            pagu: item.pagu ?? 0,
+            realisasi: item.realisasiPagu ?? 0,
+            satuan: item.satuanPagu ?? item.satuan ?? "",
             tahun: item.tahun,
-            jenisRealisasi: item.jenisRealisasi,
+            jenisRealisasi: item.jenisRealisasi ?? "NAIK",
         }));
 
         setIsSubmitting(true);
@@ -77,24 +77,16 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
         setIsSubmitting(false);
 
         if (result) {
-            const updatedTargets: RenjaPaguTarget[] = result.map((item) => ({
-                targetRealisasiId: item.id,
-                renjaId: item.renjaId,
-                renja: item.renja,
-                kodeRenja: item.kodeRenja,
-                jenisRenja: item.jenisRenja,
-                nip: item.nip,
-                idIndikator: item.idIndikator,
-                indikator: item.indikator,
-                pagu: item.pagu,
-                targetId: item.idIndikator,
-                realisasi: item.realisasi,
-                satuan: item.satuan,
-                tahun: item.tahun,
-                jenisRealisasi: item.jenisRealisasi,
-                capaian: item.capaian,
-                keteranganCapaian: item.keteranganCapaian ?? undefined,
-            }));
+            const updatedTargets: RenjaTarget[] = formData.map((item, index) => {
+                const responseItem = result[index];
+                return {
+                    ...item,
+                    targetRealisasiId: responseItem?.id ?? item.targetRealisasiId,
+                    realisasiPagu: responseItem?.realisasi ?? item.realisasiPagu,
+                    capaianPagu: responseItem?.capaian ?? item.capaianPagu,
+                    keteranganCapaianPagu: responseItem?.keteranganCapaian ?? item.keteranganCapaianPagu,
+                };
+            });
             onSuccess?.(updatedTargets);
             onClose();
         } else {
@@ -120,12 +112,12 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
                             key={`${target.targetId}-${target.tahun}`}
                             className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col"
                         >
-                            <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
+                            <div className="text-center text-xs font-semibold bg-purple-600 text-white rounded py-0.5 mb-1">
                                 Tahun {target.tahun}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Pagu</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
-                                {target.pagu}
+                                {target.pagu != null ? target.pagu.toLocaleString() : "-"}
                             </p>
                             <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi">
                                 Realisasi
@@ -135,14 +127,14 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasi || ''}
+                                value={target.realisasiPagu ?? ''}
                                 onChange={(event) =>
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }
                             />
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Satuan</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
-                                {target.satuan}
+                                {target.satuanPagu || target.satuan || "-"}
                             </p>
                         </div>
                     ))}

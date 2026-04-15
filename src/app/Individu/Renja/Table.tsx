@@ -8,8 +8,9 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
-import { RenjaTargetIndividuResponse, RenjaTarget } from "@/types";
+import { RenjaTargetIndividuResponse, RenjaTarget, RenjaPaguIndividuResponse } from "@/types";
 import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
+import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
 
 interface RenjaRow {
     id: number;
@@ -26,17 +27,26 @@ const Table = () => {
     const [rows, setRows] = useState<RenjaRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<RenjaRow | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalType, setModalType] = useState<'target' | 'pagu'>('target');
 
     const { tahun: selectedTahun, activatedTahun } = useFilterContext();
     const { user } = useUserContext();
     const { url } = useApiUrlContext();
 
-    const apiUrl = url && user?.nip && activatedTahun
+    const apiUrlTarget = url && user?.nip && activatedTahun
         ? `${url}/api/v1/realisasi/renja_target_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}`
         : null;
 
+    const apiUrlPagu = url && user?.nip && activatedTahun
+        ? `${url}/api/v1/realisasi/renja_pagu_individu/nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}`
+        : null;
+
     const { data, loading, error } = useFetchData<RenjaTargetIndividuResponse[]>({
-        url: apiUrl,
+        url: apiUrlTarget,
+    });
+
+    const { data: paguResponse, loading: loadingPagu, error: errorPagu } = useFetchData<RenjaPaguIndividuResponse[]>({
+        url: apiUrlPagu,
     });
 
     useEffect(() => {
@@ -45,7 +55,7 @@ const Table = () => {
             return;
         }
 
-        if (!data) {
+        if (!data || !paguResponse) {
             setRows([]);
             return;
         }
@@ -53,45 +63,57 @@ const Table = () => {
         const namaPegawaiParts = [user?.firstName, user?.lastName].filter(Boolean);
         const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
 
+        const paguMap = new Map(paguResponse.map(p => [p.idIndikator, p]));
+
         setRows(
-            data.map((item) => ({
-                id: item.id,
-                renja: item.renja ?? "-",
-                nama_pegawai: namaPegawai,
-                nip: item.nip ?? user?.nip ?? "-",
-                kodeRenja: item.kodeRenja ?? "-",
-                jenisRenja: item.jenisRenja ?? "-",
-                indikator: item.indikator ?? "-",
-                targets: [{
-                    targetRealisasiId: item.id ?? null,
-                    renjaId: item.renjaId,
+            data.map((item) => {
+                const paguItem = paguMap.get(item.idIndikator);
+                return {
+                    id: item.id,
                     renja: item.renja ?? "-",
+                    nama_pegawai: namaPegawai,
+                    nip: item.nip ?? user?.nip ?? "-",
                     kodeRenja: item.kodeRenja ?? "-",
                     jenisRenja: item.jenisRenja ?? "-",
-                    nip: item.nip ?? user?.nip ?? "-",
-                    idIndikator: item.idIndikator,
                     indikator: item.indikator ?? "-",
-                    targetId: item.targetId,
-                    target: item.target,
-                    realisasi: item.realisasi,
-                    satuan: item.satuan,
-                    tahun: item.tahun,
-                    jenisRealisasi: item.jenisRealisasi,
-                    capaian: item.capaian ?? "-",
-                    keteranganCapaian: item.keteranganCapaian ?? "-",
-                }],
-            }))
+                    targets: [{
+                        targetRealisasiId: item.id ?? null,
+                        renjaId: item.renjaId,
+                        renja: item.renja ?? "-",
+                        kodeRenja: item.kodeRenja ?? "-",
+                        jenisRenja: item.jenisRenja ?? "-",
+                        nip: item.nip ?? user?.nip ?? "-",
+                        idIndikator: item.idIndikator,
+                        indikator: item.indikator ?? "-",
+                        targetId: item.targetId,
+                        target: item.target,
+                        realisasi: item.realisasi,
+                        satuan: item.satuan,
+                        tahun: item.tahun,
+                        jenisRealisasi: item.jenisRealisasi,
+                        capaian: item.capaian ?? "-",
+                        keteranganCapaian: item.keteranganCapaian ?? "-",
+                        pagu: paguItem?.pagu ?? null,
+                        realisasiPagu: paguItem?.realisasi ?? null,
+                        satuanPagu: paguItem?.satuan ?? "-",
+                        capaianPagu: paguItem?.capaian ?? "-",
+                        keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
+                    }],
+                };
+            })
         );
-    }, [data, user, activatedTahun]);
+    }, [data, paguResponse, user, activatedTahun]);
 
-    const openModal = (row: RenjaRow) => {
+    const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
         setSelectedRow(row);
+        setModalType(type);
         setIsModalOpen(true);
     };
 
     const closeModal = () => {
         setIsModalOpen(false);
         setSelectedRow(null);
+        setModalType('target');
     };
 
     const handleRealisasiSuccess = (updatedTargets: RenjaTarget[]) => {
@@ -106,9 +128,9 @@ const Table = () => {
     };
 
     const infoMessage = !user?.nip
-        ? "Silakan login terlebih dahulu untuk melihat data renja target individu."
+        ? "Silakan login terlebih dahulu untuk melihat data renja individu."
         : !activatedTahun
-            ? "Pilih dan aktifkan tahun agar data renja target individu muncul."
+            ? "Pilih dan aktifkan tahun agar data renja individu muncul."
             : undefined;
 
     if (infoMessage) {
@@ -119,21 +141,21 @@ const Table = () => {
         );
     }
 
-    if (loading) {
+    if (loading || loadingPagu) {
         return (
             <div className="rounded border border-emerald-200 px-4 py-6 text-center">
                 <LoadingBeat loading={true} />
                 <p className="text-sm text-gray-600 mt-2">
-                    Memuat data renja target individu...
+                    Memuat data renja individu...
                 </p>
             </div>
         );
     }
 
-    if (error) {
+    if (error || errorPagu) {
         return (
             <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-                Gagal memuat data renja target: {error}
+                Gagal memuat data renja: {error || errorPagu}
             </div>
         );
     }
@@ -141,7 +163,7 @@ const Table = () => {
     if (!rows.length) {
         return (
             <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data renja target untuk tahun {activatedTahun} belum tersedia.
+                Data renja untuk tahun {activatedTahun} belum tersedia.
             </div>
         );
     }
@@ -158,9 +180,16 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Jenis Renja</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{activatedTahun}</th>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun}`}</th>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun}`}</th>
                         </tr>
                         <tr className="bg-emerald-500 text-white">
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
@@ -195,7 +224,7 @@ const Table = () => {
                                         <div className="flex flex-col gap-2">
                                             <ButtonGreenBorder
                                                 className="flex items-center gap-1 justify-center"
-                                                onClick={() => openModal(row)}
+                                                onClick={() => openModal(row, 'target')}
                                             >
                                                 Realisasi
                                             </ButtonGreenBorder>
@@ -216,6 +245,31 @@ const Table = () => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.keteranganCapaian || "-"}
                                     </td>
+                                    <td className="border-x border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col gap-2">
+                                            <ButtonGreenBorder
+                                                className="flex items-center gap-1 justify-center"
+                                                onClick={() => openModal(row, 'pagu')}
+                                            >
+                                                Realisasi
+                                            </ButtonGreenBorder>
+                                        </div>
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.satuanPagu || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.capaianPagu || "-"}
+                                    </td>
+                                    <td className="border-x border-b border-emerald-500 px-6 py-4">
+                                        {target?.keteranganCapaianPagu || "-"}
+                                    </td>
                                 </tr>
                             );
                         })}
@@ -225,13 +279,21 @@ const Table = () => {
             <FormModal
                 isOpen={isModalOpen}
                 onClose={closeModal}
-                title={`Realisasi Renja Target - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
+                title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
             >
-                <FormRealisasiRenjaTarget
-                    requestValues={selectedRow?.targets ?? []}
-                    onClose={closeModal}
-                    onSuccess={handleRealisasiSuccess}
-                />
+                {modalType === 'pagu' ? (
+                    <FormRealisasiRenjaPagu
+                        requestValues={selectedRow?.targets ?? []}
+                        onClose={closeModal}
+                        onSuccess={handleRealisasiSuccess}
+                    />
+                ) : (
+                    <FormRealisasiRenjaTarget
+                        requestValues={selectedRow?.targets ?? []}
+                        onClose={closeModal}
+                        onSuccess={handleRealisasiSuccess}
+                    />
+                )}
             </FormModal>
         </>
     );
