@@ -4,9 +4,10 @@ import { getSessionId } from "@/lib/session";
 
 interface useFetchDataProps {
     url: string | null;
+    trigger?: number;
 }
 
-export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> => {
+export const useFetchData = <T>({ url, trigger }: useFetchDataProps): FetchResponse<T> => {
     const [data, setData] = useState<T | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | undefined>(undefined);
@@ -58,7 +59,7 @@ export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> =>
         return () => {
             active = false;
         };
-    }, [url]);
+    }, [url, trigger]);
 
     return { data, loading, error }
 };
