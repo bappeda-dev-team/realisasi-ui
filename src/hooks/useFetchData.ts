@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FetchResponse } from '@/types'
-import Cookies from "js-cookie";
+import { getSessionId } from "@/lib/session";
 
 interface useFetchDataProps {
     url: string | null;
@@ -20,7 +20,7 @@ export const useFetchData = <T>({ url }: useFetchDataProps): FetchResponse<T> =>
         let active = true;
 
         const fetchData = async () => {
-            const sessionId = Cookies.get("sessionId")
+            const sessionId = getSessionId()
 
             if (!sessionId) {
                 setError("Silakan login.");

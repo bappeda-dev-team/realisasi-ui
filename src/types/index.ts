@@ -4,6 +4,7 @@ export type User = {
   firstName: string;
   lastName: string;
   roles: string[];
+  nip?: string;
 };
 
 export interface Tematik {
@@ -173,6 +174,145 @@ export interface RealisasiSasaran {
   lastModifiedDate: string;
   version: number;
   capaian: string;
+}
+
+export interface RenaksiIndividuResponse {
+  id: number;
+  renaksiId: string;
+  renaksi: string;
+  nip: string;
+  rekinId: string;
+  rekin: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  bulan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status: "UNCHECKED" | "CHECKED";
+  createdBy: string;
+  lastModifiedBy: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+  keteranganCapaian: string | null;
+  capaian: string;
+}
+
+export interface RenaksiTarget {
+  targetRealisasiId: number | null;
+  renaksiId: string;
+  renaksi: string;
+  nip: string;
+  rekinId: string;
+  rekin: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  bulan?: string | null;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string;
+  keteranganCapaian?: string | null;
+  rencanaKinerja?: string;
+}
+
+export interface RenaksiBatchRequest {
+  targetRealisasiId: number | null;
+  renaksiId: string;
+  renaksi: string;
+  nip: string;
+  rekinId: string;
+  rekin: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  bulan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+}
+
+export interface RekinIndividuResponse {
+  id: number;
+  rekinId: string;
+  rekin: string;
+  indikatorId: string;
+  indikator: string;
+  nip: string;
+  idSasaran?: string | null;
+  sasaran?: string | null;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status?: string | null;
+  createdBy?: string | null;
+  lastModifiedBy?: string | null;
+  createdDate?: string | null;
+  lastModifiedDate?: string | null;
+  version?: number | null;
+  capaian?: string | null;
+  keteranganCapaian?: string | null;
+}
+
+export interface RekinTarget {
+  targetRealisasiId: number | null;
+  rekinId: string;
+  rekin: string;
+  nip: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string | null;
+  keteranganCapaian?: string | null;
+  idSasaran?: string | null;
+  sasaran?: string | null;
+}
+
+export interface RekinBatchRequest {
+  targetRealisasiId: number | null;
+  rekinId: string;
+  rekin: string;
+  nip: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  idSasaran?: string | null;
+  sasaran?: string | null;
+}
+
+export interface RekinTarget {
+  targetRealisasiId: number | null;
+  rekinId: string;
+  rekin: string;
+  nip: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  bulan?: string | null;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string | null;
+  idSasaran?: string | null;
+  sasaran?: string | null;
 }
 
 export interface PerencanaanSasaranPemdaResponse {
@@ -429,4 +569,127 @@ export interface SasaranOpdRealisasiRequest {
   tahun: string;
   jenisRealisasi: string;
   kodeOpd: string;
+}
+
+export interface RenjaTargetIndividuResponse {
+  id: number;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: "PROGRAM" | "KEGIATAN" | "SUB_KEGIATAN";
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status: "CHECKED" | "UNCHECKED";
+  createdBy: string;
+  lastModifiedBy: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  capaian: string;
+  keteranganCapaian: string;
+}
+
+export type RenjaTargetIndividuResponseList = RenjaTargetIndividuResponse[];
+
+export interface RenjaTarget {
+  targetRealisasiId: number | null;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string;
+  keteranganCapaian?: string;
+}
+
+export interface RenjaBatchRequest {
+  targetRealisasiId: number | null;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
+}
+
+export interface RenjaPaguIndividuResponse {
+  id: number;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: "PROGRAM" | "KEGIATAN" | "SUB_KEGIATAN";
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  pagu: number;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  status: "CHECKED" | "UNCHECKED";
+  createdBy: string;
+  lastModifiedBy: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  version: number;
+  capaian: string;
+  keteranganCapaian: string;
+}
+
+export type RenjaPaguIndividuResponseList = RenjaPaguIndividuResponse[];
+
+export interface RenjaPaguTarget {
+  targetRealisasiId: number | null;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  pagu: number;
+  targetId: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string;
+  keteranganCapaian?: string;
+}
+
+export interface RenjaPaguBatchRequest {
+  targetRealisasiId: number | null;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  pagu: number;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: string;
 }

@@ -6,11 +6,15 @@ export interface FilterContextType {
   dinas: string | null;
   periode: string | null;
   tahun: string | null;
+  activatedTahun: string | null;
   bulan: string | null;
+  activatedBulan: string | null;
   setDinas: (v: string | null) => void;
   setPeriode: (v: string | null) => void;
   setTahun: (v: string | null) => void;
+  setActivatedTahun: (v: string | null) => void;
   setBulan: (v: string | null) => void;
+  setActivatedBulan: (v: string | null) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -21,7 +25,9 @@ export function FilterProvider({
   const [dinas, setDinas] = useState<string | null>(null);
   const [periode, setPeriode] = useState<string | null>(null);
   const [tahun, setTahun] = useState<string | null>(null);
+  const [activatedTahun, setActivatedTahun] = useState<string | null>(null);
   const [bulan, setBulan] = useState<string | null>(null);
+  const [activatedBulan, setActivatedBulan] = useState<string | null>(null);
 
   return (
     <FilterContext.Provider
@@ -29,11 +35,15 @@ export function FilterProvider({
         dinas,
         periode,
         tahun,
+        activatedTahun,
         bulan,
+        activatedBulan,
         setDinas,
         setPeriode,
         setTahun,
+        setActivatedTahun,
         setBulan,
+        setActivatedBulan,
       }}
     >
       {children}

@@ -8,10 +8,17 @@ export async function authenticate(sessionId: string): Promise<User> {
             'Content-Type': 'application/json',
             'X-Session-Id': sessionId
         },
+        credentials: "include",
+        cache: "no-store",
     });
 
     if (!res.ok) {
-        throw new Error('Failed to authenticate');
+        throw new Error(`Failed to authenticate (HTTP ${res.status})`);
+    }
+
+    const contentType = res.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+        throw new Error("Invalid auth response");
     }
 
     return res.json();

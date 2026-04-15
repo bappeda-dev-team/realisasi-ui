@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
-
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const relativePath = pathname.replace(/^\/realisasi/, '')
@@ -21,6 +20,24 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       activeClass: 'bg-green-600 text-white border-green-600',
       inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
     },
+    {
+      label: 'Renja Target',
+      href: '/Opd/Renja-Target',
+      activeClass: 'bg-sky-600 text-white border-sky-600',
+      inactiveClass: 'text-[#1C1D1D] hover:bg-sky-800 hover:text-white',
+    },
+    {
+      label: 'Renja Pagu',
+      href: '/Opd/Renja-Pagu',
+      activeClass: 'bg-purple-600 text-white border-purple-600',
+      inactiveClass: 'text-[#1C1D1D] hover:bg-purple-700 hover:text-white',
+    },
+    {
+      label: 'Renaksi',
+      href: '/Opd/Renaksi',
+      activeClass: 'bg-green-600 text-white border-green-600',
+      inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
+    },
   ]
 
   return (
@@ -32,8 +49,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             <Link
               key={href}
               href={href}
-              className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${isActive ? activeClass : inactiveClass
-                }`}
+              className={`py-1 px-3 border border-[#1C1D1D] rounded-lg cursor-pointer transition-all duration-300 ${isActive ? activeClass : inactiveClass}`}
             >
               {label}
             </Link>

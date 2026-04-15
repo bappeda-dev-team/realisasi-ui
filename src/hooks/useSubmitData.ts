@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SubmitResponse } from "@/types";
-import Cookies from "js-cookie";
+import { getSessionId } from "@/lib/session";
 
 interface useSubmitDataProps {
   url: string;
@@ -13,7 +13,7 @@ export const useSubmitData = <T>({
   const [error, setError] = useState<string | undefined>(undefined);
 
   const submit = async (payload: unknown): Promise<T | undefined> => {
-    const sessionId = Cookies.get("sessionId");
+    const sessionId = getSessionId();
 
     if (!sessionId) {
       setError("Silakan login.");

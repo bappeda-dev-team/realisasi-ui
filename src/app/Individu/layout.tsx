@@ -16,10 +16,16 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       inactiveClass: 'text-[#1C1D1D] hover:bg-red-700 hover:text-white',
     },
     {
-      label: 'Program / Kegiatan / Sub Kegiatan',
-      href: '/Individu/Rencana-Kerja',
+      label: 'Renja Target',
+      href: '/Individu/Rencana-Kerja-Target',
       activeClass: 'bg-sky-600 text-white border-sky-600',
       inactiveClass: 'text-[#1C1D1D] hover:bg-sky-800 hover:text-white',
+    },
+    {
+      label: 'Renja Pagu',
+      href: '/Individu/Renja-Pagu',
+      activeClass: 'bg-purple-600 text-white border-purple-600',
+      inactiveClass: 'text-[#1C1D1D] hover:bg-purple-700 hover:text-white',
     },
     {
       label: 'Renaksi',
