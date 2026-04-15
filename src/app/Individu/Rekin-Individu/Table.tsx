@@ -1,41 +1,165 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
-import { useBrandingContext } from "@/context/BrandingContext";
+import React, { useMemo, useState, useEffect } from "react";
+import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { FormModal } from "@/components/Global/Modal";
+import { LoadingBeat } from "@/components/Global/Loading";
+import FormRealisasiRekinIndividu from "./_components/FormRealisasiRekinIndividu";
+import { useFilterContext } from "@/context/FilterContext";
+import { useUserContext } from "@/context/UserContext";
+import { useFetchData } from "@/hooks/useFetchData";
+import { RekinIndividuResponse, RekinTarget } from "@/types";
 
-interface PemdaStrategicGoal {
+interface TableRow {
     id: number;
-    strategic_pemda: string;
-    tujuan_pemda: string;
+    rekin: string;
+    nama_pegawai: string;
+    nip: string;
     indikator: string;
-    rumus_perhitungan: string;
-    sumber_data: string;
-    target: {
-        target: string;
-        satuan: string;
-    };
+    sasaran: string;
+    targets: RekinTarget[];
 }
 
-const data = [
-    {
-        "id": 1,
-        "rekin": "_DUMMY_ Meningkatnya Kualitas Pelayanan Publik Perangkat Daerah",
-        "nama_pegawai": "akun_test_level_3",
-        "nip": "102741020",
-        "indikator": "Indeks Kepuasan Masyarakat Badan Kepegawaian, Pendidikan dan Pelatihan",
-        "target": {
-            "target": "8000",
-            "realisasi": "-",
-            "satuan": "angka",
-            "capaian": "-"
+const Table = () => {
+    const { user } = useUserContext();
+    const { tahun: selectedTahun, activatedTahun } = useFilterContext();
+    const [rows, setRows] = useState<TableRow[]>([]);
+    const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const yearLabel = activatedTahun;
+
+    const apiUrl = useMemo(() => {
+        if (!user?.nip || !yearLabel) return null;
+        return `/api/v1/realisasi/rekin/by-nip/${encodeURIComponent(
+            user.nip,
+        )}/by-tahun/${encodeURIComponent(yearLabel)}`;
+    }, [user?.nip, yearLabel]);
+
+    const { data, loading, error } = useFetchData<RekinIndividuResponse[]>({
+        url: apiUrl,
+    });
+
+    useEffect(() => {
+        if (!yearLabel) {
+            setRows([]);
+            setIsModalOpen(false);
+            setSelectedRow(null);
+            return;
         }
 
+        if (!data || !user) {
+            setRows([]);
+            return;
+        }
+
+        const namaPegawaiParts = [user.firstName, user.lastName].filter(Boolean);
+        const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
+
+        setRows(
+            data.map((item) => {
+                const target: RekinTarget = {
+                    targetRealisasiId: item.id ?? null,
+                    rekinId: item.rekinId,
+                    rekin: item.rekin ?? "-",
+                    nip: item.nip ?? user.nip ?? "-",
+                    indikatorId: item.indikatorId ?? "",
+                    indikator: item.indikator ?? "-",
+                    targetId: item.targetId,
+                    target: item.target ?? "-",
+                    realisasi: item.realisasi ?? 0,
+                    satuan: item.satuan ?? "-",
+                    tahun: item.tahun ?? yearLabel,
+                    jenisRealisasi: item.jenisRealisasi ?? "NAIK",
+                    capaian: item.capaian ?? "-",
+                    keteranganCapaian: item.keteranganCapaian ?? "-",
+                    idSasaran: item.idSasaran,
+                    sasaran: item.sasaran,
+                };
+
+                return {
+                    id: item.id,
+                    rekin: item.rekin ?? "-",
+                    nama_pegawai: namaPegawai,
+                    nip: item.nip ?? user.nip ?? "-",
+                    indikator: item.indikator ?? "-",
+                    sasaran: item.sasaran ?? "-",
+                    targets: [target],
+                };
+            }),
+        );
+    }, [data, user, yearLabel]);
+
+    const handleOpenModal = (row: TableRow) => {
+        setSelectedRow(row);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedRow(null);
+    };
+
+    const handleRealisasiSuccess = (updatedTargets: RekinTarget[]) => {
+        const rowId = selectedRow?.id;
+        setRows((current) =>
+            current.map((row) =>
+                row.id === rowId
+                    ? {
+                          ...row,
+                          targets: updatedTargets,
+                      }
+                    : row,
+            ),
+        );
+        handleCloseModal();
+    };
+
+    const modalValues = useMemo(
+        () => selectedRow?.targets ?? [],
+        [selectedRow],
+    );
+
+    const infoMessage = !user?.nip
+        ? "Silakan login terlebih dahulu untuk melihat data rekin individu."
+        : !yearLabel
+          ? "Pilih dan aktifkan tahun agar data rekin individu muncul."
+          : undefined;
+
+    if (infoMessage) {
+        return (
+            <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+                {infoMessage}
+            </div>
+        );
     }
-]
 
-const Table = () => {
+    if (loading) {
+        return (
+            <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+                <LoadingBeat loading={true} />
+                <p className="text-sm text-gray-600 mt-2">
+                    Memuat data rekin individu...
+                </p>
+            </div>
+        );
+    }
 
-    const { branding } = useBrandingContext();
+    if (error) {
+        return (
+            <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+                Gagal memuat data rekin individu: {error}
+            </div>
+        );
+    }
+
+    if (!rows.length) {
+        return (
+            <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+                Data rekin individu untuk tahun {yearLabel} belum tersedia.
+            </div>
+        );
+    }
 
     return (
         <>
@@ -43,56 +167,119 @@ const Table = () => {
                 <table className="w-full">
                     <thead>
                         <tr className="text-xm bg-emerald-500 text-white">
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Rencana Kinerja</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">2025</th>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 max-w-[100px] text-center"
+                            >
+                                No
+                            </td>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 min-w-[400px] text-center"
+                            >
+                                Rencana Kinerja
+                            </td>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 min-w-[200px]"
+                            >
+                                Nama Pemilik
+                            </td>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 min-w-[300px]"
+                            >
+                                Indikator
+                            </td>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 min-w-[250px]"
+                            >
+                                Sasaran
+                            </td>
+                            <td
+                                rowSpan={2}
+                                className="border-r border-b px-6 py-3 min-w-[200px] text-center"
+                            >
+                                Aksi
+                            </td>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">
+                                {yearLabel}
+                            </th>
                         </tr>
                         <tr className="bg-emerald-500 text-white">
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                             <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {data.map((item, index) => (
-                            <tr key={index}>
-                                <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
-                                    {index + 1}
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    {item.rekin || "-"}
-                                </td>
-                                <td className="flex flex-col border-r border-b border-emerald-500 px-6 py-4">
-                                    <p>{item.nama_pegawai || "-"}</p>
-                                    <p>({item.nip || "-"})</p>
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    <div className="flex gap-2 items-center">
-                                        <p>{item.indikator || "-"}</p>
-                                    </div>
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    {item.target.target || "-"}
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    {item.target.realisasi || "-"}
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    {item.target.satuan || "-"}
-                                </td>
-                                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                    {item.target.capaian || "-"}
-                                </td>
-                            </tr>
-                        ))}
+                        {rows.map((item, index) => {
+                            const target = item.targets[0];
+                            return (
+                                <tr key={item.id}>
+                                    <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
+                                        {index + 1}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {item.rekin || "-"}
+                                    </td>
+                                    <td className="flex flex-col border-r border-b border-emerald-500 px-6 py-4">
+                                        <p>{item.nama_pegawai || "-"}</p>
+                                        <p>({item.nip || "-"})</p>
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex gap-2 items-center">
+                                            <p>{item.indikator || "-"}</p>
+                                        </div>
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {item.sasaran || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <ButtonGreenBorder
+                                            className="w-full"
+                                            onClick={() => handleOpenModal(item)}
+                                        >
+                                            Realisasi
+                                        </ButtonGreenBorder>
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.target || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.realisasi ?? "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.satuan || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.capaian || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.keteranganCapaian || "-"}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>
+            <FormModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                title={`Realisasi ${selectedRow?.rekin ?? ""}`}
+            >
+                <FormRealisasiRekinIndividu
+                    requestValues={modalValues}
+                    onClose={handleCloseModal}
+                    onSuccess={handleRealisasiSuccess}
+                />
+            </FormModal>
         </>
-    )
-}
+    );
+};
 
 export default Table;

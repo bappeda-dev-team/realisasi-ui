@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SubmitResponse } from "@/types";
-import Cookies from "js-cookie";
+import { setSessionId } from "@/lib/session";
 
 interface useAuthDataProps {
   url: string;
@@ -46,7 +46,7 @@ export const useAuthUser = ({
       const result = json as AuthResponse;
 
       if (storeCookies && result?.sessionId) {
-        Cookies.set("sessionId", result.sessionId);
+        setSessionId(result.sessionId);
       }
 
       setData(result);

@@ -58,14 +58,16 @@ interface ListPeriode {
 export default function TopFilter({ user }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
-    dinas,
-    periode,
-    tahun,
-    bulan,
-    setDinas,
-    setPeriode,
-    setTahun,
-    setBulan,
+  dinas,
+  periode,
+  tahun,
+  setActivatedTahun,
+  bulan,
+  setDinas,
+  setPeriode,
+  setTahun,
+  setBulan,
+  setActivatedBulan,
   } = useFilterContext();
   const [ShowToast, setShowToast] = useState(false);
 
@@ -186,7 +188,9 @@ export default function TopFilter({ user }: FilterProps) {
       setDinas(cookie.dinas?.value ?? null);
       setPeriode(cookie.periode?.value ?? null);
       setTahun(cookie.tahun?.value ?? null);
+      setActivatedTahun(cookie.tahun?.value ?? null);
       setBulan(cookie.bulan?.value ?? null);
+      setActivatedBulan(cookie.bulan?.value ?? null);
     } catch {}
   }, [periodeOptions]);
 
@@ -204,7 +208,8 @@ export default function TopFilter({ user }: FilterProps) {
     Cookies.set("selectedCookie", JSON.stringify(cookieValue), {
       expires: 30,
     });
-
+    setActivatedTahun(tahun);
+    setActivatedBulan(bulan);
     setShowToast(true);
   }
 

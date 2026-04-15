@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+const API_REALISASI = process.env.NEXT_PUBLIC_API_REALISASI || "http://localhost:8080"
 const ALLOWED_DEV_ORIGINS = process.env.NEXT_PUBLIC_DEV_ORIGINS || "http://localhost:9000"
 
 const nextConfig: NextConfig = {
   async rewrites() {
     return [
+      {
+        source: "/api/v1/realisasi/:path*", // panggilan fe
+        destination: `${API_URL}/api/v1/realisasi/:path*` // backend
+      },
       {
         source: "/api/:path*", // panggilan fe
         destination: `${API_URL}/api/v1/:path*` // backend
