@@ -5,6 +5,7 @@ import { TbEye, TbEyeClosed } from "react-icons/tb";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { useUserContext } from "@/context/UserContext";
 import { authenticate } from "@/lib/auth";
+import { setSessionId } from "@/lib/session";
 
 interface FormLoginProps {
   onClose: () => void;
@@ -40,9 +41,7 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
 
     if (result?.sessionId) {
       onClose();
-      // ambil data user setelah sukses
-      // karena di submit atas itu cuma kembalikan
-      // sessionId
+      setSessionId(result.sessionId);
       const user = await authenticate(result.sessionId);
       setUser(user);
       setError(null);

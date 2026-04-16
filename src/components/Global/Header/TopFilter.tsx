@@ -9,6 +9,7 @@ import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
 import { useFetchData } from "@/hooks/useFetchData";
+import { useUserContext } from "@/context/UserContext";
 
 interface LabelDropdown {
   value: string;
@@ -58,17 +59,18 @@ interface ListPeriode {
 export default function TopFilter({ user }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
-  dinas,
-  periode,
-  tahun,
-  setActivatedTahun,
-  bulan,
-  setDinas,
-  setPeriode,
-  setTahun,
-  setBulan,
-  setActivatedBulan,
+    dinas,
+    periode,
+    tahun,
+    setActivatedTahun,
+    bulan,
+    setDinas,
+    setPeriode,
+    setTahun,
+    setBulan,
+    setActivatedBulan,
   } = useFilterContext();
+  const { lastLoginAt } = useUserContext();
   const [ShowToast, setShowToast] = useState(false);
 
   const [dinasOptions, setDinasOptions] = useState<LabelDropdown[]>([]);
@@ -77,6 +79,7 @@ export default function TopFilter({ user }: FilterProps) {
   const [bulanOptions, setBulanOptions] = useState<LabelDropdown[]>([]);
 
   const [loadingTahun, setLoadingTahun] = useState<boolean>(false);
+  const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
   const {
     data: dataDinas,
@@ -84,6 +87,7 @@ export default function TopFilter({ user }: FilterProps) {
     error: errorDinas,
   } = useFetchData<DinasResponse>({
     url: `/api/periode/list_opd`,
+    trigger: fetchTrigger,
   });
 
   const {
@@ -92,6 +96,7 @@ export default function TopFilter({ user }: FilterProps) {
     error: errorPeriode,
   } = useFetchData<PeriodeResponse>({
     url: `/api/periode/periode`,
+    trigger: fetchTrigger,
   });
   // ----------------------------
   // FETCH AWAL (DINAS, PERIODE, TAHUN)
@@ -99,6 +104,15 @@ export default function TopFilter({ user }: FilterProps) {
   useEffect(() => {
     loadBulan();
   }, []);
+
+  // ----------------------------
+  // RE-FETCH SETELAH LOGIN
+  // ----------------------------
+  useEffect(() => {
+    if (lastLoginAt) {
+      setFetchTrigger((prev) => prev + 1);
+    }
+  }, [lastLoginAt]);
 
   // ----------------------------
   // DROPDOWN DINAS (OPD)
