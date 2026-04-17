@@ -1,8 +1,8 @@
 import { User } from "@/types";
-import { clearSessionId } from "@/lib/session";
 import { useUserContext } from "@/context/UserContext";
+import { clearSessionId } from "@/lib/session";
 import { TbLogout } from "react-icons/tb";
-import { useRouter } from "next/navigation";
+import { logout } from "./logout";
 
 // TODO: map this with user profile
 // const roleColors: Record<string, string> = {
@@ -19,13 +19,12 @@ import { useRouter } from "next/navigation";
 
 export default function UserProfile({ user }: { user: User }) {
   const { setUser, setError } = useUserContext();
-  const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     clearSessionId();
     setUser(null);
     setError(null);
-    router.push("/");
+    await logout();
   };
 
   return (
