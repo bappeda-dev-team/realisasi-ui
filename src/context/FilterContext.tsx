@@ -4,12 +4,16 @@ import { createContext, useContext, useState } from "react";
 
 export interface FilterContextType {
   dinas: string | null;
+  activatedDinas: string | null;
+  namaDinas: string | null;
   periode: string | null;
   tahun: string | null;
   activatedTahun: string | null;
   bulan: string | null;
   activatedBulan: string | null;
   setDinas: (v: string | null) => void;
+  setActivatedDinas: (v: string | null) => void;
+  setNamaDinas: (v: string | null) => void;
   setPeriode: (v: string | null) => void;
   setTahun: (v: string | null) => void;
   setActivatedTahun: (v: string | null) => void;
@@ -23,6 +27,8 @@ export function FilterProvider({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const [dinas, setDinas] = useState<string | null>(null);
+  const [activatedDinas, setActivatedDinas] = useState<string | null>(null);
+  const [namaDinas, setNamaDinas] = useState<string | null>(null);
   const [periode, setPeriode] = useState<string | null>(null);
   const [tahun, setTahun] = useState<string | null>(null);
   const [activatedTahun, setActivatedTahun] = useState<string | null>(null);
@@ -33,12 +39,16 @@ export function FilterProvider({
     <FilterContext.Provider
       value={{
         dinas,
+        activatedDinas,
+        namaDinas,
         periode,
         tahun,
         activatedTahun,
         bulan,
         activatedBulan,
         setDinas,
+        setActivatedDinas,
+        setNamaDinas,
         setPeriode,
         setTahun,
         setActivatedTahun,

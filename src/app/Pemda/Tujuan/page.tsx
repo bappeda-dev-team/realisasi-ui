@@ -5,7 +5,6 @@ import { useFetchData } from "@/hooks/useFetchData";
 import {
     PerencanaanTujuanPemda,
     PerencanaanTujuanPemdaResponse,
-    RealisasiTujuan,
     RealisasiTujuanResponse,
     TargetRealisasiCapaian,
     TujuanPemda,
@@ -64,6 +63,7 @@ export default function Tujuan() {
         data: realisasiData,
         loading: realisasiLoading,
         error: realisasiError,
+        refetch: refetchRealisasi,
     } = useFetchData<RealisasiTujuanResponse>({
         url: selectedTahun
             ? `/api/realisasi/tujuans/by-tahun/${selectedTahun}`
@@ -140,23 +140,21 @@ export default function Tujuan() {
             <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan Pemda</h2>
             <div className="mt-2 rounded-t-lg border border-red-400">
                 <TableTujuan
-                    periode={periodeTampil}
+                    tahun={parseInt(selectedTahun)}
                     tujuansPemda={tujuansPemda}
                     targetRealisasiCapaians={dataTargetRealisasi}
                     handleOpenModal={handleOpenModal}
                 />
                 <ModalTujuanPemda
                     item={selectedTujuan}
+                    tahun={parseInt(selectedTahun)}
                     isOpen={OpenModal}
                     onClose={() => {
                         setOpenModal(false);
                     }}
-                    onSuccess={(result: RealisasiTujuan[]) => {
-                        const updated = gabunganDataPerencanaanRealisasi(
-                            perencanaanTujuan,
-                            result,
-                        );
-                        setDataTargetRealisasi(updated);
+                    onSuccess={() => {
+                        setOpenModal(false);
+                        refetchRealisasi();
                     }}
                 />
             </div>

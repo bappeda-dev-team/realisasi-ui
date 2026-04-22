@@ -7,7 +7,7 @@ interface RowSasaranOpdComponentProps {
     sasaranOpd: SasaranOpdPerencanaan;
     dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[];
     tahun: number;
-    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => void;
+    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[], indikatorId: string) => void;
 }
 
 export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun, handleOpenModal }: RowSasaranOpdComponentProps) {
@@ -34,17 +34,6 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                         <td className="border-l border-b border-emerald-500 px-6 py-4">{ind.sumber_data || '-'}</td>
                         {targetList.length > 0 ? (
                             <React.Fragment key={`${ind.id || index}-target-${tahun}`}>
-                                <td className="border border-emerald-500 px-6 py-4 text-center">
-                                    <div className="flex flex-col gap-2">
-                                        <ButtonGreenBorder
-                                            className="flex items-center gap-1 cursor-pointer"
-                                            onClick={() => {
-                                                handleOpenModal(sasaranOpd, dataTargetRealisasi);
-                                            }} >
-                                            Realisasi
-                                        </ButtonGreenBorder>
-                                    </div>
-                                </td>
                                 {targetList.map((target, idx) => (
                                     <ColTargetSasaranComponent
                                         key={target.targetRealisasiId || idx}
@@ -52,6 +41,9 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                                         realisasi={target.realisasi}
                                         satuan={target.satuan}
                                         capaian={target.capaian}
+                                        handleClick={() => {
+                                            handleOpenModal(sasaranOpd, dataTargetRealisasi, ind.id.toString());
+                                        }}
                                     />
                                 ))}
                             </React.Fragment>
@@ -59,7 +51,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                             :
                             (
                                 <React.Fragment key={`${ind.id || index}-target-${tahun}`}>
-                                    <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={5}>
+                                    <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={4}>
                                         Tidak ada target di tahun {tahun}
                                     </td>
                                 </React.Fragment>
@@ -83,7 +75,7 @@ const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, ta
         <tr key={sasaranOpd.id}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.nama_sasaran_opd}</td>
-            <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+            <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                 Tidak ada indikator dan target tahun {tahun}
             </td>
         </tr>
@@ -95,14 +87,32 @@ type TargetColProps = {
     realisasi: number;
     satuan: string;
     capaian: string;
+    handleClick?: () => void;
 };
 
-const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian }) => {
+const formatWithComma = (value: number | string): string => {
+        if (value === null || value === undefined || value === 0) return '-';
+        return value.toString().replace('.', ',');
+    };
+
+const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, handleClick }) => {
 
     return (
         <>
             <td className="border border-emerald-500 px-6 py-4 text-center">{target}</td>
-            <td className="border border-emerald-500 px-6 py-4 text-center">{realisasi}</td>
+            <td className="border border-emerald-500 px-6 py-4 text-center">
+                <div className="flex flex-col items-center gap-2">
+                    <span>{formatWithComma(realisasi)}</span>
+                    {handleClick && (
+                        <ButtonGreenBorder
+                            className="w-full"
+                            onClick={handleClick}
+                        >
+                            Realisasi
+                        </ButtonGreenBorder>
+                    )}
+                </div>
+            </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{capaian}</td>
         </>

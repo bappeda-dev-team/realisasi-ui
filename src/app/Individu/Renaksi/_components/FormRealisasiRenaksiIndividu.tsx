@@ -144,11 +144,11 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
         >
             <div className="mb-4">
                 <h3 className="font-bold">Rencana Kinerja: {currentPlan}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
                     {formData.map((target) => (
                         <div
                             key={`${target.targetId}-${target.tahun}`}
-                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col"
+                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2"
                         >
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
                                 {activeMonthLabel}

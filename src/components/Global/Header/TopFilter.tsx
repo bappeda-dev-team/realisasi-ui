@@ -65,6 +65,8 @@ export default function TopFilter({ user }: FilterProps) {
     setActivatedTahun,
     bulan,
     setDinas,
+    setActivatedDinas,
+    setNamaDinas,
     setPeriode,
     setTahun,
     setBulan,
@@ -200,6 +202,8 @@ export default function TopFilter({ user }: FilterProps) {
     try {
       const cookie: SelectedCookie = JSON.parse(cookieStr);
       setDinas(cookie.dinas?.value ?? null);
+      setActivatedDinas(cookie.dinas?.value ?? null);
+      setNamaDinas(cookie.dinas?.label ?? null);
       setPeriode(cookie.periode?.value ?? null);
       setTahun(cookie.tahun?.value ?? null);
       setActivatedTahun(cookie.tahun?.value ?? null);
@@ -212,8 +216,9 @@ export default function TopFilter({ user }: FilterProps) {
   // SIMPAN COOKIE
   // ----------------------------
   function handleActivate() {
+    const selectedDinas = dinasOptions.find((x) => x.value === dinas);
     const cookieValue: SelectedCookie = {
-      dinas: dinasOptions.find((x) => x.value === dinas) ?? null,
+      dinas: selectedDinas ?? null,
       periode: periodeOptions.find((x) => x.value === periode) ?? null,
       tahun: tahunOptions.find((x) => x.value === tahun) ?? null,
       bulan: bulanOptions.find((x) => x.value === bulan) ?? null,
@@ -222,6 +227,8 @@ export default function TopFilter({ user }: FilterProps) {
     Cookies.set("selectedCookie", JSON.stringify(cookieValue), {
       expires: 30,
     });
+    setActivatedDinas(dinas);
+    setNamaDinas(selectedDinas?.label ?? null);
     setActivatedTahun(tahun);
     setActivatedBulan(bulan);
     setShowToast(true);

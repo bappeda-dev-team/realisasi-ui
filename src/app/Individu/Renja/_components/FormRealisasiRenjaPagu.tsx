@@ -7,6 +7,7 @@ import { FormProps, RenjaTarget, RenjaPaguBatchRequest, RenjaPaguIndividuRespons
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
+import { getMonthName } from "@/lib/months";
 
 type FormRealisasiRenjaPaguProps = FormProps<RenjaTarget[], RenjaTarget[]>;
 
@@ -14,7 +15,9 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
     const [formData, setFormData] = useState<RenjaTarget[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const { tahun: selectedTahun } = useFilterContext();
+    const { tahun: selectedTahun, activatedBulan } = useFilterContext();
+    const monthLabel = getMonthName(activatedBulan);
+    const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
         () => (url ? `${url}/api/v1/realisasi/renja_pagu_individu/batch` : "/api/v1/renja_pagu_individu/batch"),
@@ -32,6 +35,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
             requestValues.map((item) => ({
                 ...item,
                 tahun: selectedTahun ?? item.tahun,
+                bulan: monthLabel ?? item.bulan,
             }))
         );
     }, [requestValues, selectedTahun]);
@@ -56,7 +60,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
             return;
         }
 
-        const payload: RenjaPaguBatchRequest[] = formData.map((item) => ({
+const payload: RenjaPaguBatchRequest[] = formData.map((item) => ({
             targetRealisasiId: item.targetRealisasiId,
             renjaId: item.renjaId,
             renja: item.renja,
@@ -69,6 +73,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
             realisasi: item.realisasiPagu ?? 0,
             satuan: item.satuanPagu ?? item.satuan ?? "",
             tahun: item.tahun,
+            bulan: item.bulan ?? monthLabel ?? "",
             jenisRealisasi: item.jenisRealisasi ?? "NAIK",
         }));
 
@@ -106,14 +111,14 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
             <div className="mb-4">
                 <h3 className="font-bold">Rencana Kerja: {currentRenja}</h3>
                 <p className="text-sm text-gray-600 mt-1">Indikator: {currentIndikator}</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mt-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-sm">
                     {formData.map((target) => (
                         <div
                             key={`${target.targetId}-${target.tahun}`}
-                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col"
+                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2"
                         >
-                            <div className="text-center text-xs font-semibold bg-purple-600 text-white rounded py-0.5 mb-1">
-                                Tahun {target.tahun}
+                            <div className="text-center text-xs font-semibold bg-red-600 text-white rounded py-0.5 mb-1">
+                                {activePeriodLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Pagu</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">

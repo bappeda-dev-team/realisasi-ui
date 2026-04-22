@@ -18,7 +18,11 @@ const nextConfig: NextConfig = {
       {
         source: "/auth-api/:path*",
         destination: `${API_URL}/:path*` // backend
-      }
+      },
+      // {
+      //   source: "/user-info/:path",
+      //   destination: `${API_URL}/user-info/:path` // backend
+      // }
     ]
   },
   output: "standalone",

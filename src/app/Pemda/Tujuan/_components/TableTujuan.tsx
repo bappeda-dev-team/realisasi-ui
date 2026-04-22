@@ -3,13 +3,13 @@ import RowTujuanComponent from './RowTujuanComponent';
 import { TargetRealisasiCapaian, TujuanPemda } from '@/types';
 
 interface TableTujuanProps {
-    periode: number[];
+    tahun: number;
     tujuansPemda: TujuanPemda[];
     targetRealisasiCapaians: TargetRealisasiCapaian[];
     handleOpenModal: (tujuan: TujuanPemda, data: TargetRealisasiCapaian[]) => void;
 }
 
-function TableTujuan({ periode, tujuansPemda, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {
+function TableTujuan({ tahun, tujuansPemda, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {
 
     return (
         <table className="w-full">
@@ -21,22 +21,15 @@ function TableTujuan({ periode, tujuansPemda, targetRealisasiCapaians, handleOpe
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Indikator</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
-                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center">Aksi</th>
-                    {periode.map((tahun) => (
-                        <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
-                            {tahun}
-                        </th>
-                    ))}
+                    <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
+                        {tahun}
+                    </th>
                 </tr>
                 <tr className="text-white bg-red-500">
-                    {periode.map(tahun => (
-                        <React.Fragment key={tahun}>
-                            <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>
-                            <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Realisasi</th>
-                            <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Satuan</th>
-                            <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Capaian</th>
-                        </React.Fragment>
-                    ))}
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Realisasi</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Satuan</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Capaian</th>
                 </tr>
             </thead>
             <tbody>
@@ -46,7 +39,7 @@ function TableTujuan({ periode, tujuansPemda, targetRealisasiCapaians, handleOpe
                         no={index + 1}
                         tujuan={tuj}
                         dataTargetRealisasi={targetRealisasiCapaians}
-                        periode={periode}
+                        tahun={tahun}
                         handleOpenModal={handleOpenModal}
                     />
                 )

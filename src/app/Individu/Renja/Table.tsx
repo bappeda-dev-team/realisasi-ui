@@ -8,6 +8,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
+import { getMonthName } from "@/lib/months";
 import { RenjaTargetIndividuResponse, RenjaTarget, RenjaPaguIndividuResponse } from "@/types";
 import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
 import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
@@ -29,16 +30,18 @@ const Table = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalType, setModalType] = useState<'target' | 'pagu'>('target');
 
-    const { tahun: selectedTahun, activatedTahun } = useFilterContext();
+    const { tahun: selectedTahun, activatedTahun, activatedBulan } = useFilterContext();
     const { user } = useUserContext();
     const { url } = useApiUrlContext();
 
-    const apiUrlTarget = url && user?.nip && activatedTahun
-        ? `${url}/api/v1/realisasi/renja_target_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}`
+    const bulanName = getMonthName(activatedBulan);
+
+    const apiUrlTarget = url && user?.nip && activatedTahun && bulanName
+        ? `${url}/api/v1/realisasi/renja_target_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanName)}`
         : null;
 
-    const apiUrlPagu = url && user?.nip && activatedTahun
-        ? `${url}/api/v1/realisasi/renja_pagu_individu/nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}`
+    const apiUrlPagu = url && user?.nip && activatedTahun && bulanName
+        ? `${url}/api/v1/realisasi/renja_pagu_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanName)}`
         : null;
 
     const { data, loading, error } = useFetchData<RenjaTargetIndividuResponse[]>({
@@ -50,7 +53,7 @@ const Table = () => {
     });
 
     useEffect(() => {
-        if (!activatedTahun) {
+        if (!activatedTahun || !bulanName) {
             setRows([]);
             return;
         }
@@ -90,6 +93,7 @@ const Table = () => {
                         realisasi: item.realisasi,
                         satuan: item.satuan,
                         tahun: item.tahun,
+                        bulan: item.bulan ?? bulanName ?? undefined,
                         jenisRealisasi: item.jenisRealisasi,
                         capaian: item.capaian ?? "-",
                         keteranganCapaian: item.keteranganCapaian ?? "-",
@@ -102,7 +106,7 @@ const Table = () => {
                 };
             })
         );
-    }, [data, paguResponse, user, activatedTahun]);
+    }, [data, paguResponse, user, activatedTahun, bulanName]);
 
     const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
         setSelectedRow(row);
@@ -129,13 +133,13 @@ const Table = () => {
 
     const infoMessage = !user?.nip
         ? "Silakan login terlebih dahulu untuk melihat data renja individu."
-        : !activatedTahun
-            ? "Pilih dan aktifkan tahun agar data renja individu muncul."
+        : !activatedTahun || !bulanName
+            ? "Harap pilih tahun dan bulan dahulu"
             : undefined;
 
     if (infoMessage) {
         return (
-            <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+            <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
                 {infoMessage}
             </div>
         );
@@ -179,21 +183,19 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Jenis Renja</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun}`}</th>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun}`}</th>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun} - ${bulanName}`}</th>
+                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun} - ${bulanName}`}</th>
                         </tr>
                         <tr className="bg-emerald-500 text-white">
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
                             <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
                             <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>
@@ -221,20 +223,18 @@ const Table = () => {
                                         {row.indikator || "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col gap-2">
+                                        {target?.target || "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span>{target?.realisasi ?? "-"}</span>
                                             <ButtonGreenBorder
-                                                className="flex items-center gap-1 justify-center"
+                                                className="w-full"
                                                 onClick={() => openModal(row, 'target')}
                                             >
                                                 Realisasi
                                             </ButtonGreenBorder>
                                         </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.target || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.realisasi ?? "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.satuan || "-"}
@@ -245,21 +245,19 @@ const Table = () => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.keteranganCapaian || "-"}
                                     </td>
-                                    <td className="border-x border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col gap-2">
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span>{target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}</span>
                                             <ButtonGreenBorder
-                                                className="flex items-center gap-1 justify-center"
+                                                className="w-full"
                                                 onClick={() => openModal(row, 'pagu')}
                                             >
                                                 Realisasi
                                             </ButtonGreenBorder>
                                         </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.satuanPagu || "-"}

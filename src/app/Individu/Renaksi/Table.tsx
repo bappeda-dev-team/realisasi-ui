@@ -108,12 +108,12 @@ const Table = () => {
   const infoMessage = !user?.nip
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : !monthLabel
-      ? "Pilih dan aktifkan bulan agar data renaksi individu muncul."
+      ? "Harap pilih periode dan tahun dahulu"
       : undefined;
 
   if (infoMessage) {
     return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         {infoMessage}
       </div>
     );
@@ -176,12 +176,6 @@ const Table = () => {
               >
                 Rencana Aksi
               </td>
-              <td
-                rowSpan={2}
-                className="border-r border-b px-6 py-3 min-w-[140px] text-center"
-              >
-                Aksi
-              </td>
               <th
                 colSpan={5}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
@@ -217,20 +211,18 @@ const Table = () => {
                     {row.renaksi || "-"}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    <div className="flex flex-col gap-2">
+                    {target?.target || "-"}
+                  </td>
+                  <td className="border-r border-b border-emerald-500 px-6 py-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <span>{target?.realisasi ?? "-"}</span>
                       <ButtonGreenBorder
-                        className="flex items-center gap-1 justify-center"
+                        className="w-full"
                         onClick={() => openModal(row)}
                       >
                         Realisasi
                       </ButtonGreenBorder>
                     </div>
-                  </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {target?.target || "-"}
-                  </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {target?.realisasi ?? "-"}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {target?.satuan || "-"}

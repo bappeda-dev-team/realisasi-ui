@@ -15,7 +15,7 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<SasaranOpdRealisasiRequest[]>([]);
 
-    // fill data awal
+// fill data awal
     useEffect(() => {
         if (requestValues) {
             const generatedFormData: SasaranOpdRealisasiRequest[] = requestValues.map((indikator) => {
@@ -24,7 +24,9 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
                     sasaranId: indikator.sasaranId.toString(),
                     indikatorId: indikator.indikatorId,
                     targetId: indikator.targetId,
-                    target: indikator.target,
+                    target: typeof indikator.target === 'string' 
+                        ? indikator.target.replace(',', '.') 
+                        : indikator.target,
                     realisasi: indikator.realisasi,
                     satuan: indikator.satuan,
                     tahun: indikator.tahun,
@@ -37,14 +39,20 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
         }
     }, [requestValues]);
 
+    const convertToDisplayString = (value: number | null): string => {
+        if (value === null || value === undefined) return '';
+        return value.toString().replace('.', ',');
+    };
+
     // handle saat berubah ?
-    const handleChange = (indikatorId: string, tahun: string, value: string) => {
-        const numericReal = parseFloat(value)
+const handleChange = (indikatorId: string, tahun: string, value: string) => {
+        const normalizedValue = value.replace(',', '.');
+        const numericReal = value === '' ? 0 : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(numericReal) ? 0 : numericReal }
+                    ? { ...item, realizesi: isNaN(numericReal) ? 0 : numericReal }
                     : item
             )
         );
@@ -74,9 +82,9 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
             <div className="mb-4">
                 <h3 className="font-bold">Indikator: {indikator}</h3>
-                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
                     {requestValues?.map((ind) => (
-                        <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col">
+                        <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
                                 {ind.tahun}
                             </div>
@@ -88,13 +96,10 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
                                 Realisasi:
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
-                                step="0.01"
                                 name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
-                                value={
-                                    formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? 0
-                                }
+                                value={convertToDisplayString(formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? null)}
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, e.target.value)}
                             />
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
