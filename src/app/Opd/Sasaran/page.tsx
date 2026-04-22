@@ -4,37 +4,38 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { FormModal } from "@/components/Global/Modal";
 import React, { useEffect, useState } from "react";
 import { useFetchData } from "@/hooks/useFetchData";
+import { useFilterContext } from "@/context/FilterContext";
 import {
   SasaranOpdPerencanaanResponse,
   SasaranOpdPerencanaan,
   SasaranOpdRealisasiResponse,
   SasaranOpdTargetRealisasiCapaian,
-  SasaranOpdRealisasi,
 } from "@/types";
 import TableSasaranOpd from "./_components/TableSasaranOpd";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
 
 export default function SasaranPage() {
-  const kodeOpd = "5.03.5.04.0.00.01.0000";
+  const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, namaDinas: namaOpd } = useFilterContext();
+  const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
-  const selectedTahun = 2025;
   const jenisPeriode = "rpjmd";
   const {
     data: sasaranOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
-  } = useFetchData<SasaranOpdPerencanaanResponse>({
-    url: `/api/perencanaan/sasaran_opd/renja/${kodeOpd}/${selectedTahun}/${jenisPeriode}`,
+} = useFetchData<SasaranOpdPerencanaanResponse>({
+    url: kodeOpd ? `/api/perencanaan/sasaran_opd/renja/${kodeOpd}/${selectedTahunValue}/${jenisPeriode}` : null,
   });
-  const {
-    data: realisasiData,
-    loading: realisasiLoading,
-    error: realisasiError,
+const {
+    data: realizationData,
+    loading: realizationLoading,
+    error: realizationError,
+    refetch: refetchRealization,
   } = useFetchData<SasaranOpdRealisasiResponse>({
-    url: `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
+    url: kodeOpd ? `/api/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahunValue}` : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     SasaranOpdTargetRealisasiCapaian[]
@@ -42,63 +43,69 @@ export default function SasaranPage() {
   const [PerencanaanSasaranOpd, setPerencanaanSasaranOpd] = useState<
     SasaranOpdPerencanaan[]
   >([]);
-  const [NamaOpd, setNamaOpd] = useState<string>("");
   const [SasaranOpdSelected, setSasaranOpdSelected] = useState<
     SasaranOpdTargetRealisasiCapaian[]
   >([]);
   const [OpenModal, setOpenModal] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (sasaranOpdData?.data && realisasiData) {
+useEffect(() => {
+    if (sasaranOpdData?.data && realizationData && kodeOpd) {
       const perencanaan = sasaranOpdData.data
         .flatMap(pohon => pohon.sasaran_opd);
       setPerencanaanSasaranOpd(perencanaan);
 
-      setNamaOpd('-');
       const combinedData = gabunganDataPerencanaanRealisasi(
         perencanaan,
-        realisasiData,
+        realizationData,
+        kodeOpd,
       );
       setTargetRealisasiCapaian(combinedData);
     } else {
-      setNamaOpd("");
       setTargetRealisasiCapaian([]);
       setPerencanaanSasaranOpd([]);
     }
-  }, [sasaranOpdData, realisasiData]);
+  }, [sasaranOpdData, realizationData, kodeOpd]);
 
-  if (perencanaanLoading || realisasiLoading)
+  if (perencanaanLoading || realizationLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
-  if (realisasiError)
-    return <div>Error fetching realisasi: {realisasiError}</div>;
+  if (realizationError)
+    return <div>Error fetching realization: {realizationError}</div>;
 
   const handleOpenModal = (
     sasaran: SasaranOpdPerencanaan,
     dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[],
+    indikatorId: string,
   ) => {
-    // sasaran -> buat text diatas sama filter
     const targetCapaian = dataTargetRealisasi.filter(
-      (tc) => tc.sasaranId === sasaran.id.toString(),
+      (tc) => tc.sasaranId === sasaran.id.toString() && tc.indikatorId === indikatorId,
     );
 
-    if (targetCapaian) {
-      setSasaranOpdSelected(targetCapaian); // Set the selected purpose to the found target capaian
+    if (targetCapaian.length > 0) {
+      setSasaranOpdSelected(targetCapaian);
     } else {
       console.warn("No matching target capaian found for the selected tujuan");
-      setSasaranOpdSelected([]); // Optionally reset if nothing is found to avoid stale data
+      setSasaranOpdSelected([]);
     }
     setOpenModal(true);
   };
 
+  if (!kodeOpd || !selectedTahun) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih periode dan tahun dahulu
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Sasaran OPD - {NamaOpd} Tahun {selectedTahun}
+        Realisasi Sasaran OPD - {namaOpd || '-'} - Tahun {selectedTahunValue}
       </h2>
       <TableSasaranOpd
-        tahun={selectedTahun}
+        tahun={selectedTahunValue}
         sasaranOpd={PerencanaanSasaranOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}
@@ -108,19 +115,16 @@ export default function SasaranPage() {
         onClose={() => {
           setOpenModal(false);
         }}
-        title={`Realisasi Sasaran OPD - ${SasaranOpdSelected[0]?.sasaranOpd || ""}`}
+        title={`Realisasi Sasaran OPD - ${namaOpd || '-'} - Tahun ${selectedTahunValue}`}
       >
         <FormRealisasiSasaranOpd
           requestValues={SasaranOpdSelected}
           onClose={() => {
             setOpenModal(false);
           }}
-          onSuccess={(result: SasaranOpdRealisasi[]) => {
-            const updated = gabunganDataPerencanaanRealisasi(
-              PerencanaanSasaranOpd,
-              result,
-            );
-            setTargetRealisasiCapaian(updated);
+          onSuccess={() => {
+            setOpenModal(false);
+            refetchRealization();
           }}
         />
       </FormModal>

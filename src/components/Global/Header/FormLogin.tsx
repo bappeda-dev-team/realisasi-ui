@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuthUser } from "@/hooks/useAuthUser";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { TbEye, TbEyeClosed } from "react-icons/tb";
@@ -6,6 +7,7 @@ import { LoadingButtonClip } from "@/components/Global/Loading";
 import { useUserContext } from "@/context/UserContext";
 import { authenticate } from "@/lib/auth";
 import { setSessionId } from "@/lib/session";
+import { getDefaultPage } from "@/lib/rbac";
 
 interface FormLoginProps {
   onClose: () => void;
@@ -18,6 +20,7 @@ interface LoginRequest {
 }
 
 const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
+  const router = useRouter();
   const { submit, loading, error } = useAuthUser({
     url: `/auth-api/auth/login`,
   });
@@ -46,6 +49,9 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
       setUser(user);
       setError(null);
       setLastLoginAt(Date.now());
+
+      const defaultPage = getDefaultPage(user);
+      router.push(defaultPage);
 
       onSuccess();
     }

@@ -63,18 +63,6 @@ export default function RowSasaranComponent({
             </td>
             {targetList.length > 0 ? (
               <>
-                <td className="border border-red-400 px-6 py-4 text-center">
-                  <div className="flex flex-col gap-2">
-                    <ButtonGreenBorder
-                      className="flex items-center gap-1 cursor-pointer"
-                      onClick={() => {
-                        handleOpenModal(sasaran, dataTargetRealisasi);
-                      }}
-                    >
-                      Realisasi
-                    </ButtonGreenBorder>
-                  </div>
-                </td>
                 {targetList.map((target, idx) => (
                   <ColTargetSasaran
                     key={target.targetRealisasiId || idx}
@@ -82,19 +70,19 @@ export default function RowSasaranComponent({
                     realisasi={target.realisasi}
                     satuan={target.satuan}
                     capaian={target.capaian}
+                    handleClick={() => {
+                      handleOpenModal(sasaran, dataTargetRealisasi);
+                    }}
                   />
                 ))}
               </>
             ) : (
-              <>
-                <td className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"></td>
-                <td
-                  colSpan={4}
-                  className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
-                >
-                  Tidak ada target
-                </td>
-              </>
+              <td
+                colSpan={4}
+                className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
+              >
+                Tidak ada target
+              </td>
             )}
           </tr>
         );
@@ -115,7 +103,7 @@ const EmptyIndikatorRow: React.FC<{
         {sasaran.sasaran_pemda}
       </td>
       <td
-        colSpan={8}
+        colSpan={7}
         className="border border-red-400 px-6 py-4 text-center text-gray-500 italic"
       >
         Tidak ada indikator dan target tahun {tahun}
@@ -129,12 +117,23 @@ const ColTargetSasaran: React.FC<{
   realisasi: number;
   satuan: string;
   capaian: string;
-}> = ({ target, realisasi, satuan, capaian }) => {
+  handleClick?: () => void;
+}> = ({ target, realisasi, satuan, capaian, handleClick }) => {
   return (
     <>
       <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
       <td className="border border-red-400 px-6 py-4 text-center">
-        {realisasi}
+        <div className="flex flex-col items-center gap-2">
+          <span>{realisasi}</span>
+          {handleClick && (
+            <ButtonGreenBorder
+              className="w-full"
+              onClick={handleClick}
+            >
+              Realisasi
+            </ButtonGreenBorder>
+          )}
+        </div>
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
       <td className="border border-red-400 px-6 py-4 text-center">{capaian}</td>

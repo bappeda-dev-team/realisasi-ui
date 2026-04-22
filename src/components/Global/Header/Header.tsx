@@ -13,6 +13,7 @@ import { useUserContext } from "@/context/UserContext";
 import { ToastSuccess, ToastError } from "@/components/Global/Alert";
 import Login from "@/components/Global/Header/Login";
 import FormLogin from "@/components/Global/Header/FormLogin";
+import { getAccessibleMenus } from "@/lib/rbac";
 
 export const Header = () => {
   const { user, loading, error, lastLoginAt } = useUserContext();
@@ -47,27 +48,18 @@ export const Header = () => {
         <div className="mx-auto flex md:justify-start justify-between gap-5 items-center px-4 py-3">
           {user && (
             <ul className="hidden md:flex space-x-6">
-              <Link
-                href="/Pemda"
-                className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white`}
-              >
-                <TbBuildingFortress />
-                Pemda
-              </Link>
-              <Link
-                href="/Opd"
-                className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white`}
-              >
-                <TbBuilding />
-                Perangkat Daerah
-              </Link>
-              <Link
-                href="/Individu"
-                className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white`}
-              >
-                <TbUserSquareRounded />
-                Individu
-              </Link>
+              {getAccessibleMenus(user).map((menu) => (
+                <Link
+                  key={menu.href}
+                  href={menu.href}
+                  className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white`}
+                >
+                  {menu.href === '/Pemda' && <TbBuildingFortress />}
+                  {menu.href === '/Opd' && <TbBuilding />}
+                  {menu.href === '/Individu' && <TbUserSquareRounded />}
+                  {menu.name}
+                </Link>
+              ))}
             </ul>
           )}
           <div className="flex items-center gap-6 ml-auto">

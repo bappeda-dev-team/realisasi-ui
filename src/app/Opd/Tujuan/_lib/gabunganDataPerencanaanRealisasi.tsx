@@ -8,6 +8,7 @@ import {
 export function gabunganDataPerencanaanRealisasi(
   perencanaan: TujuanOpdPerencanaan[],
   realisasi: TujuanOpdRealisasiResponse,
+  kodeOpd: string,
 ): TujuanOpdTargetRealisasiCapaian[] {
   const hasil: TujuanOpdTargetRealisasiCapaian[] = [];
 
@@ -44,7 +45,7 @@ export function gabunganDataPerencanaanRealisasi(
           capaian: real?.capaian ?? "-",
           satuan: target.satuan,
           tahun: target.tahun,
-          kodeOpd: "-",
+          kodeOpd: kodeOpd,
         });
       });
     });

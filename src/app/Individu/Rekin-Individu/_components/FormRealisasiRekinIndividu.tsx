@@ -7,6 +7,7 @@ import { FormProps, RekinTarget, RekinBatchRequest, RekinIndividuResponse } from
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
+import { getMonthName } from "@/lib/months";
 
 type FormRealisasiRekinIndividuProps = FormProps<RekinTarget[], RekinTarget[]>;
 
@@ -14,14 +15,16 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     const [formData, setFormData] = useState<RekinTarget[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const { tahun: selectedTahun } = useFilterContext();
+    const { tahun: selectedTahun, activatedBulan } = useFilterContext();
+    const monthLabel = getMonthName(activatedBulan);
+    const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
         () => (url ? `${url}/api/v1/realisasi/rekin/batch` : "/api/v1/realisasi/rekin/batch"),
         [url],
     );
     const { submit, loading, error } = useSubmitData<RekinIndividuResponse[]>({ url: submitUrl });
-    const activeYearLabel = selectedTahun ?? "Tahun";
+    
 
     useEffect(() => {
         if (!requestValues?.length) {
@@ -33,6 +36,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             requestValues.map((item) => ({
                 ...item,
                 tahun: selectedTahun ?? item.tahun,
+                bulan: monthLabel ?? item.bulan,
             }))
         );
     }, [requestValues, selectedTahun]);
@@ -82,7 +86,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             return;
         }
 
-        const payload: RekinBatchRequest[] = formData.map((item) => ({
+const payload: RekinBatchRequest[] = formData.map((item) => ({
             targetRealisasiId: item.targetRealisasiId,
             rekinId: item.rekinId,
             rekin: item.rekin,
@@ -94,6 +98,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             realisasi: item.realisasi,
             satuan: item.satuan,
             tahun: item.tahun ?? baseTahun,
+            bulan: item.bulan ?? monthLabel ?? "",
             jenisRealisasi: item.jenisRealisasi,
             idSasaran: item.idSasaran,
             sasaran: item.sasaran,
@@ -103,7 +108,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
         const result = await submit(payload);
         setIsSubmitting(false);
 
-        if (result) {
+if (result) {
             const updatedTargets: RekinTarget[] = result.map((item) => ({
                 targetRealisasiId: item.id,
                 rekinId: item.rekinId,
@@ -116,6 +121,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 realisasi: item.realisasi,
                 satuan: item.satuan,
                 tahun: item.tahun,
+                bulan: item.bulan,
                 jenisRealisasi: item.jenisRealisasi,
                 capaian: item.capaian ?? undefined,
                 keteranganCapaian: item.keteranganCapaian ?? undefined,
@@ -139,14 +145,14 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
         >
             <div className="mb-4">
                 <h3 className="font-bold">Rencana Kinerja: {currentPlan}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
                     {formData.map((target) => (
                         <div
                             key={`${target.targetId}-${target.tahun}`}
-                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col"
+                            className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2"
                         >
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {activeYearLabel}
+                                {activePeriodLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Target</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">

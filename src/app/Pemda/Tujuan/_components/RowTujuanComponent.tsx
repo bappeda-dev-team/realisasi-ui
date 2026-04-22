@@ -6,7 +6,7 @@ interface RowTujuanComponentProps {
     no: number;
     tujuan: any;
     dataTargetRealisasi: any[];
-    periode: number[];
+    tahun: number;
     handleOpenModal: (tujuan: any, dataTargetRealisasi: any) => void;
 }
 
@@ -14,14 +14,20 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     tujuan,
     dataTargetRealisasi,
-    periode,
+    tahun,
     handleOpenModal,
 }) => {
     const indikatorList = tujuan.indikator ?? [];
     const indikator = tujuan.indikator?.[0];
     if (indikatorList.length === 0) {
-        return <EmptyIndikatorRow no={no} tujuan={tujuan} periode={periode} />;
+        return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} />;
     }
+
+    const targetData = dataTargetRealisasi.find(
+        (r) =>
+            r.indikatorId === indikator.id.toString() &&
+            r.tahun === tahun.toString(),
+    );
 
     return (
         <tr>
@@ -41,51 +47,22 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
             <td className="border border-red-400 px-6 py-4 text-center">
                 {indikator?.sumber_data ?? "-"}
             </td>
-            {periode.map((tahun, idx) => {
-                const targetData = dataTargetRealisasi.find(
-                    (r) =>
-                        r.indikatorId === indikator.id.toString() &&
-                        r.tahun === tahun.toString(),
-                );
-
-                return (
-                    <React.Fragment key={`${tujuan.id}-${indikator.id}-${tahun}`}>
-                        {targetData && targetData.target ? (
-                            <>
-                                {idx === 0 && (
-                                    <td className="border border-red-400 px-6 py-4 text-center">
-                                        <div className="flex flex-col gap-2">
-                                            <ButtonGreenBorder
-                                                className="flex items-center gap-1 cursor-pointer"
-                                                onClick={() => handleOpenModal(tujuan, dataTargetRealisasi)}
-                                            >
-                                                Realisasi
-                                            </ButtonGreenBorder>
-                                        </div>
-                                    </td>
-                                )}
-
-                                <ColTargetTujuanComponent
-                                    target={targetData.target}
-                                    satuan={targetData.satuan}
-                                    realisasi={targetData.realisasi}
-                                    capaian={targetData.capaian}
-                                />
-                            </>
-                        ) : (
-                            <>
-                                <td className="border border-red-400 px-6 py-4 text-center"></td>
-                                <td
-                                    className="border border-red-400 px-6 py-4 text-center"
-                                    colSpan={4}
-                                >
-                                    Tidak ada target
-                                </td>
-                            </>
-                        )}
-                    </React.Fragment>
-                );
-            })}
+            {targetData && targetData.target ? (
+                <ColTargetTujuanComponent
+                    target={targetData.target}
+                    satuan={targetData.satuan}
+                    realisasi={targetData.realisasi}
+                    capaian={targetData.capaian}
+                    handleClick={() => handleOpenModal(tujuan, dataTargetRealisasi)}
+                />
+            ) : (
+                <td
+                    className="border border-red-400 px-6 py-4 text-center"
+                    colSpan={4}
+                >
+                    Tidak ada target
+                </td>
+            )}
         </tr>
     );
 };
@@ -95,8 +72,8 @@ export default RowTujuanComponent;
 const EmptyIndikatorRow: React.FC<{
     tujuan: any;
     no: number;
-    periode: number[];
-}> = ({ tujuan, no, periode }) => {
+    tahun: number;
+}> = ({ tujuan, no, tahun }) => {
     return (
         <tr key={tujuan.id} className="bg-red-300">
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
@@ -106,11 +83,11 @@ const EmptyIndikatorRow: React.FC<{
             <td className="border border-red-400 px-6 py-4 text-center">
                 {tujuan.misi}
             </td>
-            <td
-                colSpan={8}
+<td
+                colSpan={7}
                 className="border border-red-400 px-6 py-4 text-center text-gray-500 italic"
-            >
-                Tidak ada indikator dan target tahun {periode[0]}
+              >
+                Tidak ada indikator dan target tahun {tahun}
             </td>
         </tr>
     );

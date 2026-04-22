@@ -85,7 +85,7 @@ const Table = () => {
 
   if (infoMessage) {
     return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         {infoMessage}
       </div>
     )

@@ -53,12 +53,6 @@ function TableSasaran({
             Sumber Data
           </th>
           <th
-            rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center"
-          >
-            Aksi
-          </th>
-          <th
             key={tahun}
             colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"

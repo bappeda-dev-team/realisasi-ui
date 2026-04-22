@@ -53,12 +53,6 @@ function TableTujuan({
             Sumber Data
           </th>
           <th
-            rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[100px] text-center"
-          >
-            Aksi
-          </th>
-          <th
             colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
@@ -94,7 +88,7 @@ function TableTujuan({
           ))
         ) : (
           <tr>
-            <td colSpan={10} className="p-4 text-center text-gray-500">
+            <td colSpan={9} className="p-4 text-center text-gray-500">
               Tidak ada data tujuan OPD
             </td>
           </tr>

@@ -7,7 +7,7 @@ interface TableSasaranOpdProps {
     tahun: number;
     sasaranOpd: SasaranOpdPerencanaan[];
     targetRealisasiCapaians: SasaranOpdTargetRealisasiCapaian[];
-    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => void;
+    handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[], indikatorId: string) => void;
 }
 
 export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapaians, handleOpenModal }: TableSasaranOpdProps) {
@@ -21,7 +21,6 @@ export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapa
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Indikator</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Rumus Perhitungan</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Sumber Data</td>
-                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[100px]">Aksi</td>
                     <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun}</th>
                 </tr>
                 <tr className="bg-emerald-500 text-white">

@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
 
-const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]>> = ({
+const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number }> = ({
     requestValues,
+    tahun,
     onClose,
     onSuccess
 }) => {
@@ -13,35 +14,45 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<TujuanRequest[]>([]);
 
+    const filteredRequestValues = useMemo(() => 
+        requestValues?.filter((item) => item.tahun === (tahun ?? new Date().getFullYear()).toString()) ?? [],
+        [requestValues, tahun]
+    );
+
     // fill data awal
     useEffect(() => {
-        if (requestValues) {
-            const generatedFormData: TujuanRequest[] = requestValues.map((indikator) => {
-                return ({
-                    targetRealisasiId: indikator.targetRealisasiId,
-                    tujuanId: indikator.tujuanId,
-                    indikatorId: indikator.indikatorId,
-                    tahun: indikator.tahun,
-                    targetId: indikator.targetId,
-                    target: indikator.target,
-                    satuan: indikator.satuan,
-                    realisasi: indikator.realisasi,
-                    jenisRealisasi: 'NAIK',
-                })
-            }
-            );
-            setFormData(generatedFormData);
-        }
-    }, [requestValues]);
+        const generatedFormData: TujuanRequest[] = filteredRequestValues.map((indikator) => {
+            return ({
+                targetRealisasiId: indikator.targetRealisasiId,
+                tujuanId: indikator.tujuanId,
+                indikatorId: indikator.indikatorId,
+                tahun: indikator.tahun,
+                targetId: indikator.targetId,
+                target: typeof indikator.target === 'string'
+                    ? indikator.target.replace(',', '.')
+                    : indikator.target,
+                satuan: indikator.satuan,
+                realisasi: indikator.realisasi,
+                jenisRealisasi: 'NAIK',
+            })
+        });
+        setFormData(generatedFormData);
+    }, [filteredRequestValues]);
+
+    const convertToDisplayString = (value: number | null): string => {
+        if (value === null || value === undefined) return '';
+        return value.toString().replace('.', ',');
+    };
 
     // handle saat berubah ?
-    const handleChange = (indikatorId: string, tahun: string, value: string) => {
-        const numericReal = parseFloat(value)
+const handleChange = (indikatorId: string, tahun: string, value: string) => {
+        const normalizedValue = value.replace(',', '.');
+        const numericReal = value === '' ? 0 : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(numericReal) ? 0 : numericReal }
+                    ? { ...item, realizesi: isNaN(numericReal) ? 0 : numericReal }
                     : item
             )
         );
@@ -65,15 +76,15 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
     };
 
     // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa
-    const indikator = requestValues ? requestValues[0].indikator : ''
+    const indikator = filteredRequestValues && filteredRequestValues.length > 0 ? filteredRequestValues[0].indikator : ''
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
             <div className="mb-4">
                 <h3 className="font-bold">Indikator: {indikator}</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-2 text-sm">
-                    {requestValues?.map((ind) => (
-                        <div key={ind.targetRealisasiId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
+                    {filteredRequestValues?.map((ind) => (
+                        <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
                                 {ind.tahun}
                             </div>
@@ -85,13 +96,10 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
                                 Realisasi:
                             </label>
                             <input
-                                type="number"
+                                type="text"
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
-                                step="0.01"
                                 name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
-                                value={
-                                    formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? 0
-                                }
+                                value={convertToDisplayString(formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? null)}
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, e.target.value)}
                             />
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">

@@ -2,15 +2,12 @@ import {
     SasaranOpdPerencanaan, SasaranOpdRealisasiResponse, SasaranOpdTargetRealisasiCapaian
 } from '@/types';
 
-export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencanaan[], realisasi: SasaranOpdRealisasiResponse): SasaranOpdTargetRealisasiCapaian[] {
+export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencanaan[], realismoasi: SasaranOpdRealisasiResponse, kodeOpd: string): SasaranOpdTargetRealisasiCapaian[] {
     const hasil: SasaranOpdTargetRealisasiCapaian[] = [];
-    // Iterate through each planning item
-  perencanaan.forEach(sasaran => {
+    perencanaan.forEach(sasaran => {
         sasaran.indikator.forEach(indikator => {
-            // Look for targets in the current indicator
             indikator.target?.forEach(target => {
-                // Find corresponding realization for the target year and sasaran
-                const realizationEntry = realisasi.find(r =>
+                const realizationEntry = realismoasi.find(r =>
                     r.tahun === target.tahun &&
                     r.sasaranId === sasaran.id.toString() &&
                     r.indikatorId === indikator.id &&
@@ -30,7 +27,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         capaian: realizationEntry.capaian,
                         satuan: target.satuan,
                         tahun: target.tahun,
-                        kodeOpd: '-blank-'
+                        kodeOpd: kodeOpd
                     });
                 } else {
                     hasil.push({
@@ -45,7 +42,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         capaian: "-",
                         satuan: target.satuan,
                         tahun: target.tahun,
-                        kodeOpd: '-blank-'
+                        kodeOpd: kodeOpd
                     });
                 }
             });

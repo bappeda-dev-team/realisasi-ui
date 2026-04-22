@@ -3,10 +3,10 @@
 import { LoadingBeat } from "@/components/Global/Loading";
 import { FormModal } from "@/components/Global/Modal";
 import { useFetchData } from "@/hooks/useFetchData";
+import { useFilterContext } from "@/context/FilterContext";
 import {
   TujuanOpdPerencanaan,
   TujuanOpdPerencanaanResponse,
-  TujuanOpdRealisasi,
   TujuanOpdRealisasiResponse,
   TujuanOpdTargetRealisasiCapaian,
 } from "@/types";
@@ -16,25 +16,26 @@ import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 
 export default function TujuanPage() {
-  const kodeOpd = "5.03.5.04.0.00.01.0000";
+  const { activatedDinas: kodeOpd, activatedTahun: selectedTahun } = useFilterContext();
+  const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
-  const selectedTahun = 2025;
   const jenisPeriode = "rpjmd";
   const {
     data: tujuanOpdData,
     loading: perencanaanLoading,
     error: perencanaanError,
   } = useFetchData<TujuanOpdPerencanaanResponse>({
-    url: `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunAwal}/tahunakhir/${tahunAkhir}/jenisperiode/${jenisPeriode}`,
+    url: kodeOpd ? `/api/perencanaan/tujuan_opd/findall/${kodeOpd}/tahunawal/${tahunAwal}/tahunakhir/${tahunAkhir}/jenisperiode/${jenisPeriode}` : null,
   });
-  const {
-    data: realisasiData,
-    loading: realisasiLoading,
-    error: realisasiError,
+const {
+    data: realizationData,
+    loading: realizationLoading,
+    error: realizationError,
+    refetch: refetchRealization,
   } = useFetchData<TujuanOpdRealisasiResponse>({
-    url: `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahun}`,
+    url: kodeOpd ? `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahunValue}` : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TujuanOpdTargetRealisasiCapaian[]
@@ -49,7 +50,7 @@ export default function TujuanPage() {
   >([]);
 
   useEffect(() => {
-    if (tujuanOpdData?.data && realisasiData) {
+    if (tujuanOpdData?.data && realizationData && kodeOpd) {
       const perencanaan = tujuanOpdData.data;
       setPerencanaanTujuanOpd(perencanaan[0].tujuan_opd);
 
@@ -57,7 +58,8 @@ export default function TujuanPage() {
 
       const combinedData = gabunganDataPerencanaanRealisasi(
         perencanaan[0].tujuan_opd,
-        realisasiData,
+        realizationData,
+        kodeOpd,
       );
       setTargetRealisasiCapaian(combinedData);
     } else {
@@ -65,40 +67,38 @@ export default function TujuanPage() {
       setTargetRealisasiCapaian([]);
       setPerencanaanTujuanOpd([]);
     }
-  }, [tujuanOpdData, realisasiData]);
+  }, [tujuanOpdData, realizationData, kodeOpd]);
 
-  if (perencanaanLoading || realisasiLoading)
+  if (perencanaanLoading || realizationLoading)
     return <LoadingBeat loading={perencanaanLoading} />;
   if (perencanaanError)
     return <div>Error fetching perencanaan: {perencanaanError}</div>;
-  if (realisasiError)
-    return <div>Error fetching realisasi: {realisasiError}</div>;
+  if (realizationError)
+    return <div>Error fetching realistasi: {realizationError}</div>;
+
+  if (!kodeOpd || !selectedTahun) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Harap pilih periode dan tahun dahulu
+      </div>
+    );
+  }
 
   const handleOpenModal = (
     tujuan: TujuanOpdPerencanaan,
     dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[],
   ) => {
-    // tujuan -> buat text diatas sama filter
-    const targetCapaian = dataTargetRealisasi.filter(
-      (tc) => tc.tujuanId === tujuan.id_tujuan_opd,
-    );
-
-    if (targetCapaian) {
-      setTujuanOpdSelected(targetCapaian); // Set the selected purpose to the found target capaian
-    } else {
-      console.warn("No matching target capaian found for the selected tujuan");
-      setTujuanOpdSelected([]); // Optionally reset if nothing is found to avoid stale data
-    }
+    setTujuanOpdSelected(dataTargetRealisasi);
     setOpenModal(true);
   };
 
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Tujuan OPD - {NamaOpd} Tahun {selectedTahun}
+        Realisasi Tujuan OPD - {NamaOpd} Tahun {selectedTahunValue}
       </h2>
       <TableTujuanOpd
-        tahun={selectedTahun}
+        tahun={selectedTahunValue}
         tujuanOpd={PerencanaanTujuanOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}
@@ -112,15 +112,13 @@ export default function TujuanPage() {
       >
         <FormRealisasiTujuanOpd
           requestValues={TujuanOpdSelected}
+          tahun={selectedTahunValue}
           onClose={() => {
             setOpenModal(false);
           }}
-          onSuccess={(result: TujuanOpdRealisasi[]) => {
-            const updated = gabunganDataPerencanaanRealisasi(
-              PerencanaanTujuanOpd,
-              result,
-            );
-            setTargetRealisasiCapaian(updated);
+          onSuccess={() => {
+            setOpenModal(false);
+            refetchRealization();
           }}
         />
       </FormModal>
