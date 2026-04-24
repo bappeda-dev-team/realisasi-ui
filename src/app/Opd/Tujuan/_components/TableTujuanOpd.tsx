@@ -4,6 +4,7 @@ import { TujuanOpdPerencanaan, TujuanOpdTargetRealisasiCapaian } from "@/types";
 
 interface TableTujuanProps {
   tahun: number;
+  bulanLabel?: string;
   tujuanOpd: TujuanOpdPerencanaan[];
   targetRealisasiCapaians: TujuanOpdTargetRealisasiCapaian[];
   handleOpenModal: (
@@ -14,6 +15,7 @@ interface TableTujuanProps {
 
 function TableTujuan({
   tahun,
+  bulanLabel,
   tujuanOpd,
   targetRealisasiCapaians,
   handleOpenModal,
@@ -56,7 +58,7 @@ function TableTujuan({
             colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
-            {tahun}
+            {tahun} - {bulanLabel}
           </th>
         </tr>
         <tr className="text-white bg-red-500">

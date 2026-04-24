@@ -4,6 +4,7 @@ import RowSasaranComponent from "./RowSasaranComponent";
 
 interface TableSasaranProps {
   tahun: number;
+  bulanLabel?: string;
   sasaranPemda: SasaranPemda[];
   targetRealisasiCapaian: TargetRealisasiCapaianSasaran[];
   handleOpenModal: (
@@ -14,6 +15,7 @@ interface TableSasaranProps {
 
 function TableSasaran({
   tahun,
+  bulanLabel,
   sasaranPemda,
   targetRealisasiCapaian,
   handleOpenModal,
@@ -57,7 +59,7 @@ function TableSasaran({
             colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
-            {tahun}
+            {tahun} - {bulanLabel}
           </th>
         </tr>
         <tr className="text-white bg-red-500">

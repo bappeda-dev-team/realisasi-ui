@@ -4,12 +4,13 @@ import { TargetRealisasiCapaian, TujuanPemda } from '@/types';
 
 interface TableTujuanProps {
     tahun: number;
+    bulanLabel?: string;
     tujuansPemda: TujuanPemda[];
     targetRealisasiCapaians: TargetRealisasiCapaian[];
     handleOpenModal: (tujuan: TujuanPemda, data: TargetRealisasiCapaian[]) => void;
 }
 
-function TableTujuan({ tahun, tujuansPemda, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {
+function TableTujuan({ tahun, bulanLabel, tujuansPemda, targetRealisasiCapaians, handleOpenModal }: TableTujuanProps) {
 
     return (
         <table className="w-full">
@@ -22,7 +23,7 @@ function TableTujuan({ tahun, tujuansPemda, targetRealisasiCapaians, handleOpenM
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
                     <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
-                        {tahun}
+                        {tahun} - {bulanLabel}
                     </th>
                 </tr>
                 <tr className="text-white bg-red-500">

@@ -4,6 +4,7 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
 import React, { useEffect, useState } from "react";
 import { useFilterContext } from "@/context/FilterContext";
+import { getMonthName } from "@/lib/months";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataSasaranRealisasi";
 import {
   PerencanaanSasaranPemdaResponse,
@@ -16,12 +17,13 @@ import { FormModal } from "@/components/Global/Modal";
 import FormRealisasiSasaranPemda from "./_components/FormRealisasiSasaranPemda";
 
 const SasaranPage = () => {
-  const { activatedTahun: selectedTahun, tahun: selectedTahunValue } = useFilterContext();
+  const { activatedTahun: selectedTahun, tahun: selectedTahunValue, activatedBulan, bulan } = useFilterContext();
+  const selectedTahunNum = selectedTahunValue ? parseInt(selectedTahunValue) : 2025;
+  const bulanName = getMonthName(activatedBulan) ?? getMonthName(bulan ?? null) ?? "Bulan";
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
   const jenisPeriode = "rpjmd";
-  const selectedTahunNum = selectedTahunValue ? parseInt(selectedTahunValue) : 2025;
   const {
     data: sasaranData,
     loading: perencanaanLoading,
@@ -35,7 +37,7 @@ const SasaranPage = () => {
     error: realisasiError,
     refetch: refetchRealisasi,
   } = useFetchData<RealisasiSasaranResponse>({
-    url: selectedTahun ? `/api/realisasi/sasarans/by-tahun/${selectedTahunValue}` : null,
+    url: selectedTahun && bulanName ? `/api/v1/realisasi/sasarans/by-tahun/${selectedTahunValue}/by-bulan/${encodeURIComponent(bulanName)}` : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TargetRealisasiCapaianSasaran[]
@@ -71,10 +73,10 @@ const SasaranPage = () => {
   if (realisasiError)
     return <div>Error fetching realisasi: {realisasiError}</div>;
 
-  if (!selectedTahun) {
+  if (!selectedTahun || !bulanName) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p className="text-gray-500 text-lg">Silakan pilih tahun, lalu klik Aktifkan</p>
+        <p className="text-gray-500 text-lg">Silakan pilih tahun dan bulan, lalu klik Aktifkan</p>
       </div>
     );
   }
@@ -103,6 +105,7 @@ const SasaranPage = () => {
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableSasaran
           tahun={selectedTahunNum}
+          bulanLabel={bulanName}
           sasaranPemda={PerencanaanSasaran}
           targetRealisasiCapaian={TargetRealisasiCapaian}
           handleOpenModal={handleOpenModal}
@@ -112,11 +115,12 @@ const SasaranPage = () => {
           onClose={() => {
             setOpenModal(false);
           }}
-          title={`Realisasi Sasaran Pemda - Tahun ${selectedTahunNum} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
+          title={`Realisasi Sasaran Pemda - ${selectedTahunNum} - ${bulanName} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
         >
           <FormRealisasiSasaranPemda
             requestValues={SelectedSasaran}
             tahun={selectedTahunNum}
+            bulanLabel={bulanName}
             onClose={() => {
               setOpenModal(false);
             }}

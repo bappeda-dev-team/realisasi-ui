@@ -110,9 +110,10 @@ export interface TujuanRequest {
   indikatorId: string;
   targetId: string;
   target: string;
-  realisasi: number;
+  realisasi: number | '';
   satuan: string;
   tahun: string;
+  bulan: string;
   jenisRealisasi: string;
 }
 
@@ -122,9 +123,23 @@ export interface SasaranRequest {
   indikatorId: string;
   targetId: string;
   target: string;
-  realisasi: number;
+  realisasi: number | '';
   satuan: string;
   tahun: string;
+  bulan: string;
+  jenisRealisasi: string;
+}
+
+export interface SasaranRequest {
+  targetRealisasiId: number | null;
+  sasaranId: string;
+  indikatorId: string;
+  targetId: string;
+  target: string;
+  realisasi: number | '';
+  satuan: string;
+  tahun: string;
+  bulan: string;
   jenisRealisasi: string;
 }
 
@@ -494,6 +509,7 @@ export interface TujuanOpdRealisasiRequest {
   realisasi: number;
   satuan: string;
   tahun: string;
+  bulan: string;
   jenisRealisasi: string;
   kodeOpd: string;
 }
@@ -570,6 +586,7 @@ export interface SasaranOpdRealisasiRequest {
   realisasi: number;
   satuan: string;
   tahun: string;
+  bulan: string;
   jenisRealisasi: string;
   kodeOpd: string;
 }

@@ -7,13 +7,15 @@ import React, { useEffect, useState } from 'react';
 
 interface FormRealisasiTujuanOpdProps extends FormProps<TujuanOpdTargetRealisasiCapaian[], TujuanOpdRealisasi[]> {
     tahun: number;
+    bulanLabel?: string;
 }
 
 const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
     requestValues,
     onClose,
     onSuccess,
-    tahun
+    tahun,
+    bulanLabel
 }) => {
     const { url } = useApiUrlContext();
     const { submit, loading, error } = useSubmitData<TujuanOpdRealisasi[]>({ url: `${url}/api/v1/realisasi/tujuan_opd/batch` });
@@ -35,6 +37,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
                     realisasi: indikator.realisasi,
                     satuan: indikator.satuan,
                     tahun: indikator.tahun,
+                    bulan: bulanLabel ?? '',
                     jenisRealisasi: 'NAIK',
                     kodeOpd: indikator.kodeOpd,
                     indikator: indikator.indikator
@@ -43,7 +46,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
             );
             setFormData(generatedFormData);
         }
-    }, [requestValues, tahun]);
+    }, [requestValues, tahun, bulanLabel]);
 
     const convertToDisplayString = (value: number | null): string => {
         if (value === null || value === undefined) return '';
@@ -89,7 +92,7 @@ const handleChange = (indikatorId: string, tahun: string, value: string) => {
                     {formData.map((ind) => (
                         <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {tahun}
+                                {tahun} - {bulanLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                                 Target:
