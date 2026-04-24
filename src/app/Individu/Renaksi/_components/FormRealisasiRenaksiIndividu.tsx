@@ -15,7 +15,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const [formData, setFormData] = useState<RenaksiTarget[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const { tahun: selectedTahun, bulan: selectedBulan, activatedBulan } = useFilterContext();
+    const { tahun: selectedTahun, bulan: selectedBulan, activatedTahun, activatedBulan } = useFilterContext();
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
         () => (url ? `${url}/api/v1/realisasi/renaksi/batch` : "/api/v1/realisasi/renaksi/batch"),
@@ -151,7 +151,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                             className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2"
                         >
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {activeMonthLabel}
+                                {activatedTahun} - {activeMonthLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Target</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">

@@ -8,11 +8,12 @@ interface ModalTujuanPemdaProps {
   onClose: () => void;
   item: TargetRealisasiCapaian[];
   tahun: number;
+  bulanLabel?: string;
   onSuccess: (updated: RealisasiTujuanResponse) => void;
 }
 
 export const ModalTujuanPemda: React.FC<ModalTujuanPemdaProps> = ({
-  isOpen, onClose, item, tahun, onSuccess }) => {
+  isOpen, onClose, item, tahun, bulanLabel, onSuccess }) => {
 
   if (!isOpen) return null;
   const tujuan = item && item.length > 0 ? item[0].tujuanPemda : 'Tidak ada tujuan';
@@ -27,6 +28,7 @@ export const ModalTujuanPemda: React.FC<ModalTujuanPemdaProps> = ({
         <FormRealisasiTujuanPemda
           requestValues={item}
           tahun={tahun}
+          bulanLabel={bulanLabel}
           onClose={onClose}
           onSuccess={onSuccess}
         />

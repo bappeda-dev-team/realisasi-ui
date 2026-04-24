@@ -5,10 +5,12 @@ import { useSubmitData } from '@/hooks/useSubmitData';
 import { FormProps, SasaranOpdTargetRealisasiCapaian, SasaranOpdRealisasi, SasaranOpdRealisasiRequest } from '@/types';
 import React, { useEffect, useState } from 'react';
 
-const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapaian[], SasaranOpdRealisasi[]>> = ({
+const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapaian[], SasaranOpdRealisasi[]> & { tahun: number; bulanLabel?: string }> = ({
     requestValues,
     onClose,
-    onSuccess
+    onSuccess,
+    tahun,
+    bulanLabel
 }) => {
     const { url } = useApiUrlContext();
     const { submit, loading, error } = useSubmitData<SasaranOpdRealisasi[]>({ url: `${url}/api/v1/realisasi/sasaran_opd/batch` });
@@ -30,6 +32,7 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
                     realisasi: indikator.realisasi,
                     satuan: indikator.satuan,
                     tahun: indikator.tahun,
+                    bulan: bulanLabel ?? '',
                     jenisRealisasi: 'NAIK',
                     kodeOpd: indikator.kodeOpd
                 })
@@ -37,7 +40,7 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
             );
             setFormData(generatedFormData);
         }
-    }, [requestValues]);
+    }, [requestValues, bulanLabel]);
 
     const convertToDisplayString = (value: number | null): string => {
         if (value === null || value === undefined) return '';
@@ -52,7 +55,7 @@ const handleChange = (indikatorId: string, tahun: string, value: string) => {
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realizesi: isNaN(numericReal) ? 0 : numericReal }
+                    ? { ...item, realisasi: isNaN(numericReal) ? 0 : numericReal }
                     : item
             )
         );
@@ -86,7 +89,7 @@ const handleChange = (indikatorId: string, tahun: string, value: string) => {
                     {requestValues?.map((ind) => (
                         <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {ind.tahun}
+                                {tahun} - {bulanLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                                 Target:

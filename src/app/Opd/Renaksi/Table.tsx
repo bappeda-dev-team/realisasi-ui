@@ -20,13 +20,13 @@ interface RenaksiRow {
 const Table = () => {
   const [rows, setRows] = useState<RenaksiRow[]>([])
 
-  const { activatedBulan } = useFilterContext()
+  const { activatedTahun, activatedBulan } = useFilterContext()
   const { user } = useUserContext()
 
   const monthLabel = getMonthName(activatedBulan)
   const apiUrl =
-    monthLabel && user?.nip
-      ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(user.nip)}/by-bulan/${encodeURIComponent(monthLabel)}`
+    activatedTahun && monthLabel && user?.nip
+      ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
       : null
 
   const { data, loading, error } = useFetchData<RenaksiIndividuResponse[]>({

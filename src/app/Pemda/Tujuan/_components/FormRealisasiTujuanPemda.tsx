@@ -4,9 +4,10 @@ import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } fro
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
 
-const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number }> = ({
+const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number; bulanLabel?: string }> = ({
     requestValues,
     tahun,
+    bulanLabel,
     onClose,
     onSuccess
 }) => {
@@ -20,13 +21,14 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
     );
 
     // fill data awal
-    useEffect(() => {
+useEffect(() => {
         const generatedFormData: TujuanRequest[] = filteredRequestValues.map((indikator) => {
             return ({
                 targetRealisasiId: indikator.targetRealisasiId,
                 tujuanId: indikator.tujuanId,
                 indikatorId: indikator.indikatorId,
                 tahun: indikator.tahun,
+                bulan: bulanLabel ?? '',
                 targetId: indikator.targetId,
                 target: typeof indikator.target === 'string'
                     ? indikator.target.replace(',', '.')
@@ -37,22 +39,22 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
             })
         });
         setFormData(generatedFormData);
-    }, [filteredRequestValues]);
+    }, [filteredRequestValues, bulanLabel]);
 
-    const convertToDisplayString = (value: number | null): string => {
-        if (value === null || value === undefined) return '';
+    const convertToDisplayString = (value: number | '' | null | undefined): string => {
+        if (value === '' || value === null || value === undefined || value === 0) return '';
         return value.toString().replace('.', ',');
     };
 
     // handle saat berubah ?
-const handleChange = (indikatorId: string, tahun: string, value: string) => {
+    const handleChange = (indikatorId: string, tahun: string, value: string) => {
         const normalizedValue = value.replace(',', '.');
-        const numericReal = value === '' ? 0 : parseFloat(normalizedValue);
+        const numericReal = value === '' ? '' : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realizesi: isNaN(numericReal) ? 0 : numericReal }
+                    ? { ...item, realidadecoy: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
                     : item
             )
         );
@@ -86,7 +88,7 @@ const handleChange = (indikatorId: string, tahun: string, value: string) => {
                     {filteredRequestValues?.map((ind) => (
                         <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
                             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {ind.tahun}
+                                {tahun} - {bulanLabel}
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                                 Target:

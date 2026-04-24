@@ -4,6 +4,7 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { FormModal } from "@/components/Global/Modal";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useFilterContext } from "@/context/FilterContext";
+import { getMonthName } from "@/lib/months";
 import {
   TujuanOpdPerencanaan,
   TujuanOpdPerencanaanResponse,
@@ -16,8 +17,9 @@ import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 
 export default function TujuanPage() {
-  const { activatedDinas: kodeOpd, activatedTahun: selectedTahun } = useFilterContext();
+  const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, activatedBulan, bulan } = useFilterContext();
   const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
+  const bulanName = getMonthName(activatedBulan) ?? getMonthName(bulan ?? null) ?? "Bulan";
   const periode = [2025, 2026, 2027, 2028, 2029, 2030];
   const tahunAwal = periode[0];
   const tahunAkhir = periode[periode.length - 1];
@@ -35,7 +37,7 @@ const {
     error: realizationError,
     refetch: refetchRealization,
   } = useFetchData<TujuanOpdRealisasiResponse>({
-    url: kodeOpd ? `/api/realisasi/tujuan_opd/${kodeOpd}/by-tahun/${selectedTahunValue}` : null,
+    url: kodeOpd && selectedTahunValue && bulanName ? `/api/v1/realisasi/tujuan_opd/${kodeOpd}/tahun/${selectedTahunValue}/bulan/${encodeURIComponent(bulanName)}` : null,
   });
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
     TujuanOpdTargetRealisasiCapaian[]
@@ -76,10 +78,10 @@ const {
   if (realizationError)
     return <div>Error fetching realistasi: {realizationError}</div>;
 
-  if (!kodeOpd || !selectedTahun) {
+  if (!kodeOpd || !selectedTahun || !bulanName) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-        Harap pilih periode dan tahun dahulu
+        Harap pilih OPD, tahun, dan bulan dahulu
       </div>
     );
   }
@@ -95,10 +97,11 @@ const {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Tujuan OPD - {NamaOpd} Tahun {selectedTahunValue}
+        Realisasi Tujuan OPD - {NamaOpd} {selectedTahunValue} - {bulanName}
       </h2>
       <TableTujuanOpd
         tahun={selectedTahunValue}
+        bulanLabel={bulanName}
         tujuanOpd={PerencanaanTujuanOpd}
         targetRealisasiCapaians={TargetRealisasiCapaian}
         handleOpenModal={handleOpenModal}
@@ -113,6 +116,7 @@ const {
         <FormRealisasiTujuanOpd
           requestValues={TujuanOpdSelected}
           tahun={selectedTahunValue}
+          bulanLabel={bulanName}
           onClose={() => {
             setOpenModal(false);
           }}

@@ -2,6 +2,8 @@
 
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
+import { getMonthName } from "@/lib/months";
+import { useFilterContext } from "@/context/FilterContext";
 import {
     PerencanaanTujuanPemda,
     PerencanaanTujuanPemdaResponse,
@@ -13,10 +15,11 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from "./_components/TableTujuan";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
-import { useFilterContext } from "@/context/FilterContext";
 
 export default function Tujuan() {
-    const { periode: selectedPeriode, tahun: selectedTahun } = useFilterContext();
+    const { periode: selectedPeriode, tahun: selectedTahun, activatedBulan, bulan } = useFilterContext();
+    const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
+    const bulanName = getMonthName(activatedBulan) ?? getMonthName(bulan ?? null) ?? "Bulan";
     const periode = useMemo<number[]>(() => {
         if (!selectedPeriode) return [];
 
@@ -65,8 +68,8 @@ export default function Tujuan() {
         error: realisasiError,
         refetch: refetchRealisasi,
     } = useFetchData<RealisasiTujuanResponse>({
-        url: selectedTahun
-            ? `/api/realisasi/tujuans/by-tahun/${selectedTahun}`
+        url: selectedTahun && bulanName
+            ? `/api/v1/realisasi/tujuans/by-tahun/${selectedTahunValue}/by-bulan/${encodeURIComponent(bulanName)}`
             : null,
     });
 
@@ -99,10 +102,10 @@ export default function Tujuan() {
         );
     }, [perencanaanData, realisasiData]);
 
-    if (selectedTahun === null || periode.length === 0)
+    if (selectedTahun === null || !bulanName || periode.length === 0)
         return (
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-                Harap pilih periode dan tahun dahulu
+                Harap pilih periode, tahun, dan bulan dahulu
             </div>
         );
     /* if (!perencanaanData || !realisasiData) return <LoadingBeat loading={perencanaanLoading} />; */
@@ -141,6 +144,7 @@ export default function Tujuan() {
             <div className="mt-2 rounded-t-lg border border-red-400">
                 <TableTujuan
                     tahun={parseInt(selectedTahun)}
+                    bulanLabel={bulanName}
                     tujuansPemda={tujuansPemda}
                     targetRealisasiCapaians={dataTargetRealisasi}
                     handleOpenModal={handleOpenModal}
@@ -148,6 +152,7 @@ export default function Tujuan() {
                 <ModalTujuanPemda
                     item={selectedTujuan}
                     tahun={parseInt(selectedTahun)}
+                    bulanLabel={bulanName}
                     isOpen={OpenModal}
                     onClose={() => {
                         setOpenModal(false);

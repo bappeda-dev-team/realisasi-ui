@@ -8,7 +8,7 @@ import FormRealisasiRenaksiIndividu from "./_components/FormRealisasiRenaksiIndi
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
-import { formatMonthHeader, getMonthName } from "@/lib/months";
+import { getMonthName } from "@/lib/months";
 import { RenaksiIndividuResponse, RenaksiTarget } from "@/types";
 
 interface RenaksiRow {
@@ -25,15 +25,15 @@ const Table = () => {
   const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { activatedBulan } = useFilterContext();
+  const { activatedTahun, activatedBulan } = useFilterContext();
   const { user } = useUserContext();
 
   const monthLabel = getMonthName(activatedBulan);
   const apiUrl =
-    monthLabel && user?.nip
+    activatedTahun && monthLabel && user?.nip
       ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(
           user.nip,
-        )}/by-bulan/${encodeURIComponent(monthLabel)}`
+        )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
       : null;
 
   const { data, loading, error } = useFetchData<RenaksiIndividuResponse[]>({
@@ -82,7 +82,7 @@ const Table = () => {
     );
   }, [data, user]);
 
-  const monthColumnLabel = formatMonthHeader(activatedBulan, "Bulan 5");
+  const monthColumnLabel = `${activatedTahun} - ${monthLabel}`;
 
   const openModal = (row: RenaksiRow) => {
     setSelectedRow(row);
@@ -107,9 +107,11 @@ const Table = () => {
 
   const infoMessage = !user?.nip
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
-    : !monthLabel
-      ? "Harap pilih periode dan tahun dahulu"
-      : undefined;
+    : !activatedTahun
+      ? "Harap pilih tahun dahulu"
+      : !monthLabel
+        ? "Harap pilih bulan dahulu"
+        : undefined;
 
   if (infoMessage) {
     return (

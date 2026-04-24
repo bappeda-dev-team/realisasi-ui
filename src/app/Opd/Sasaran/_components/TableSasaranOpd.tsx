@@ -5,12 +5,13 @@ import { SasaranOpdPerencanaan, SasaranOpdTargetRealisasiCapaian } from '@/types
 
 interface TableSasaranOpdProps {
     tahun: number;
+    bulanLabel?: string;
     sasaranOpd: SasaranOpdPerencanaan[];
     targetRealisasiCapaians: SasaranOpdTargetRealisasiCapaian[];
     handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[], indikatorId: string) => void;
 }
 
-export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapaians, handleOpenModal }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, targetRealisasiCapaians, handleOpenModal }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -21,7 +22,7 @@ export default function TableSasaranOpd({ tahun, sasaranOpd, targetRealisasiCapa
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Indikator</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Rumus Perhitungan</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Sumber Data</td>
-                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun}</th>
+                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun} - {bulanLabel}</th>
                 </tr>
                 <tr className="bg-emerald-500 text-white">
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
