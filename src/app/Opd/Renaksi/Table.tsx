@@ -3,9 +3,8 @@
 import React, { useEffect, useState } from 'react'
 import { LoadingBeat } from '@/components/Global/Loading'
 import { useFilterContext } from '@/context/FilterContext'
-import { useUserContext } from '@/context/UserContext'
 import { useFetchData } from '@/hooks/useFetchData'
-import { formatMonthHeader, getMonthName } from '@/lib/months'
+import { getMonthName } from '@/lib/months'
 import { RenaksiIndividuResponse, RenaksiTarget } from '@/types'
 
 interface RenaksiRow {
@@ -20,13 +19,12 @@ interface RenaksiRow {
 const Table = () => {
   const [rows, setRows] = useState<RenaksiRow[]>([])
 
-  const { activatedTahun, activatedBulan } = useFilterContext()
-  const { user } = useUserContext()
+  const { activatedDinas: kodeOpd, activatedTahun, activatedBulan } = useFilterContext()
 
   const monthLabel = getMonthName(activatedBulan)
   const apiUrl =
-    activatedTahun && monthLabel && user?.nip
-      ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
+    kodeOpd && activatedTahun && monthLabel
+      ? `/api/v1/realisasi/renaksi/by-kodeOpd/${encodeURIComponent(kodeOpd)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
       : null
 
   const { data, loading, error } = useFetchData<RenaksiIndividuResponse[]>({
@@ -39,46 +37,58 @@ const Table = () => {
       return
     }
 
-    const namaPegawaiParts = [user?.firstName, user?.lastName].filter(Boolean)
-    const namaPegawai = namaPegawaiParts.join(' ').trim() || 'Pengguna'
+    const groupedByNip = new Map<string, RenaksiIndividuResponse[]>()
 
-    setRows(
-      data.map((item) => {
-        const target: RenaksiTarget = {
-          targetRealisasiId: item.id ?? null,
-          renaksiId: item.renaksiId,
-          renaksi: item.renaksi ?? '-',
-          nip: item.nip ?? user?.nip ?? '-',
-          rekinId: item.rekinId,
-          rekin: item.rekin ?? '-',
-          targetId: item.targetId,
-          target: item.target,
-          realisasi: item.realisasi,
-          satuan: item.satuan,
-          tahun: item.tahun,
-          bulan: item.bulan,
-          jenisRealisasi: item.jenisRealisasi,
-          capaian: item.capaian ?? '-',
-          keteranganCapaian: item.keteranganCapaian ?? '-',
-          rencanaKinerja: item.rekin,
-        }
+    data.forEach((item) => {
+      const nipKey = item.nip || 'unknown'
+      const existing = groupedByNip.get(nipKey) || []
+      groupedByNip.set(nipKey, [...existing, item])
+    })
 
-        return {
-          id: item.id,
-          renaksi: item.renaksi ?? '-',
-          nama_pegawai: namaPegawai,
-          nip: item.nip ?? user?.nip ?? '-',
-          rekin: item.rekin ?? '-',
-          targets: [target],
-        }
+    const newRows: RenaksiRow[] = []
+
+    groupedByNip.forEach((items, nipKey) => {
+      const firstItem = items[0]
+      const namaPegawai = firstItem.nip || '-'
+
+      const targets: RenaksiTarget[] = items.map((item) => ({
+        targetRealisasiId: item.id ?? null,
+        renaksiId: item.renaksiId,
+        renaksi: item.renaksi ?? '-',
+        nip: item.nip ?? '-',
+        rekinId: item.rekinId,
+        rekin: item.rekin ?? '-',
+        targetId: item.targetId,
+        target: item.target,
+        realisasi: item.realisasi,
+        satuan: item.satuan,
+        tahun: item.tahun,
+        bulan: item.bulan,
+        jenisRealisasi: item.jenisRealisasi,
+        capaian: item.capaian ?? '-',
+        keteranganCapaian: item.keteranganCapaian ?? '-',
+        rencanaKinerja: item.rekin,
+      }))
+
+      newRows.push({
+        id: firstItem.id,
+        renaksi: firstItem.renaksi ?? '-',
+        nama_pegawai: namaPegawai,
+        nip: nipKey,
+        rekin: firstItem.rekin ?? '-',
+        targets,
       })
-    )
-  }, [data, user])
+    })
 
-  const monthColumnLabel = formatMonthHeader(activatedBulan, 'Bulan 5')
+    setRows(newRows)
+  }, [data])
 
-  const infoMessage = !user?.nip
-    ? 'Silakan login terlebih dahulu untuk melihat data renaksi OPD.'
+  const monthColumnLabel = activatedTahun && monthLabel 
+    ? `${activatedTahun} - ${monthLabel}` 
+    : 'Bulan'
+
+  const infoMessage = !kodeOpd
+    ? 'Silakan pilih OPD terlebih dahulu untuk melihat data renaksi OPD.'
     : !monthLabel
     ? 'Pilih dan aktifkan bulan agar data renaksi OPD muncul.'
     : undefined
