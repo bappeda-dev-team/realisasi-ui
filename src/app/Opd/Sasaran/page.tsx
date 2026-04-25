@@ -104,7 +104,7 @@ useEffect(() => {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Sasaran OPD - {namaOpd || '-'} {selectedTahunValue} - {bulanName}
+        Realisasi Sasaran OPD - {namaOpd}
       </h2>
       <TableSasaranOpd
         tahun={selectedTahunValue}

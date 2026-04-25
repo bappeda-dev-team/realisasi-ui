@@ -97,7 +97,7 @@ const {
   return (
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">
-        Realisasi Tujuan OPD - {NamaOpd} {selectedTahunValue} - {bulanName}
+        Realisasi Tujuan OPD - {NamaOpd}
       </h2>
       <TableTujuanOpd
         tahun={selectedTahunValue}
