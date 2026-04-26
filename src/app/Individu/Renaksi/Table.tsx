@@ -9,6 +9,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthName } from "@/lib/months";
+import { ROLES } from "@/constants/roles";
 import { RenaksiIndividuResponse, RenaksiTarget } from "@/types";
 
 interface RenaksiRow {
@@ -27,6 +28,20 @@ const Table = () => {
 
   const { activatedTahun, activatedBulan } = useFilterContext();
   const { user } = useUserContext();
+
+  const userLevel = user?.roles.find(r => r.startsWith('level_'));
+
+  const getHeaderColor = (level: string | undefined) => {
+    switch(level) {
+      case ROLES.LEVEL_1: return 'bg-red-600 text-white';
+      case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
+      case ROLES.LEVEL_3: return 'bg-green-600 text-white';
+      case ROLES.LEVEL_4: return 'bg-orange-600 text-white';
+      default: return 'bg-emerald-500 text-white';
+    }
+  };
+
+  const headerColor = getHeaderColor(userLevel);
 
   const monthLabel = getMonthName(activatedBulan);
   const apiUrl =
@@ -153,7 +168,7 @@ const Table = () => {
       <div className="overflow-auto m-2 rounded-t-xl">
         <table className="w-full">
           <thead>
-            <tr className="text-xm bg-emerald-500 text-white">
+            <tr className={`text-xm ${headerColor}`}>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 max-w-[100px] text-center"
@@ -185,7 +200,7 @@ const Table = () => {
                 {monthColumnLabel}
               </th>
             </tr>
-            <tr className="bg-emerald-500 text-white">
+            <tr className={headerColor}>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">
                 Realisasi
