@@ -9,6 +9,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthName } from "@/lib/months";
+import { ROLES } from "@/constants/roles";
 import { RekinIndividuResponse, RekinTarget } from "@/types";
 
 interface TableRow {
@@ -27,6 +28,20 @@ const Table = () => {
     const [rows, setRows] = useState<TableRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const userLevel = user?.roles.find(r => r.startsWith('level_'));
+
+    const getHeaderColor = (level: string | undefined) => {
+        switch(level) {
+            case ROLES.LEVEL_1: return 'bg-red-600 text-white';
+            case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
+            case ROLES.LEVEL_3: return 'bg-green-600 text-white';
+            case ROLES.LEVEL_4: return 'bg-orange-600 text-white';
+            default: return 'bg-emerald-500 text-white';
+        }
+    };
+
+    const headerColor = getHeaderColor(userLevel);
 
     const yearLabel = activatedTahun;
     const monthLabel = getMonthName(activatedBulan);
@@ -169,7 +184,7 @@ const Table = () => {
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table className="w-full">
                     <thead>
-                        <tr className="text-xm bg-emerald-500 text-white">
+                        <tr className={`text-xm ${headerColor}`}>
                             <td
                                 rowSpan={2}
                                 className="border-r border-b px-6 py-3 max-w-[100px] text-center"
@@ -205,7 +220,7 @@ const Table = () => {
                                 {yearLabel} - {monthLabel}
                             </th>
                         </tr>
-                        <tr className="bg-emerald-500 text-white">
+                        <tr className={headerColor}>
                             <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
                             <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
                             <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
