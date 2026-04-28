@@ -8,6 +8,7 @@ import Select from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
+import { canAccessPemda, canAccessOpd } from "@/lib/rbac";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useUserContext } from "@/context/UserContext";
 
@@ -83,6 +84,10 @@ export default function TopFilter({ user }: FilterProps) {
   const [loadingTahun, setLoadingTahun] = useState<boolean>(false);
   const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
+  const isSuperAdmin = user ? canAccessPemda(user) : false;
+  const canEditOpd = user ? canAccessOpd(user) : false;
+  const userKodeOpd = user?.kode_opd;
+
   const {
     data: dataDinas,
     loading: loadingDinas,
@@ -121,14 +126,18 @@ export default function TopFilter({ user }: FilterProps) {
   // ----------------------------
   useEffect(() => {
     if (dataDinas?.data) {
-      setDinasOptions(
-        dataDinas.data.map((d) => ({
-          value: d.kode_opd,
-          label: d.nama_opd,
-        })),
-      );
+      let options = dataDinas.data.map((d) => ({
+        value: d.kode_opd,
+        label: d.nama_opd,
+      }));
+
+      if (!canEditOpd && userKodeOpd) {
+        options = options.filter((opt) => opt.value === userKodeOpd);
+      }
+
+      setDinasOptions(options);
     }
-  }, [dataDinas]);
+  }, [dataDinas, canEditOpd, userKodeOpd]);
 
   // ----------------------------
   // DROPDOWN PERIODE
@@ -213,6 +222,20 @@ export default function TopFilter({ user }: FilterProps) {
   }, [periodeOptions]);
 
   // ----------------------------
+  // AUTO SELECT OPD FOR NON-EDIT USERS (LEVEL 1-4)
+  // ----------------------------
+  useEffect(() => {
+    if (!canEditOpd && userKodeOpd && dinasOptions.length > 0) {
+      const userOpd = dinasOptions.find((opt) => opt.value === userKodeOpd);
+      if (userOpd) {
+        setDinas(userOpd.value);
+        setActivatedDinas(userOpd.value);
+        setNamaDinas(userOpd.label);
+      }
+    }
+  }, [dinasOptions, canEditOpd, userKodeOpd]);
+
+  // ----------------------------
   // SIMPAN COOKIE
   // ----------------------------
   function handleActivate() {
@@ -261,7 +284,8 @@ export default function TopFilter({ user }: FilterProps) {
             onChange={(opt) => setDinas(opt?.value ?? null)}
             placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
             isSearchable
-            isClearable
+            isClearable={canEditOpd}
+            isDisabled={!canEditOpd}
           />
 
           {/* PILIH PERIODE */}
