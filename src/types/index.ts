@@ -5,6 +5,7 @@ export type User = {
   lastName: string;
   roles: string[];
   nip?: string;
+  kode_opd?: string;
 };
 
 export interface Tematik {

@@ -1,7 +1,6 @@
 import { User } from "@/types";
 import { useUserContext } from "@/context/UserContext";
 import { useFilterContext } from "@/context/FilterContext";
-import { usePathname } from "next/navigation";
 import { clearSessionId } from "@/lib/session";
 import { TbLogout } from "react-icons/tb";
 import { logout } from "./logout";
@@ -22,9 +21,6 @@ import { logout } from "./logout";
 export default function UserProfile({ user }: { user: User }) {
   const { setUser, setError } = useUserContext();
   const { periode, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
-  const pathname = usePathname();
-  const isOpdPage = pathname.startsWith('/Opd');
-  const isPemdaPage = pathname.startsWith('/Pemda');
   const level = user?.roles?.[0] ?? "unknown";
 
   const getMonthName = (monthValue: string | null) => {
@@ -51,18 +47,8 @@ export default function UserProfile({ user }: { user: User }) {
         <span>{activatedTahun}</span>
         <span className="text-white/70">|</span>
         <span>{bulanName}</span>
-        {isOpdPage && (
-          <>
-            <span className="text-white/70">|</span>
-            <span>{namaDinas ?? 'OPD belum dipilih'}</span>
-          </>
-        )}
-        {isPemdaPage && (
-          <>
-            <span className="text-white/70">|</span>
-            <span>{namaDinas ?? 'OPD belum dipilih'}</span>
-          </>
-        )}
+        <span className="text-white/70">|</span>
+        <span>{namaDinas ?? 'OPD belum dipilih'}</span>
         <span className="text-white/70">|</span>
         <span>{user?.firstName}</span>
         <span className="text-white/70">|</span>
