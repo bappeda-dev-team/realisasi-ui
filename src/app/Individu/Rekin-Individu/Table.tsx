@@ -9,8 +9,8 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthName } from "@/lib/months";
-import { ROLES } from "@/constants/roles";
 import { RekinIndividuResponse, RekinTarget } from "@/types";
+import { getHeaderColor } from "@/lib/userLevelStyle";
 
 interface TableRow {
     id: number;
@@ -30,16 +30,6 @@ const Table = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
-
-    const getHeaderColor = (level: string | undefined) => {
-        switch(level) {
-            case ROLES.LEVEL_1: return 'bg-red-600 text-white';
-            case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
-            case ROLES.LEVEL_3: return 'bg-green-600 text-white';
-            case ROLES.LEVEL_4: return 'bg-orange-600 text-white';
-            default: return 'bg-emerald-500 text-white';
-        }
-    };
 
     const headerColor = getHeaderColor(userLevel);
 
@@ -124,9 +114,9 @@ const Table = () => {
             current.map((row) =>
                 row.id === rowId
                     ? {
-                          ...row,
-                          targets: updatedTargets,
-                      }
+                        ...row,
+                        targets: updatedTargets,
+                    }
                     : row,
             ),
         );
@@ -141,8 +131,8 @@ const Table = () => {
     const infoMessage = !user?.nip
         ? "Silakan login terlebih dahulu untuk melihat data rekin individu."
         : !yearLabel || !monthLabel
-          ? "Harap pilih tahun dan bulan dahulu"
-          : undefined;
+            ? "Harap pilih tahun dan bulan dahulu"
+            : undefined;
 
     if (infoMessage) {
         return (
@@ -215,7 +205,7 @@ const Table = () => {
                             >
                                 Sasaran
                             </td>
-                            
+
                             <th colSpan={6} className="border-l border-b px-6 py-3 min-w-[100px]">
                                 {yearLabel} - {monthLabel}
                             </th>
@@ -239,9 +229,11 @@ const Table = () => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {item.rekin || "-"}
                                     </td>
-                                    <td className="flex flex-col border-r border-b border-emerald-500 px-6 py-4">
-                                        <p>{item.nama_pegawai || "-"}</p>
-                                        <p>({item.nip || "-"})</p>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col items-center gap-2 ">
+                                            <p>{item.nama_pegawai || "-"}</p>
+                                            <p>({item.nip || "-"})</p>
+                                        </div>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         <div className="flex gap-2 items-center">
