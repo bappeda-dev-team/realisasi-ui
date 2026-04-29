@@ -8,10 +8,11 @@ interface TableSasaranOpdProps {
     bulanLabel?: string;
     sasaranOpd: SasaranOpdPerencanaan[];
     targetRealisasiCapaians: SasaranOpdTargetRealisasiCapaian[];
+    handleOpenPrintPreview: () => void;
     handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[], indikatorId: string) => void;
 }
 
-export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, targetRealisasiCapaians, handleOpenModal }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, targetRealisasiCapaians, handleOpenPrintPreview, handleOpenModal }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -22,13 +23,15 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, targetR
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Indikator</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Rumus Perhitungan</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Sumber Data</td>
-                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun} - {bulanLabel}</th>
+                    <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun} - {bulanLabel}</th>
+                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="bg-emerald-500 text-white">
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi</th>
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                    <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +42,7 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, targetR
                         sasaranOpd={sasOpd}
                         dataTargetRealisasi={targetRealisasiCapaians}
                         tahun={tahun}
+                        handleOpenPrintPreview={handleOpenPrintPreview}
                         handleOpenModal={handleOpenModal}
                     />
                 ))}

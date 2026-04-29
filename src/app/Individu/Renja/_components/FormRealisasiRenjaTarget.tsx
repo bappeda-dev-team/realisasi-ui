@@ -38,7 +38,7 @@ const FormRealisasiRenjaTarget: React.FC<FormRealisasiRenjaTargetProps> = ({ req
                 bulan: monthLabel ?? item.bulan,
             }))
         );
-    }, [requestValues, selectedTahun]);
+    }, [requestValues, selectedTahun, monthLabel]);
 
     const handleChange = (targetId: string, tahun: string, value: string) => {
         const parsedValue = parseFloat(value);
@@ -83,25 +83,18 @@ const FormRealisasiRenjaTarget: React.FC<FormRealisasiRenjaTargetProps> = ({ req
         setIsSubmitting(false);
 
         if (result) {
-            const updatedTargets: RenjaTarget[] = result.map((item) => ({
-                targetRealisasiId: item.id,
-                renjaId: item.renjaId,
-                renja: item.renja,
-                kodeRenja: item.kodeRenja,
-                jenisRenja: item.jenisRenja,
-                nip: item.nip,
-                idIndikator: item.idIndikator,
-                indikator: item.indikator,
-                targetId: item.targetId,
-                target: item.target,
-                realisasi: item.realisasi,
-                satuan: item.satuan,
-                tahun: item.tahun,
-                bulan: item.bulan,
-                jenisRealisasi: item.jenisRealisasi,
-                capaian: item.capaian,
-                keteranganCapaian: item.keteranganCapaian ?? undefined,
-            }));
+            // Keep any existing pagu fields from requestValues/formData.
+            // Only patch target-related values returned by the API.
+            const updatedTargets: RenjaTarget[] = formData.map((item, index) => {
+                const responseItem = result[index];
+                return {
+                    ...item,
+                    targetRealisasiId: responseItem?.id ?? item.targetRealisasiId,
+                    realisasi: responseItem?.realisasi ?? item.realisasi,
+                    capaian: responseItem?.capaian ?? item.capaian,
+                    keteranganCapaian: responseItem?.keteranganCapaian ?? item.keteranganCapaian,
+                };
+            });
             onSuccess?.(updatedTargets);
             onClose();
         } else {

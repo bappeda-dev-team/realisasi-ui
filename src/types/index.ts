@@ -87,6 +87,7 @@ export interface RealisasiTujuan {
   lastModifiedDate: string;
   version: number;
   capaian: string;
+  keteranganCapaian?: string | null;
 }
 
 export type RealisasiTujuanResponse = RealisasiTujuan[];
@@ -101,6 +102,7 @@ export interface TargetRealisasiCapaian {
   target: string;
   realisasi: number;
   capaian: string;
+  keteranganCapaian: string;
   satuan: string;
   tahun: string;
 }
@@ -190,6 +192,7 @@ export interface RealisasiSasaran {
   lastModifiedDate: string;
   version: number;
   capaian: string;
+  keteranganCapaian?: string | null;
 }
 
 export interface RenaksiIndividuResponse {
@@ -418,6 +421,7 @@ export interface TargetRealisasiCapaianSasaran {
   target: string;
   realisasi: number;
   capaian: string;
+  keteranganCapaian: string;
   satuan: string;
   tahun: string;
 }
@@ -474,6 +478,7 @@ export interface TujuanOpdTargetRealisasiCapaian {
   target: string;
   realisasi: number;
   capaian: string;
+  keteranganCapaian: string;
   satuan: string;
   tahun: string;
   kodeOpd: string;
@@ -497,6 +502,7 @@ export interface TujuanOpdRealisasi {
   lastModifiedDate: string;
   version: number;
   capaian: string;
+  keteranganCapaian?: string | null;
 }
 
 export type TujuanOpdRealisasiResponse = TujuanOpdRealisasi[];
@@ -507,7 +513,7 @@ export interface TujuanOpdRealisasiRequest {
   indikatorId: string;
   targetId: string;
   target: string;
-  realisasi: number;
+  realisasi: number | null;
   satuan: string;
   tahun: string;
   bulan: string;
@@ -559,6 +565,7 @@ export interface SasaranOpdRealisasi {
   lastModifiedDate: string;
   version: number;
   capaian: string;
+  keteranganCapaian?: string | null;
 }
 
 export type SasaranOpdRealisasiResponse = SasaranOpdRealisasi[];
@@ -573,6 +580,7 @@ export interface SasaranOpdTargetRealisasiCapaian {
   target: string;
   realisasi: number;
   capaian: string;
+  keteranganCapaian: string;
   satuan: string;
   tahun: string;
   kodeOpd: string;
@@ -584,7 +592,7 @@ export interface SasaranOpdRealisasiRequest {
   indikatorId: string;
   targetId: string;
   target: string;
-  realisasi: number;
+  realisasi: number | null;
   satuan: string;
   tahun: string;
   bulan: string;

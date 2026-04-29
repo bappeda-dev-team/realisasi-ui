@@ -43,6 +43,7 @@ export function gabunganDataPerencanaanRealisasi(
           target: target.target,
           realisasi: real?.realisasi ?? 0,
           capaian: real?.capaian ?? "-",
+          keteranganCapaian: real?.keteranganCapaian ?? "-",
           satuan: target.satuan,
           tahun: target.tahun,
           kodeOpd: kodeOpd,

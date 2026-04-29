@@ -5,12 +5,15 @@ import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRenaksiIndividu from "./_components/FormRealisasiRenaksiIndividu";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthName } from "@/lib/months";
 import { RenaksiIndividuResponse, RenaksiTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
+import { ROLES } from "@/constants/roles";
 
 interface RenaksiRow {
   id: number;
@@ -25,20 +28,46 @@ const Table = () => {
   const [rows, setRows] = useState<RenaksiRow[]>([]);
   const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string>("renaksi-individu.pdf");
+  const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
-  const { activatedTahun, activatedBulan } = useFilterContext();
+  const { activatedTahun, activatedBulan, namaDinas } = useFilterContext();
   const { user } = useUserContext();
 
   const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
-  const headerColor = getHeaderColor(userLevel);
+const getHeaderColor = (level: string | undefined) => {
+    switch (level) {
+      case ROLES.LEVEL_1: return 'bg-red-600 text-white';
+      case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
+      case ROLES.LEVEL_3: return 'bg-green-600 text-white';
+      case ROLES.LEVEL_4: return 'bg-orange-600 text-white';
+      default: return 'bg-emerald-500 text-white';
+    }
+  };
 
+  const getHeaderFillColor = (level: string | undefined): [number, number, number] => {
+    switch (level) {
+      case ROLES.LEVEL_1: return [220, 38, 38];
+      case ROLES.LEVEL_2: return [37, 99, 235];
+      case ROLES.LEVEL_3: return [22, 163, 74];
+      case ROLES.LEVEL_4: return [234, 88, 12];
+      default: return [16, 185, 129];
+    }
+  };
+
+  const headerColor = getHeaderColor(userLevel);
+  const headerFillColor = getHeaderFillColor(userLevel);
+
+  const yearLabel = activatedTahun;
   const monthLabel = getMonthName(activatedBulan);
   const apiUrl =
     activatedTahun && monthLabel && user?.nip
       ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(
-          user.nip,
-        )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
+        user.nip,
+      )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthLabel)}`
       : null;
 
   const { data, loading, error } = useFetchData<RenaksiIndividuResponse[]>({
@@ -110,6 +139,121 @@ const Table = () => {
     setSelectedRow(null);
   };
 
+  const createPdfDocument = () => {
+    const doc = new jsPDF({
+      orientation: "landscape",
+      unit: "pt",
+      format: "a4",
+    });
+
+    const periodLabel = `${monthColumnLabel}`;
+    const opdTitle = namaDinas ? ` - ${namaDinas}` : "";
+
+    doc.setFontSize(14);
+    doc.text(`Renaksi Individu${opdTitle}`, 40, 40);
+    doc.setFontSize(10);
+    doc.text(`Periode: ${periodLabel}`, 40, 58);
+
+    const tableHead = [[
+      "No",
+      "Rencana Kinerja",
+      "Nama Pemilik",
+      "Rencana Aksi",
+      "Target",
+      "Realisasi",
+      "Satuan",
+      "Capaian",
+      "Keterangan Capaian",
+    ]];
+
+    const tableBody: any[] = [];
+
+    rows.forEach((item, index) => {
+      const targets = item.targets.length ? item.targets : [null];
+
+      targets.forEach((target, targetIndex) => {
+        const detailRow = [
+          target?.target || "-",
+          target?.realisasi ?? "-",
+          target?.satuan || "-",
+          target?.capaian || "-",
+          target?.keteranganCapaian || "-",
+        ];
+
+        if (targetIndex === 0) {
+          tableBody.push([
+            { content: index + 1, rowSpan: targets.length },
+            { content: item.rekin || "-", rowSpan: targets.length },
+            { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
+            { content: item.renaksi || "-", rowSpan: targets.length },
+            ...detailRow,
+          ]);
+          return;
+        }
+
+        tableBody.push(detailRow);
+      });
+    });
+
+    autoTable(doc, {
+      head: tableHead,
+      body: tableBody,
+      startY: 72,
+      styles: {
+        fontSize: 8,
+        cellPadding: 4,
+        lineColor: [16, 185, 129],
+        lineWidth: 0.5,
+        textColor: [31, 41, 55],
+        valign: "top",
+      },
+      headStyles: {
+        fillColor: headerFillColor,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        lineColor: [255, 255, 255],
+        lineWidth: 0.5,
+      },
+      tableWidth: "auto",
+      margin: { top: 72, right: 40, bottom: 40, left: 40 },
+      theme: "grid",
+    });
+
+    const safeMonthLabel = String(monthLabel || "bulan").replace(/\s+/g, "-").toLowerCase();
+    const safeYearLabel = String(yearLabel || "tahun").replace(/\s+/g, "-").toLowerCase();
+    const fileName = `renaksi-individu-${safeYearLabel}-${safeMonthLabel}.pdf`;
+    return { doc, fileName };
+  };
+
+  const handleOpenPrintPreview = () => {
+    const { doc, fileName } = createPdfDocument();
+    const previewUrl = String(doc.output("bloburl"));
+
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+    }
+
+    setPreviewDoc(doc);
+    setPdfFileName(fileName);
+    setPdfPreviewUrl(previewUrl);
+    setIsPrintPreviewOpen(true);
+  };
+
+  const handleClosePrintPreview = () => {
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+    }
+
+    setIsPrintPreviewOpen(false);
+    setPdfPreviewUrl(null);
+    setPreviewDoc(null);
+  };
+
+  const handleDownloadPdf = () => {
+    if (!previewDoc) return;
+    previewDoc.save(pdfFileName);
+  };
+
   const infoMessage = !user?.nip
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : !activatedTahun
@@ -156,7 +300,7 @@ const Table = () => {
   return (
     <>
       <div className="overflow-auto m-2 rounded-t-xl">
-        <table className="w-full">
+        <table id="print-area-renaksi" className="w-full">
           <thead>
             <tr className={`text-xm ${headerColor}`}>
               <td
@@ -189,6 +333,12 @@ const Table = () => {
               >
                 {monthColumnLabel}
               </th>
+              <td
+                rowSpan={2}
+                className="border-l border-b px-6 py-3 min-w-[120px] text-center"
+              >
+                Aksi
+              </td>
             </tr>
             <tr className={headerColor}>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
@@ -240,6 +390,16 @@ const Table = () => {
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {target?.keteranganCapaian || "-"}
                   </td>
+                  <td className="border-r border-b border-emerald-500 px-6 py-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <ButtonGreenBorder
+                        className="w-full"
+                        onClick={handleOpenPrintPreview}
+                      >
+                        Cetak
+                      </ButtonGreenBorder>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
@@ -257,6 +417,52 @@ const Table = () => {
           onSuccess={handleRealisasiSuccess}
         />
       </FormModal>
+
+      {isPrintPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="fixed inset-0 bg-black/40"
+            onClick={handleClosePrintPreview}
+          ></div>
+          <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
+            <div className="mb-3 border-b pb-2">
+              <h2 className="text-lg font-semibold uppercase">Preview Cetak Renaksi Individu</h2>
+              <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
+            </div>
+
+            <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
+              {pdfPreviewUrl ? (
+                <iframe
+                  title="Preview PDF Renaksi Individu"
+                  src={pdfPreviewUrl}
+                  className="h-full w-full"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                  Gagal memuat preview PDF.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleClosePrintPreview}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Tutup
+              </button>
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
+              >
+                Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

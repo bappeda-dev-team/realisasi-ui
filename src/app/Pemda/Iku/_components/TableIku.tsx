@@ -6,9 +6,10 @@ interface TableIkuProps {
     tahun: number;
     ikuPemda: IkuPemda[];
     targetRealisasiCapaian: IkuPemdaTargetRealisasiCapaian[];
+    handleOpenPrintPreview: () => void;
 }
 
-export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian }: TableIkuProps) {
+export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian, handleOpenPrintPreview }: TableIkuProps) {
     return (
         <table className="w-full">
             <thead>
@@ -21,6 +22,7 @@ export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian }: Ta
                     <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun}
                     </th>
+                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="text-white bg-sky-500">
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>
@@ -37,6 +39,7 @@ export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian }: Ta
                         ikuPemda={iku}
                         tahun={tahun}
                         dataTargetRealisasi={targetRealisasiCapaian}
+                        handleOpenPrintPreview={handleOpenPrintPreview}
                     />
                 ))}
             </tbody>

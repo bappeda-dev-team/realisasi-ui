@@ -7,6 +7,7 @@ interface RowTujuanComponentProps {
     tujuan: any;
     dataTargetRealisasi: any[];
     tahun: number;
+    handleOpenPrintPreview: () => void;
     handleOpenModal: (tujuan: any, dataTargetRealisasi: any) => void;
 }
 
@@ -15,12 +16,13 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     tujuan,
     dataTargetRealisasi,
     tahun,
+    handleOpenPrintPreview,
     handleOpenModal,
 }) => {
     const indikatorList = tujuan.indikator ?? [];
     const indikator = tujuan.indikator?.[0];
     if (indikatorList.length === 0) {
-        return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} />;
+        return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />;
     }
 
     const targetData = dataTargetRealisasi.find(
@@ -53,16 +55,22 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                     satuan={targetData.satuan}
                     realisasi={targetData.realisasi}
                     capaian={targetData.capaian}
+                    keteranganCapaian={targetData.keteranganCapaian}
                     handleClick={() => handleOpenModal(tujuan, dataTargetRealisasi)}
                 />
             ) : (
                 <td
                     className="border border-red-400 px-6 py-4 text-center"
-                    colSpan={4}
+                    colSpan={5}
                 >
                     Tidak ada target
                 </td>
             )}
+            <td className="border border-red-400 px-6 py-4 text-center">
+                <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                    Cetak
+                </ButtonGreenBorder>
+            </td>
         </tr>
     );
 };
@@ -73,7 +81,8 @@ const EmptyIndikatorRow: React.FC<{
     tujuan: any;
     no: number;
     tahun: number;
-}> = ({ tujuan, no, tahun }) => {
+    handleOpenPrintPreview: () => void;
+}> = ({ tujuan, no, tahun, handleOpenPrintPreview }) => {
     return (
         <tr key={tujuan.id} className="bg-red-300">
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
@@ -84,10 +93,15 @@ const EmptyIndikatorRow: React.FC<{
                 {tujuan.misi}
             </td>
 <td
-                colSpan={7}
+                colSpan={8}
                 className="border border-red-400 px-6 py-4 text-center text-gray-500 italic"
               >
                 Tidak ada indikator dan target tahun {tahun}
+            </td>
+            <td className="border border-red-400 px-6 py-4 text-center">
+                <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                    Cetak
+                </ButtonGreenBorder>
             </td>
         </tr>
     );

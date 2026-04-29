@@ -7,14 +7,15 @@ interface RowSasaranOpdComponentProps {
     sasaranOpd: SasaranOpdPerencanaan;
     dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[];
     tahun: number;
+    handleOpenPrintPreview: () => void;
     handleOpenModal: (sasaran: SasaranOpdPerencanaan, dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[], indikatorId: string) => void;
 }
 
-export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun, handleOpenModal }: RowSasaranOpdComponentProps) {
+export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisasi, tahun, handleOpenPrintPreview, handleOpenModal }: RowSasaranOpdComponentProps) {
     const indikatorList = sasaranOpd.indikator ?? [];
 
     if (indikatorList.length === 0) {
-        return <EmptyIndikatorRow no={no} sasaranOpd={sasaranOpd} tahun={tahun} />
+        return <EmptyIndikatorRow no={no} sasaranOpd={sasaranOpd} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />
     }
 
     return (
@@ -41,6 +42,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                                         realisasi={target.realisasi}
                                         satuan={target.satuan}
                                         capaian={target.capaian}
+                                        keteranganCapaian={target.keteranganCapaian}
                                         handleClick={() => {
                                             handleOpenModal(sasaranOpd, dataTargetRealisasi, ind.id.toString());
                                         }}
@@ -49,13 +51,18 @@ export default function RowSasaranComponent({ no, sasaranOpd, dataTargetRealisas
                             </React.Fragment>
                         )
                             :
-                            (
-                                <React.Fragment key={`${ind.id || index}-target-${tahun}`}>
-                                    <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={4}>
+                                (
+                                    <React.Fragment key={`${ind.id || index}-target-${tahun}`}>
+                                    <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={5}>
                                         Tidak ada target di tahun {tahun}
                                     </td>
                                 </React.Fragment>
                             )}
+                        <td className="border border-emerald-500 px-6 py-4 text-center">
+                            <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                                Cetak
+                            </ButtonGreenBorder>
+                        </td>
                     </tr>
                 )
             })}
@@ -68,15 +75,21 @@ interface EmptyIndikatorSasaran {
     sasaranOpd: SasaranOpdPerencanaan;
     no: number;
     tahun: number;
+    handleOpenPrintPreview: () => void;
 }
 
-const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, tahun }) => {
+const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, tahun, handleOpenPrintPreview }) => {
     return (
         <tr key={sasaranOpd.id}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.nama_sasaran_opd}</td>
-            <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+            <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                 Tidak ada indikator dan target tahun {tahun}
+            </td>
+            <td className="border border-emerald-500 px-6 py-4 text-center">
+                <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                    Cetak
+                </ButtonGreenBorder>
             </td>
         </tr>
     )
@@ -87,6 +100,7 @@ type TargetColProps = {
     realisasi: number;
     satuan: string;
     capaian: string;
+    keteranganCapaian: string;
     handleClick?: () => void;
 };
 
@@ -95,7 +109,7 @@ const formatWithComma = (value: number | string): string => {
         return value.toString().replace('.', ',');
     };
 
-const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, handleClick }) => {
+const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, handleClick }) => {
 
     return (
         <>
@@ -115,6 +129,7 @@ const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi
             </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{capaian}</td>
+            <td className="border border-emerald-500 px-6 py-4">{keteranganCapaian || '-'}</td>
         </>
     );
 }
