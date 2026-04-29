@@ -7,6 +7,7 @@ interface TableTujuanProps {
   bulanLabel?: string;
   tujuanOpd: TujuanOpdPerencanaan[];
   targetRealisasiCapaians: TujuanOpdTargetRealisasiCapaian[];
+  handleOpenPrintPreview: () => void;
   handleOpenModal: (
     tujuan: TujuanOpdPerencanaan,
     dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[],
@@ -18,6 +19,7 @@ function TableTujuan({
   bulanLabel,
   tujuanOpd,
   targetRealisasiCapaians,
+  handleOpenPrintPreview,
   handleOpenModal,
 }: TableTujuanProps) {
   return (
@@ -55,10 +57,16 @@ function TableTujuan({
             Sumber Data
           </th>
           <th
-            colSpan={4}
+            colSpan={5}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center"
+          >
+            Aksi
           </th>
         </tr>
         <tr className="text-white bg-red-500">
@@ -74,6 +82,9 @@ function TableTujuan({
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
             Capaian
           </th>
+          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
+            Keterangan Capaian
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -85,12 +96,13 @@ function TableTujuan({
               tujuan={tuj}
               dataTargetRealisasi={targetRealisasiCapaians}
               tahun={tahun}
+              handleOpenPrintPreview={handleOpenPrintPreview}
               handleOpenModal={handleOpenModal}
             />
           ))
         ) : (
           <tr>
-            <td colSpan={9} className="p-4 text-center text-gray-500">
+            <td colSpan={11} className="p-4 text-center text-gray-500">
               Tidak ada data tujuan OPD
             </td>
           </tr>

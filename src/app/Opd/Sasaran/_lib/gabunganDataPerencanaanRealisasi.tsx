@@ -25,6 +25,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         target: target.target,
                         realisasi: realizationEntry.realisasi,
                         capaian: realizationEntry.capaian,
+                        keteranganCapaian: realizationEntry.keteranganCapaian ?? "-",
                         satuan: target.satuan,
                         tahun: target.tahun,
                         kodeOpd: kodeOpd
@@ -40,6 +41,7 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: SasaranOpdPerencan
                         target: target.target,
                         realisasi: 0,
                         capaian: "-",
+                        keteranganCapaian: "-",
                         satuan: target.satuan,
                         tahun: target.tahun,
                         kodeOpd: kodeOpd

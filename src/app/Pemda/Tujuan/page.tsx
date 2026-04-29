@@ -15,6 +15,8 @@ import React, { useEffect, useState, useMemo } from "react";
 import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from "./_components/TableTujuan";
 import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function Tujuan() {
     const { periode: selectedPeriode, tahun: selectedTahun, activatedBulan, bulan } = useFilterContext();
@@ -85,6 +87,10 @@ export default function Tujuan() {
     const [perencanaanTujuan, setPerencanaanTujuan] = useState<
         PerencanaanTujuanPemda[]
     >([]);
+    const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
+    const [pdfFileName, setPdfFileName] = useState("tujuan-pemda.pdf");
+    const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
     // Effect
     useEffect(() => {
@@ -101,6 +107,14 @@ export default function Tujuan() {
             perencanaan.flatMap(pokin => pokin.tujuan_pemda),
         );
     }, [perencanaanData, realisasiData]);
+
+    useEffect(() => {
+        return () => {
+            if (pdfPreviewUrl) {
+                URL.revokeObjectURL(pdfPreviewUrl);
+            }
+        };
+    }, [pdfPreviewUrl]);
 
     if (selectedTahun === null || !bulanName || periode.length === 0)
         return (
@@ -134,6 +148,173 @@ export default function Tujuan() {
         setOpenModal(true);
     };
 
+    const sanitizeForPdf = (value: unknown) => {
+        if (value == null) return "-";
+        let text = String(value);
+
+        try {
+            text = text.normalize("NFKC");
+        } catch {
+            // ignore if environment doesn't support normalize
+        }
+
+        text = text
+            .replace(/\u2265/g, ">=")
+            .replace(/\u2264/g, "<=")
+            .replace(/\u00b1/g, "+/-");
+
+        text = text.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, "");
+        text = text.replace(/\s+/g, " ").trim();
+
+        return text.length ? text : "-";
+    };
+
+    const createPdfDocument = () => {
+        const doc = new jsPDF({
+            orientation: "landscape",
+            unit: "pt",
+            format: "a4",
+        });
+
+        const periodLabel = `${selectedTahunValue} - ${bulanName}`;
+
+        doc.setFontSize(14);
+        doc.text("Tujuan Pemda", 40, 40);
+        doc.setFontSize(10);
+        doc.text(`Periode: ${periodLabel}`, 40, 58);
+
+        const tableHead = [[
+            "No",
+            "Tujuan",
+            "Visi/Misi",
+            "Indikator",
+            "Rumus Perhitungan",
+            "Sumber Data",
+            "Target",
+            "Realisasi",
+            "Satuan",
+            "Capaian",
+            "Keterangan Capaian",
+        ]];
+
+        const tableBody: any[] = [];
+
+        tujuansPemda.forEach((tujuan, tujuanIndex) => {
+            const indikatorList = tujuan.indikator ?? [];
+
+            if (indikatorList.length === 0) {
+                tableBody.push([
+                    tujuanIndex + 1,
+                    sanitizeForPdf(tujuan.tujuan_pemda),
+                    sanitizeForPdf(tujuan.misi),
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                    "-",
+                ]);
+                return;
+            }
+
+            indikatorList.forEach((indikator: any, indikatorIndex: number) => {
+                const targetData = dataTargetRealisasi.find(
+                    (r) =>
+                        r.indikatorId === indikator.id.toString() &&
+                        r.tahun === selectedTahunValue.toString(),
+                );
+
+                tableBody.push([
+                    indikatorIndex === 0 ? tujuanIndex + 1 : "",
+                    indikatorIndex === 0 ? sanitizeForPdf(tujuan.tujuan_pemda) : "",
+                    indikatorIndex === 0 ? sanitizeForPdf(tujuan.misi) : "",
+                    sanitizeForPdf(indikator.indikator),
+                    sanitizeForPdf(indikator.rumus_perhitungan),
+                    sanitizeForPdf(indikator.sumber_data),
+                    sanitizeForPdf(targetData?.target),
+                    sanitizeForPdf(targetData?.realisasi ?? 0),
+                    sanitizeForPdf(targetData?.satuan),
+                    sanitizeForPdf(targetData?.capaian),
+                    sanitizeForPdf(targetData?.keteranganCapaian),
+                ]);
+            });
+        });
+
+        autoTable(doc, {
+            head: tableHead,
+            body: tableBody,
+            startY: 72,
+            styles: {
+                fontSize: 8,
+                cellPadding: 3,
+                lineColor: [248, 113, 113],
+                lineWidth: 0.5,
+                textColor: [31, 41, 55],
+                valign: "top",
+                overflow: "linebreak",
+            },
+            headStyles: {
+                fillColor: [239, 68, 68],
+                textColor: [255, 255, 255],
+                fontStyle: "bold",
+                halign: "center",
+                valign: "middle",
+            },
+            columnStyles: {
+                0: { cellWidth: 26, halign: "center" },
+                1: { cellWidth: 170 },
+                2: { cellWidth: 100 },
+                3: { cellWidth: 90 },
+                4: { cellWidth: 120 },
+                5: { cellWidth: 90 },
+                6: { cellWidth: 45, halign: "center" },
+                7: { cellWidth: 45, halign: "center" },
+                8: { cellWidth: 45, halign: "center" },
+                9: { cellWidth: 45, halign: "center" },
+                10: { cellWidth: 180 },
+            },
+            tableWidth: "wrap",
+            margin: { top: 72, right: 40, bottom: 40, left: 40 },
+            theme: "grid",
+        });
+
+        const safeMonthLabel = String(bulanName || "bulan").replace(/\s+/g, "-").toLowerCase();
+        const safeYearLabel = String(selectedTahunValue || "tahun").replace(/\s+/g, "-").toLowerCase();
+        const fileName = `tujuan-pemda-${safeYearLabel}-${safeMonthLabel}.pdf`;
+        return { doc, fileName };
+    };
+
+    const handleOpenPrintPreview = () => {
+        const { doc, fileName } = createPdfDocument();
+        const previewUrl = String(doc.output("bloburl"));
+
+        if (pdfPreviewUrl) {
+            URL.revokeObjectURL(pdfPreviewUrl);
+        }
+
+        setPreviewDoc(doc);
+        setPdfFileName(fileName);
+        setPdfPreviewUrl(previewUrl);
+        setIsPrintPreviewOpen(true);
+    };
+
+    const handleClosePrintPreview = () => {
+        if (pdfPreviewUrl) {
+            URL.revokeObjectURL(pdfPreviewUrl);
+        }
+
+        setIsPrintPreviewOpen(false);
+        setPdfPreviewUrl(null);
+        setPreviewDoc(null);
+    };
+
+    const handleDownloadPdf = () => {
+        if (!previewDoc) return;
+        previewDoc.save(pdfFileName);
+    };
+
     // here's the magic
     // filter the fkin periode
     const periodeTampil = years.filter((p) => p === parseInt(selectedTahun));
@@ -147,6 +328,7 @@ export default function Tujuan() {
                     bulanLabel={bulanName}
                     tujuansPemda={tujuansPemda}
                     targetRealisasiCapaians={dataTargetRealisasi}
+                    handleOpenPrintPreview={handleOpenPrintPreview}
                     handleOpenModal={handleOpenModal}
                 />
                 <ModalTujuanPemda
@@ -163,6 +345,51 @@ export default function Tujuan() {
                     }}
                 />
             </div>
+            {isPrintPreviewOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div
+                        className="fixed inset-0 bg-black/40"
+                        onClick={handleClosePrintPreview}
+                    ></div>
+                    <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
+                        <div className="mb-3 border-b pb-2">
+                            <h2 className="text-lg font-semibold uppercase">Preview Cetak Tujuan Pemda</h2>
+                            <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
+                        </div>
+
+                        <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
+                            {pdfPreviewUrl ? (
+                                <iframe
+                                    title="Preview PDF Tujuan Pemda"
+                                    src={pdfPreviewUrl}
+                                    className="h-full w-full"
+                                />
+                            ) : (
+                                <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                                    Gagal memuat preview PDF.
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-4 flex justify-end gap-2">
+                            <button
+                                type="button"
+                                onClick={handleClosePrintPreview}
+                                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            >
+                                Tutup
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleDownloadPdf}
+                                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
+                            >
+                                Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

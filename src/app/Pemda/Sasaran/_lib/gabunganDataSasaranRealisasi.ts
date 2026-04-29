@@ -34,6 +34,7 @@ export function gabunganDataPerencanaanRealisasi(
             target: target.target,
             realisasi: realizationEntry.realisasi,
             capaian: realizationEntry.capaian,
+            keteranganCapaian: realizationEntry.keteranganCapaian ?? "-",
             satuan: target.satuan,
             tahun: target.tahun,
           });
@@ -48,6 +49,7 @@ export function gabunganDataPerencanaanRealisasi(
             target: target.target,
             realisasi: 0,
             capaian: "",
+            keteranganCapaian: "-",
             satuan: target.satuan,
             tahun: target.tahun,
           });

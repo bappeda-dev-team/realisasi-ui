@@ -7,6 +7,7 @@ interface RowSasaranComponentProps {
   sasaran: SasaranPemda;
   dataTargetRealisasi: TargetRealisasiCapaianSasaran[];
   tahun: number;
+  handleOpenPrintPreview: () => void;
   handleOpenModal: (
     sasaran: SasaranPemda,
     dataTargetRealisasi: TargetRealisasiCapaianSasaran[],
@@ -18,12 +19,13 @@ export default function RowSasaranComponent({
   sasaran,
   dataTargetRealisasi,
   tahun,
+  handleOpenPrintPreview,
   handleOpenModal,
 }: RowSasaranComponentProps) {
   const indikatorList = sasaran.indikator ?? [];
 
   if (indikatorList.length === 0) {
-    return <EmptyIndikatorRow no={no} sasaran={sasaran} tahun={tahun} />;
+    return <EmptyIndikatorRow no={no} sasaran={sasaran} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />;
   }
 
   return (
@@ -70,6 +72,7 @@ export default function RowSasaranComponent({
                     realisasi={target.realisasi}
                     satuan={target.satuan}
                     capaian={target.capaian}
+                    keteranganCapaian={target.keteranganCapaian}
                     handleClick={() => {
                       handleOpenModal(sasaran, dataTargetRealisasi);
                     }}
@@ -78,12 +81,17 @@ export default function RowSasaranComponent({
               </>
             ) : (
               <td
-                colSpan={4}
+                colSpan={5}
                 className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
               >
                 Tidak ada target
               </td>
             )}
+            <td className="border border-red-400 px-6 py-4 text-center">
+              <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                Cetak
+              </ButtonGreenBorder>
+            </td>
           </tr>
         );
       })}
@@ -95,7 +103,8 @@ const EmptyIndikatorRow: React.FC<{
   sasaran: SasaranPemda;
   no: number;
   tahun: number;
-}> = ({ sasaran, no, tahun }) => {
+  handleOpenPrintPreview: () => void;
+}> = ({ sasaran, no, tahun, handleOpenPrintPreview }) => {
   return (
     <tr key={sasaran.id_sasaran_pemda} className="bg-red-300">
       <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
@@ -103,10 +112,15 @@ const EmptyIndikatorRow: React.FC<{
         {sasaran.sasaran_pemda}
       </td>
       <td
-        colSpan={7}
+        colSpan={8}
         className="border border-red-400 px-6 py-4 text-center text-gray-500 italic"
       >
         Tidak ada indikator dan target tahun {tahun}
+      </td>
+      <td className="border border-red-400 px-6 py-4 text-center">
+        <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+          Cetak
+        </ButtonGreenBorder>
       </td>
     </tr>
   );
@@ -117,8 +131,9 @@ const ColTargetSasaran: React.FC<{
   realisasi: number;
   satuan: string;
   capaian: string;
+  keteranganCapaian: string;
   handleClick?: () => void;
-}> = ({ target, realisasi, satuan, capaian, handleClick }) => {
+}> = ({ target, realisasi, satuan, capaian, keteranganCapaian, handleClick }) => {
   return (
     <>
       <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
@@ -137,6 +152,7 @@ const ColTargetSasaran: React.FC<{
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
       <td className="border border-red-400 px-6 py-4 text-center">{capaian}</td>
+      <td className="border border-red-400 px-6 py-4">{keteranganCapaian || "-"}</td>
     </>
   );
 };

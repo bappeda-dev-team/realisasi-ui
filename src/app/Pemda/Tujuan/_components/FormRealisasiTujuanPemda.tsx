@@ -42,19 +42,20 @@ useEffect(() => {
     }, [filteredRequestValues, bulanLabel]);
 
     const convertToDisplayString = (value: number | '' | null | undefined): string => {
-        if (value === '' || value === null || value === undefined || value === 0) return '';
+        if (value === '' || value === null || value === undefined) return '';
         return value.toString().replace('.', ',');
     };
 
     // handle saat berubah ?
     const handleChange = (indikatorId: string, tahun: string, value: string) => {
-        const normalizedValue = value.replace(',', '.');
-        const numericReal = value === '' ? '' : parseFloat(normalizedValue);
+        const trimmed = value.trim();
+        const normalizedValue = trimmed.replace(',', '.');
+        const numericReal = trimmed === '' ? '' : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realidadecoy: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
+                    ? { ...item, realisasi: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
                     : item
             )
         );

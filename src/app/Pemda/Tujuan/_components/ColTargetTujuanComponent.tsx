@@ -6,6 +6,7 @@ type TargetColProps = {
   realisasi: string;
   satuan: string;
   capaian: string;
+  keteranganCapaian: string;
   handleClick?: () => void;
 };
 
@@ -14,7 +15,7 @@ const convertToDisplayString = (value: string | null | undefined): string => {
   return value.toString().replace(/\./g, ',');
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, handleClick }) => {
 
   return (
     <React.Fragment>
@@ -34,6 +35,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
       <td className="border border-red-400 px-6 py-4 text-center">{convertToDisplayString(capaian)}</td>
+      <td className="border border-red-400 px-6 py-4">{keteranganCapaian || '-'}</td>
     </React.Fragment>
   );
 }

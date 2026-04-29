@@ -7,6 +7,7 @@ interface TableSasaranProps {
   bulanLabel?: string;
   sasaranPemda: SasaranPemda[];
   targetRealisasiCapaian: TargetRealisasiCapaianSasaran[];
+  handleOpenPrintPreview: () => void;
   handleOpenModal: (
     sasaran: SasaranPemda,
     dataTargetRealisasi: TargetRealisasiCapaianSasaran[],
@@ -18,6 +19,7 @@ function TableSasaran({
   bulanLabel,
   sasaranPemda,
   targetRealisasiCapaian,
+  handleOpenPrintPreview,
   handleOpenModal,
 }: TableSasaranProps) {
   return (
@@ -56,10 +58,16 @@ function TableSasaran({
           </th>
           <th
             key={tahun}
-            colSpan={4}
+            colSpan={5}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center"
+          >
+            Aksi
           </th>
         </tr>
         <tr className="text-white bg-red-500">
@@ -75,6 +83,9 @@ function TableSasaran({
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
             Capaian
           </th>
+          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
+            Keterangan Capaian
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -85,6 +96,7 @@ function TableSasaran({
             sasaran={sas}
             dataTargetRealisasi={targetRealisasiCapaian}
             tahun={tahun}
+            handleOpenPrintPreview={handleOpenPrintPreview}
             handleOpenModal={handleOpenModal}
           />
         ))}

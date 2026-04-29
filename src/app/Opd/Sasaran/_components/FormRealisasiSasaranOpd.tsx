@@ -48,14 +48,21 @@ const FormRealisasiSasaranOpd: React.FC<FormProps<SasaranOpdTargetRealisasiCapai
     };
 
     // handle saat berubah ?
-const handleChange = (indikatorId: string, tahun: string, value: string) => {
-        const normalizedValue = value.replace(',', '.');
-        const numericReal = value === '' ? 0 : parseFloat(normalizedValue);
+    const handleChange = (indikatorId: string, tahun: string, value: string) => {
+        // Allow empty input (store as null) and accept comma decimals.
+        const trimmed = value.trim();
+        const normalizedValue = trimmed.replace(',', '.');
+
+        let numericReal: number | null = null;
+        if (trimmed !== '') {
+            const parsed = parseFloat(normalizedValue);
+            numericReal = Number.isNaN(parsed) ? null : parsed;
+        }
 
         setFormData((prev) =>
             prev.map((item) =>
                 item.indikatorId === indikatorId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(numericReal) ? 0 : numericReal }
+                    ? { ...item, realisasi: numericReal }
                     : item
             )
         );

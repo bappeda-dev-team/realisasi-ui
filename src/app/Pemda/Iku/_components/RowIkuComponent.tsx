@@ -1,18 +1,21 @@
 import React from 'react'
 import { IkuPemda, IkuPemdaTargetRealisasiCapaian } from '@/types'
+import { ButtonGreenBorder } from "@/components/Global/Button/button";
 
 interface RowIkuComponentProps {
     no: number;
     ikuPemda: IkuPemda;
     tahun: number;
     dataTargetRealisasi: IkuPemdaTargetRealisasiCapaian[];
+    handleOpenPrintPreview: () => void;
 }
 
 export default function RowIkuComponent({
     no,
     ikuPemda,
     tahun,
-    dataTargetRealisasi
+    dataTargetRealisasi,
+    handleOpenPrintPreview
 }: RowIkuComponentProps) {
     const targetList = dataTargetRealisasi.filter(r => r.indikatorId === ikuPemda.indikator_id && r.tahun === tahun.toString());
 
@@ -39,6 +42,11 @@ export default function RowIkuComponent({
                         Tidak ada target
                     </td>
                 )}
+                <td className="border border-sky-500 px-6 py-4 text-center">
+                    <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                        Cetak
+                    </ButtonGreenBorder>
+                </td>
             </tr>
         </>
     )

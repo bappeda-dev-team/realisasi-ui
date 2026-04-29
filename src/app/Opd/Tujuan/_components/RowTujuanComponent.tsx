@@ -7,6 +7,7 @@ interface RowTujuanComponentProps {
     tujuan: TujuanOpdPerencanaan;
     dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[];
     tahun: number;
+    handleOpenPrintPreview: () => void;
     handleOpenModal: (tujuan: TujuanOpdPerencanaan, dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => void;
 }
 
@@ -15,12 +16,13 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     tujuan,
     dataTargetRealisasi,
     tahun,
+    handleOpenPrintPreview,
     handleOpenModal
 }) => {
     const indikatorList = tujuan.indikator ?? [];
 
     if (indikatorList.length === 0) {
-        return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} />
+        return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />
     }
 
     return (
@@ -51,6 +53,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                         realisasi={target.realisasi}
                                         satuan={target.satuan}
                                         capaian={target.capaian}
+                                        keteranganCapaian={target.keteranganCapaian}
                                         handleClick={handleClick}
                                     />
                                 ))}
@@ -62,6 +65,11 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 </td>
                             </React.Fragment>
                         )}
+                        <td className="border border-red-400 px-6 py-4 text-center">
+                            <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                                Cetak
+                            </ButtonGreenBorder>
+                        </td>
                     </tr>
                 )
             })}
@@ -75,17 +83,24 @@ const EmptyIndikatorRow: React.FC<{
     tujuan: any;
     no: number;
     tahun: number;
+    handleOpenPrintPreview: () => void;
 }> = ({
     tujuan,
     no,
-    tahun
+    tahun,
+    handleOpenPrintPreview,
 }) => {
         return (
             <tr key={tujuan.id}>
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
                 <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuan}</td>
-                <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
+                </td>
+                <td className="border border-red-400 px-6 py-4 text-center">
+                    <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                        Cetak
+                    </ButtonGreenBorder>
                 </td>
             </tr>
         )
@@ -97,10 +112,11 @@ type TargetColProps = {
     realisasi: number;
     satuan: string;
     capaian: string;
+    keteranganCapaian: string;
     handleClick?: () => void;
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, handleClick }) => {
 
     return (
         <>
@@ -120,6 +136,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
             </td>
             <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{capaian}</td>
+            <td className="border border-red-400 px-6 py-4">{keteranganCapaian || '-'}</td>
         </>
     );
 }

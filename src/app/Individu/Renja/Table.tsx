@@ -53,7 +53,18 @@ const Table = () => {
         }
     };
 
+    const getHeaderFillColor = (level: string | undefined): [number, number, number] => {
+        switch (level) {
+            case ROLES.LEVEL_1: return [220, 38, 38];
+            case ROLES.LEVEL_2: return [37, 99, 235];
+            case ROLES.LEVEL_3: return [22, 163, 74];
+            case ROLES.LEVEL_4: return [234, 88, 12];
+            default: return [16, 185, 129];
+        }
+    };
+
     const headerColor = getHeaderColor(userLevel);
+    const headerFillColor = getHeaderFillColor(userLevel);
 
     const bulanName = getMonthName(activatedBulan);
 
@@ -191,25 +202,39 @@ const Table = () => {
             ],
         ];
 
-        const tableBody = rows.map((row, index) => {
-            const target = row.targets[0];
-            return [
-                index + 1,
-                row.renja || "-",
-                `${row.nama_pegawai || "-"} (${row.nip || "-"})`,
-                `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`,
-                row.indikator || "-",
-                target?.target || "-",
-                target?.realisasi ?? "-",
-                target?.satuan || "-",
-                target?.capaian || "-",
-                target?.keteranganCapaian || "-",
-                target?.pagu != null ? target.pagu.toLocaleString() : "-",
-                target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-",
-                target?.satuanPagu || "-",
-                target?.capaianPagu || "-",
-                target?.keteranganCapaianPagu || "-",
-            ];
+        const tableBody: any[] = [];
+
+        rows.forEach((row, index) => {
+            const targets = row.targets.length ? row.targets : [null];
+
+            targets.forEach((target, targetIndex) => {
+                const detailRow = [
+                    target?.target || "-",
+                    target?.realisasi ?? "-",
+                    target?.satuan || "-",
+                    target?.capaian || "-",
+                    target?.keteranganCapaian || "-",
+                    target?.pagu != null ? target.pagu.toLocaleString() : "-",
+                    target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-",
+                    target?.satuanPagu || "-",
+                    target?.capaianPagu || "-",
+                    target?.keteranganCapaianPagu || "-",
+                ];
+
+                if (targetIndex === 0) {
+                    tableBody.push([
+                        { content: index + 1, rowSpan: targets.length },
+                        { content: row.renja || "-", rowSpan: targets.length },
+                        { content: `${row.nama_pegawai || "-"} (${row.nip || "-"})`, rowSpan: targets.length },
+                        { content: `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`, rowSpan: targets.length },
+                        { content: row.indikator || "-", rowSpan: targets.length },
+                        ...detailRow,
+                    ]);
+                    return;
+                }
+
+                tableBody.push(detailRow);
+            });
         });
 
         autoTable(doc, {
@@ -226,15 +251,17 @@ const Table = () => {
                 overflow: "linebreak",
             },
             headStyles: {
-                fillColor: [16, 185, 129],
+                fillColor: headerFillColor,
                 textColor: [255, 255, 255],
                 fontStyle: "bold",
                 halign: "center",
                 valign: "middle",
+                lineColor: [255, 255, 255],
+                lineWidth: 0.5,
             },
             columnStyles: {
                 0: { cellWidth: 26, halign: "center" },
-                1: { cellWidth: 100 },
+                1: { cellWidth: 140 },
                 2: { cellWidth: 100 },
                 3: { cellWidth: 118 },
                 4: { cellWidth: 128 },
@@ -243,8 +270,8 @@ const Table = () => {
                 7: { cellWidth: 46, halign: "center" },
                 8: { cellWidth: 50, halign: "center" },
                 9: { cellWidth: 100 },
-                10: { cellWidth: 58, halign: "right" },
-                11: { cellWidth: 62, halign: "right" },
+                10: { cellWidth: 58, halign: "center" },
+                11: { cellWidth: 62, halign: "center" },
                 12: { cellWidth: 52, halign: "center" },
                 13: { cellWidth: 54, halign: "center" },
                 14: { cellWidth: 110 },
@@ -333,7 +360,7 @@ const Table = () => {
     return (
         <>
             <div className="overflow-auto m-2 rounded-t-xl">
-                <table className="w-full">
+                <table id="print-area-renja" className="w-full">
                     <thead>
                         <tr className={`text-xm ${headerColor}`}>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>

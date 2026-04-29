@@ -47,7 +47,18 @@ const Table = () => {
         }
     };
 
+    const getHeaderFillColor = (level: string | undefined): [number, number, number] => {
+        switch(level) {
+            case ROLES.LEVEL_1: return [220, 38, 38];
+            case ROLES.LEVEL_2: return [37, 99, 235];
+            case ROLES.LEVEL_3: return [22, 163, 74];
+            case ROLES.LEVEL_4: return [234, 88, 12];
+            default: return [16, 185, 129];
+        }
+    };
+
     const headerColor = getHeaderColor(userLevel);
+    const headerFillColor = getHeaderFillColor(userLevel);
 
     const yearLabel = activatedTahun;
     const monthLabel = getMonthName(activatedBulan);
@@ -172,20 +183,34 @@ const Table = () => {
             "Keterangan Capaian",
         ]];
 
-        const tableBody = rows.map((item, index) => {
-            const target = item.targets[0];
-            return [
-                index + 1,
-                item.rekin || "-",
-                `${item.nama_pegawai || "-"} (${item.nip || "-"})`,
-                item.indikator || "-",
-                item.sasaran || "-",
-                target?.target || "-",
-                target?.realisasi ?? "-",
-                target?.satuan || "-",
-                target?.capaian || "-",
-                target?.keteranganCapaian || "-",
-            ];
+        const tableBody: any[] = [];
+
+        rows.forEach((item, index) => {
+            const targets = item.targets.length ? item.targets : [null];
+
+            targets.forEach((target, targetIndex) => {
+                const detailRow = [
+                    target?.target || "-",
+                    target?.realisasi ?? "-",
+                    target?.satuan || "-",
+                    target?.capaian || "-",
+                    target?.keteranganCapaian || "-",
+                ];
+
+                if (targetIndex === 0) {
+                    tableBody.push([
+                        { content: index + 1, rowSpan: targets.length },
+                        { content: item.rekin || "-", rowSpan: targets.length },
+                        { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
+                        { content: item.indikator || "-", rowSpan: targets.length },
+                        { content: item.sasaran || "-", rowSpan: targets.length },
+                        ...detailRow,
+                    ]);
+                    return;
+                }
+
+                tableBody.push(detailRow);
+            });
         });
 
         autoTable(doc, {
@@ -201,9 +226,11 @@ const Table = () => {
                 valign: "top",
             },
             headStyles: {
-                fillColor: [16, 185, 129],
+                fillColor: headerFillColor,
                 textColor: [255, 255, 255],
                 fontStyle: "bold",
+                lineColor: [255, 255, 255],
+                lineWidth: 0.5,
             },
             tableWidth: "auto",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
