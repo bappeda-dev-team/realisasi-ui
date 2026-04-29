@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "js-cookie": "^3.0.5",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "next": "15.3.2",
     "nextjs-toploader": "^3.8.16",
     "react": "^19.0.0",
@@ -20,8 +22,8 @@
     "react-spinners": "^0.17.0"
   },
   "devDependencies": {
-    "@types/js-cookie": "^3.0.6",
     "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

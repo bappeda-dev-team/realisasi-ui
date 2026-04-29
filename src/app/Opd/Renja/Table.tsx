@@ -188,7 +188,7 @@ target: item.target ?? "-",
                         <tr className="text-xm bg-sky-600 text-white">
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Rencana Kerja</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Jenis Renja</td>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Bidang Urusan/Program/Kegitan/Subkegitan</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
                             <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
