@@ -9,12 +9,12 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { getMonthName } from "@/lib/months";
-import { ROLES } from "@/constants/roles";
 import { RenjaTargetIndividuResponse, RenjaTarget, RenjaPaguIndividuResponse } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
 import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
+import { getHeaderColor } from "@/lib/userLevelStyle";
 
 interface RenjaRow {
     id: number;
@@ -43,7 +43,7 @@ const Table = () => {
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
-    const getHeaderColor = (level: string | undefined) => {
+const getHeaderColor = (level: string | undefined) => {
         switch (level) {
             case ROLES.LEVEL_1: return 'bg-red-600 text-white';
             case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
@@ -62,7 +62,6 @@ const Table = () => {
             default: return [16, 185, 129];
         }
     };
-
     const headerColor = getHeaderColor(userLevel);
     const headerFillColor = getHeaderFillColor(userLevel);
 
