@@ -54,7 +54,7 @@ function TableTujuan({
             Sumber Data
           </th>
           <th
-            colSpan={5}
+            colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
@@ -71,10 +71,7 @@ function TableTujuan({
             Target
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Realisasi
-          </th>
-          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Satuan
+            Realisasi (%)
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
             Capaian
@@ -99,9 +96,9 @@ function TableTujuan({
           ))
         ) : (
           <tr>
-            <td colSpan={11} className="p-4 text-center text-gray-500">
-              Tidak ada data tujuan OPD
-            </td>
+              <td colSpan={10} className="p-4 text-center text-gray-500">
+                Tidak ada data tujuan OPD
+              </td>
           </tr>
         )}
       </tbody>

@@ -39,6 +39,14 @@ export const useAuthUser = ({
           const errJson = await response.json();
           if (errJson.message) errMsg = errJson.message;
         } catch (_) {}
+
+        if (
+          response.status === 500 ||
+          /request failed with status\s*500/i.test(errMsg)
+        ) {
+          throw new Error("Username atau password yang anda masukan salah");
+        }
+
         throw new Error(errMsg);
       }
 

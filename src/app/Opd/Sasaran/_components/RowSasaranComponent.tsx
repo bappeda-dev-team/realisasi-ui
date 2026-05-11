@@ -64,14 +64,13 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
                             <ColTargetSasaranComponent
                                 target={target.target}
                                 realisasi={target.realisasi}
-                                satuan={target.satuan}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
                                 canEdit={canEdit}
                                 handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
                             />
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={5}>
+                            <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={4}>
                                 Tidak ada target di tahun {tahun}
                             </td>
                         )}
@@ -103,9 +102,9 @@ const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, ta
         <tr key={sasaranOpd.renjaId}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.renja}</td>
-            <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
-                Tidak ada indikator dan target tahun {tahun}
-            </td>
+                <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+                    Tidak ada indikator dan target tahun {tahun}
+                </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">
                 <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
                     Cetak
@@ -118,7 +117,6 @@ const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, ta
 type TargetColProps = {
     target: string;
     realisasi: number;
-    satuan: string;
     capaian: string;
     keteranganCapaian: string;
     canEdit: boolean;
@@ -130,7 +128,7 @@ const formatWithComma = (value: number | string): string => {
         return value.toString().replace('.', ',');
     };
 
-const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, canEdit, handleClick }) => {
 
     return (
         <>
@@ -148,7 +146,6 @@ const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi
                     )}
                 </div>
             </td>
-            <td className="border border-emerald-500 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-emerald-500 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
         </>

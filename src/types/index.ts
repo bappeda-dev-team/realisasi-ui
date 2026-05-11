@@ -74,8 +74,11 @@ export interface RealisasiTujuan {
   id: number;
   tujuanId: string;
   tujuan: string;
+  visiMisi?: string | null;
   indikatorId: string;
   indikator: string;
+  rumusPerhitungan?: string | null;
+  sumberData?: string | null;
   targetId: string;
   target: string;
   realisasi: number;
@@ -96,8 +99,11 @@ export interface TargetRealisasiCapaian {
   targetRealisasiId: number | null;
   tujuanPemda: string;
   tujuanId: string;
+  visiMisi: string;
   indikatorId: string;
   indikator: string;
+  rumusPerhitungan: string;
+  sumberData: string;
   targetId: string;
   target: string;
   realisasi: number;
@@ -107,10 +113,28 @@ export interface TargetRealisasiCapaian {
   tahun: string;
 }
 
+export interface TujuanPemdaRealisasiGroupedIndikator {
+  id: string;
+  indikator: string;
+  rumusPerhitungan: string;
+  sumberData: string;
+  targets: TargetRealisasiCapaian[];
+}
+
+export interface TujuanPemdaRealisasiGrouped {
+  tujuanId: string;
+  tujuanPemda: string;
+  visiMisi: string;
+  indikator: TujuanPemdaRealisasiGroupedIndikator[];
+}
+
 export interface TujuanRequest {
   targetRealisasiId: number | null;
   tujuanId: string;
+  visiMisi: string;
   indikatorId: string;
+  rumusPerhitungan: string;
+  sumberData: string;
   targetId: string;
   target: string;
   realisasi: number | '';
@@ -131,6 +155,8 @@ export interface SasaranRequest {
   tahun: string;
   bulan: string;
   jenisRealisasi: string;
+  rumusPerhitungan: string;
+  sumberData: string;
 }
 
 export interface SasaranRequest {
@@ -144,6 +170,8 @@ export interface SasaranRequest {
   tahun: string;
   bulan: string;
   jenisRealisasi: string;
+  rumusPerhitungan: string;
+  sumberData: string;
 }
 
 export interface Modal<T> {
@@ -181,6 +209,8 @@ export interface RealisasiSasaran {
   sasaran: string;
   indikatorId: string;
   indikator: string;
+  rumusPerhitungan?: string | null;
+  sumberData?: string | null;
   targetId: string;
   target: string;
   realisasi: number;
@@ -475,6 +505,8 @@ export interface TargetRealisasiCapaianSasaran {
   sasaranId: string;
   indikatorId: string;
   indikator: string;
+  rumusPerhitungan: string;
+  sumberData: string;
   targetId: string;
   target: string;
   realisasi: number;
@@ -482,6 +514,20 @@ export interface TargetRealisasiCapaianSasaran {
   keteranganCapaian: string;
   satuan: string;
   tahun: string;
+}
+
+export interface SasaranPemdaRealisasiGroupedIndikator {
+  id: string;
+  indikator: string;
+  rumusPerhitungan: string;
+  sumberData: string;
+  targets: TargetRealisasiCapaianSasaran[];
+}
+
+export interface SasaranPemdaRealisasiGrouped {
+  sasaranId: string;
+  sasaranPemda: string;
+  indikator: SasaranPemdaRealisasiGroupedIndikator[];
 }
 
 export interface TujuanOpdPerencanaan {

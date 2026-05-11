@@ -3,17 +3,20 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
+import { getMonthKey } from '@/lib/months';
 
-const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number; bulanLabel?: string }> = ({
+const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
     requestValues,
     tahun,
+    bulan,
     bulanLabel,
     onClose,
     onSuccess
 }) => {
-    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `/api/realisasi/tujuans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `/api/v1/realisasi/tujuans/batch` });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<TujuanRequest[]>([]);
+    const normalizedBulan = getMonthKey(bulan);
 
     const filteredRequestValues = useMemo(() => 
         requestValues?.filter((item) => item.tahun === (tahun ?? new Date().getFullYear()).toString()) ?? [],
@@ -26,9 +29,12 @@ useEffect(() => {
             return ({
                 targetRealisasiId: indikator.targetRealisasiId,
                 tujuanId: indikator.tujuanId,
+                visiMisi: indikator.visiMisi ?? '-',
                 indikatorId: indikator.indikatorId,
+                rumusPerhitungan: indikator.rumusPerhitungan ?? '-',
+                sumberData: indikator.sumberData ?? '-',
                 tahun: indikator.tahun,
-                bulan: bulanLabel ?? '',
+                bulan: normalizedBulan ?? '',
                 targetId: indikator.targetId,
                 target: typeof indikator.target === 'string'
                     ? indikator.target.replace(',', '.')
@@ -39,7 +45,7 @@ useEffect(() => {
             })
         });
         setFormData(generatedFormData);
-    }, [filteredRequestValues, bulanLabel]);
+    }, [filteredRequestValues, normalizedBulan]);
 
     const convertToDisplayString = (value: number | '' | null | undefined): string => {
         if (value === '' || value === null || value === undefined) return '';
@@ -64,6 +70,10 @@ useEffect(() => {
     // saat submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!normalizedBulan) {
+            alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
+            return;
+        }
         setProses(loading);
 
         const result = await submit(formData)

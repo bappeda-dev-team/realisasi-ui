@@ -2,12 +2,14 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
+import { getMonthKey } from '@/lib/months';
 import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
 import React, { useEffect, useState, useMemo } from 'react';
 
-const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]> & { tahun: number; bulanLabel?: string }> = ({
+const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
     requestValues,
     tahun,
+    bulan,
     bulanLabel,
     onClose,
     onSuccess
@@ -16,6 +18,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     const { submit, loading, error } = useSubmitData<RealisasiSasaran[]>({ url: `${url}/api/v1/realisasi/sasarans/batch` });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<SasaranRequest[]>([]);
+    const normalizedBulan = getMonthKey(bulan);
 
     const filteredRequestValues = useMemo(() => 
         requestValues?.filter((item) => item.tahun === tahun.toString()) ?? [],
@@ -36,12 +39,14 @@ target: typeof indikator.target === 'string'
                 realisasi: indikator.realisasi,
                 satuan: indikator.satuan,
                 tahun: indikator.tahun,
-                bulan: bulanLabel ?? '',
+                bulan: normalizedBulan ?? '',
                 jenisRealisasi: 'NAIK',
+                rumusPerhitungan: indikator.rumusPerhitungan,
+                sumberData: indikator.sumberData,
             })
         });
         setFormData(generatedFormData);
-    }, [filteredRequestValues, bulanLabel]);
+    }, [filteredRequestValues, normalizedBulan]);
 
     const convertToDisplayString = (value: number | '' | null | undefined): string => {
         if (value === '' || value === null || value === undefined || value === 0) return '';
@@ -65,6 +70,10 @@ target: typeof indikator.target === 'string'
     // saat submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!normalizedBulan) {
+            alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
+            return;
+        }
         setProses(loading);
 
         const result = await submit(formData)

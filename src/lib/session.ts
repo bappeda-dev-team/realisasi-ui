@@ -4,6 +4,7 @@ export const SESSION_ID_COOKIE = "sessionId";
 export const SESSION_ID_STORAGE_KEY = "sessionId";
 const LEGACY_SESSION_ID_STORAGE_KEY = "realisasi.sessionId";
 const COOKIE_PATHS_TO_CLEAR = ["/", "/realisasi"] as const;
+export const SESSION_EXPIRED_EVENT = "auth:session-expired";
 
 function isBrowser() {
   return typeof window !== "undefined";
@@ -94,4 +95,9 @@ export function getSessionId(): string | undefined {
 export function clearSessionId() {
   removeCookieSessionId();
   clearStorageSessionId();
+}
+
+export function notifySessionExpired() {
+  if (!isBrowser()) return;
+  window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
 }

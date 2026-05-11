@@ -42,13 +42,12 @@ export default function TujuanPage() {
     activatedDinas: kodeOpd,
     activatedTahun: selectedTahun,
     activatedBulan,
-    bulan,
     namaDinas,
   } = useFilterContext();
 
   const selectedTahunValue = selectedTahun ? parseInt(selectedTahun, 10) : 2025;
-  const bulanKey = getMonthKey(activatedBulan) ?? getMonthKey(bulan ?? null);
-  const bulanName = getMonthName(activatedBulan) ?? getMonthName(bulan ?? null) ?? "Bulan";
+  const bulanKey = getMonthKey(activatedBulan);
+  const bulanName = getMonthName(activatedBulan) ?? "Bulan";
 
   const {
     data: realisasiData,
@@ -199,8 +198,7 @@ export default function TujuanPage() {
       "Rumus Perhitungan",
       "Sumber Data",
       "Target",
-      "Realisasi",
-      "Satuan",
+      "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
     ]];
@@ -223,7 +221,6 @@ export default function TujuanPage() {
               "-",
               "-",
               "-",
-              "-",
             ]);
             return;
           }
@@ -234,8 +231,7 @@ export default function TujuanPage() {
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
               sanitizeForPdf(target.target),
-              target.realisasi ?? 0,
-              sanitizeForPdf(target.satuan),
+              sanitizeForPdf(target.realisasi ?? 0),
               sanitizeForPdf(formatPercentageText(target.capaian)),
               sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
             ]);
@@ -284,10 +280,9 @@ export default function TujuanPage() {
         3: { cellWidth: 200 },
         4: { cellWidth: 50, halign: "center" },
         5: { cellWidth: 50, halign: "center" },
-        6: { cellWidth: 50, halign: "center" },
+        6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 50, halign: "center" },
-        8: { cellWidth: 50, halign: "center" },
-        9: { cellWidth: 70 },
+        8: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },

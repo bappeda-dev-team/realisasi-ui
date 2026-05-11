@@ -70,14 +70,13 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                             <ColTargetTujuanComponent
                                 target={target.target}
                                 realisasi={target.realisasi}
-                                satuan={target.satuan}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
                                 canEdit={canEdit}
                                 handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
                             />
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center" colSpan={5}>
+                            <td className="border border-red-400 px-6 py-4 text-center" colSpan={4}>
                                 Tidak ada target
                             </td>
                         )}
@@ -111,7 +110,7 @@ const EmptyIndikatorRow: React.FC<{
             <tr key={tujuan.tujuanId}>
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
                 <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanOpd}</td>
-                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+                <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
                 </td>
                 <td className="border border-red-400 px-6 py-4 text-center">
@@ -127,14 +126,13 @@ const EmptyIndikatorRow: React.FC<{
 type TargetColProps = {
     target: string;
     realisasi: number;
-    satuan: string;
     capaian: string;
     keteranganCapaian: string;
     canEdit: boolean;
     handleClick?: () => void;
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, canEdit, handleClick }) => {
 
     return (
         <>
@@ -152,7 +150,6 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
                     )}
                 </div>
             </td>
-            <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
         </>

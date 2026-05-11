@@ -1,24 +1,19 @@
 import React from "react";
-import { SasaranPemda, TargetRealisasiCapaianSasaran } from "@/types";
+import { SasaranPemdaRealisasiGrouped, TargetRealisasiCapaianSasaran } from "@/types";
 import RowSasaranComponent from "./RowSasaranComponent";
 
 interface TableSasaranProps {
   tahun: number;
   bulanLabel?: string;
-  sasaranPemda: SasaranPemda[];
-  targetRealisasiCapaian: TargetRealisasiCapaianSasaran[];
+  sasaranPemda: SasaranPemdaRealisasiGrouped[];
   handleOpenPrintPreview: () => void;
-  handleOpenModal: (
-    sasaran: SasaranPemda,
-    dataTargetRealisasi: TargetRealisasiCapaianSasaran[],
-  ) => void;
+  handleOpenModal: (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
 }
 
 function TableSasaran({
   tahun,
   bulanLabel,
   sasaranPemda,
-  targetRealisasiCapaian,
   handleOpenPrintPreview,
   handleOpenModal,
 }: TableSasaranProps) {
@@ -58,7 +53,7 @@ function TableSasaran({
           </th>
           <th
             key={tahun}
-            colSpan={5}
+            colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
@@ -75,10 +70,7 @@ function TableSasaran({
             Target
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Realisasi
-          </th>
-          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Satuan
+            Realisasi (%)
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
             Capaian
@@ -91,10 +83,9 @@ function TableSasaran({
       <tbody>
         {sasaranPemda.map((sas, index) => (
           <RowSasaranComponent
-            key={sas.id_sasaran_pemda}
+            key={sas.sasaranId}
             no={index + 1}
             sasaran={sas}
-            dataTargetRealisasi={targetRealisasiCapaian}
             tahun={tahun}
             handleOpenPrintPreview={handleOpenPrintPreview}
             handleOpenModal={handleOpenModal}

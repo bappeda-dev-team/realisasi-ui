@@ -2,14 +2,12 @@
 
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useFilterContext } from "@/context/FilterContext";
-import { getMonthName } from "@/lib/months";
-import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataSasaranRealisasi";
+import { getMonthKey, getMonthName } from "@/lib/months";
 import {
-  PerencanaanSasaranPemdaResponse,
   RealisasiSasaranResponse,
-  SasaranPemda,
+  SasaranPemdaRealisasiGrouped,
   TargetRealisasiCapaianSasaran,
 } from "@/types";
 import TableSasaran from "./_components/TableSasaran";
@@ -22,32 +20,18 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 const SasaranPage = () => {
   const { activatedTahun: selectedTahun, activatedBulan } = useFilterContext();
   const selectedTahunNum = selectedTahun ? parseInt(selectedTahun) : 2025;
+  const bulanKey = getMonthKey(activatedBulan ?? null);
   const bulanName = getMonthName(activatedBulan ?? null);
-  const periode = [2025, 2026, 2027, 2028, 2029, 2030];
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
-  const jenisPeriode = "rpjmd";
-  const {
-    data: sasaranData,
-    loading: perencanaanLoading,
-    error: perencanaanError,
-  } = useFetchData<PerencanaanSasaranPemdaResponse>({
-    url: `/api/perencanaan/sasaran_pemda/findall/tahun_awal/${tahunAwal}/tahun_akhir/${tahunAkhir}/jenis_periode/${jenisPeriode}`,
-  });
+
   const {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
     refetch: refetchRealisasi,
   } = useFetchData<RealisasiSasaranResponse>({
-    url: selectedTahun && bulanName ? `/api/v1/realisasi/sasarans/by-tahun/${selectedTahun}/by-bulan/${encodeURIComponent(bulanName)}` : null,
+    url: selectedTahun && bulanKey ? `/api/v1/realisasi/sasarans/by-tahun/${selectedTahun}/by-bulan/${encodeURIComponent(bulanKey)}` : null,
   });
-  const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
-    TargetRealisasiCapaianSasaran[]
-  >([]);
-  const [PerencanaanSasaran, setPerencanaanSasaran] = useState<SasaranPemda[]>(
-    [],
-  );
+
   const [OpenModal, setOpenModal] = useState<boolean>(false);
   const [SelectedSasaran, setSelectedSasaran] = useState<
     TargetRealisasiCapaianSasaran[]
@@ -57,21 +41,59 @@ const SasaranPage = () => {
   const [pdfFileName, setPdfFileName] = useState("sasaran-pemda.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
-  useEffect(() => {
-    if (sasaranData?.data && realisasiData) {
-      const perencanaan: SasaranPemda[] = sasaranData.data
-        .flatMap((tema) => tema.subtematik)
-        .flatMap((subTema) => subTema.sasaran_pemda);
+  const targetRealisasiCapaian = useMemo<TargetRealisasiCapaianSasaran[]>(() => {
+    return (realisasiData ?? []).map((item) => ({
+      targetRealisasiId: item.id ?? null,
+      sasaranPemda: item.sasaran ?? "-",
+      sasaranId: String(item.sasaranId),
+      indikatorId: String(item.indikatorId),
+      indikator: item.indikator ?? "-",
+      rumusPerhitungan: item.rumusPerhitungan ?? "-",
+      sumberData: item.sumberData ?? "-",
+      targetId: String(item.targetId),
+      target: item.target ?? "-",
+      realisasi: item.realisasi ?? 0,
+      capaian: item.capaian ?? "-",
+      keteranganCapaian: item.keteranganCapaian ?? "-",
+      satuan: item.satuan ?? "-",
+      tahun: String(item.tahun ?? ""),
+    }));
+  }, [realisasiData]);
 
-      setPerencanaanSasaran(perencanaan);
+  const groupedSasaranPemda = useMemo<SasaranPemdaRealisasiGrouped[]>(() => {
+    const sasaranMap = new Map<string, SasaranPemdaRealisasiGrouped>();
 
-      const combinedData = gabunganDataPerencanaanRealisasi(
-        perencanaan,
-        realisasiData,
-      );
-      setTargetRealisasiCapaian(combinedData);
-    }
-  }, [sasaranData, realisasiData]);
+    targetRealisasiCapaian.forEach((item) => {
+      const sasaranKey = item.sasaranId;
+      const indikatorKey = item.indikatorId;
+
+      let sasaran = sasaranMap.get(sasaranKey);
+      if (!sasaran) {
+        sasaran = {
+          sasaranId: sasaranKey,
+          sasaranPemda: item.sasaranPemda,
+          indikator: [],
+        };
+        sasaranMap.set(sasaranKey, sasaran);
+      }
+
+      let indikator = sasaran.indikator.find((row) => row.id === indikatorKey);
+      if (!indikator) {
+        indikator = {
+          id: indikatorKey,
+          indikator: item.indikator,
+          rumusPerhitungan: item.rumusPerhitungan,
+          sumberData: item.sumberData,
+          targets: [],
+        };
+        sasaran.indikator.push(indikator);
+      }
+
+      indikator.targets.push(item);
+    });
+
+    return Array.from(sasaranMap.values());
+  }, [targetRealisasiCapaian]);
 
   useEffect(() => {
     return () => {
@@ -81,14 +103,20 @@ const SasaranPage = () => {
     };
   }, [pdfPreviewUrl]);
 
-  if (perencanaanLoading || realisasiLoading)
-    return <LoadingBeat loading={perencanaanLoading} />;
-  if (perencanaanError)
-    return <div>Error fetching perencanaan: {perencanaanError}</div>;
+  if (realisasiLoading)
+    return <LoadingBeat loading={realisasiLoading} />;
   if (realisasiError)
     return <div>Error fetching realisasi: {realisasiError}</div>;
 
-  if (!selectedTahun || !activatedBulan || !bulanName) {
+  if (groupedSasaranPemda.length === 0) {
+    return (
+      <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+        Data sasaran pemda tidak ada.
+      </div>
+    );
+  }
+
+  if (!selectedTahun || !activatedBulan || !bulanKey || !bulanName) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         Pilih dan aktifkan periode, tahun, dan bulan agar data sasaran pemda muncul.
@@ -97,20 +125,8 @@ const SasaranPage = () => {
   }
 
   // modal logic
-  const handleOpenModal = (
-    sasaran: SasaranPemda,
-    dataTargetRealisasi: TargetRealisasiCapaianSasaran[],
-  ) => {
-    // sasaran -> buat text diatas sama filter
-    const targetCapaian = dataTargetRealisasi.filter(
-      (tc) => tc.sasaranId === sasaran.id_sasaran_pemda.toString(),
-    );
-
-    if (targetCapaian) {
-      setSelectedSasaran(targetCapaian);
-    } else {
-      setSelectedSasaran([]);
-    }
+  const handleOpenModal = (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => {
+    setSelectedSasaran(dataTargetRealisasi);
     setOpenModal(true);
   };
 
@@ -156,22 +172,18 @@ const SasaranPage = () => {
       "Rumus Perhitungan",
       "Sumber Data",
       "Target",
-      "Realisasi",
-      "Satuan",
+      "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
     ]];
 
     const tableBody: any[] = [];
 
-    PerencanaanSasaran.forEach((sasaran, sasaranIndex) => {
-      const indikatorList = sasaran.indikator ?? [];
-
-      if (indikatorList.length === 0) {
+    groupedSasaranPemda.forEach((sasaran, sasaranIndex) => {
+      if (!sasaran.indikator.length) {
         tableBody.push([
           sasaranIndex + 1,
-          sanitizeForPdf(sasaran.sasaran_pemda),
-          "-",
+          sanitizeForPdf(sasaran.sasaranPemda),
           "-",
           "-",
           "-",
@@ -183,26 +195,46 @@ const SasaranPage = () => {
         return;
       }
 
-      indikatorList.forEach((indikator, indikatorIndex) => {
-        const targetData = TargetRealisasiCapaian.find(
-          (item) =>
-            item.sasaranId === sasaran.id_sasaran_pemda.toString() &&
-            item.indikatorId === indikator.id.toString() &&
-            item.tahun === selectedTahunNum.toString(),
-        );
+      const detailRows: Array<Array<string | number>> = [];
 
-        tableBody.push([
-          indikatorIndex === 0 ? sasaranIndex + 1 : "",
-          indikatorIndex === 0 ? sanitizeForPdf(sasaran.sasaran_pemda) : "",
-          sanitizeForPdf(indikator.indikator),
-          sanitizeForPdf(indikator.rumus_perhitungan),
-          sanitizeForPdf(indikator.sumber_data),
-          sanitizeForPdf(targetData?.target),
-          sanitizeForPdf(targetData?.realisasi ?? 0),
-          sanitizeForPdf(targetData?.satuan),
-          sanitizeForPdf(formatPercentageText(targetData?.capaian)),
-          sanitizeForPdf(formatPercentageText(targetData?.keteranganCapaian)),
-        ]);
+      sasaran.indikator.forEach((indikator) => {
+        if (!indikator.targets.length) {
+          detailRows.push([
+            sanitizeForPdf(indikator.indikator),
+            sanitizeForPdf(indikator.rumusPerhitungan),
+            sanitizeForPdf(indikator.sumberData),
+            "-",
+            "-",
+            "-",
+            "-",
+          ]);
+          return;
+        }
+
+        indikator.targets.forEach((target) => {
+          detailRows.push([
+            sanitizeForPdf(indikator.indikator),
+            sanitizeForPdf(indikator.rumusPerhitungan),
+            sanitizeForPdf(indikator.sumberData),
+            sanitizeForPdf(target.target),
+            sanitizeForPdf(target.realisasi ?? 0),
+            sanitizeForPdf(formatPercentageText(target.capaian)),
+            sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+          ]);
+        });
+      });
+
+      detailRows.forEach((detailRow, detailIndex) => {
+        if (detailIndex === 0) {
+          tableBody.push([
+            { content: sasaranIndex + 1, rowSpan: detailRows.length },
+            { content: sanitizeForPdf(sasaran.sasaranPemda), rowSpan: detailRows.length },
+            ...detailRow,
+          ]);
+          return;
+        }
+
+        tableBody.push(detailRow);
       });
     });
 
@@ -233,10 +265,9 @@ const SasaranPage = () => {
         3: { cellWidth: 100 },
         4: { cellWidth: 120 },
         5: { cellWidth: 45, halign: "center" },
-        6: { cellWidth: 45, halign: "center" },
+        6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
-        8: { cellWidth: 45, halign: "center" },
-        9: { cellWidth: 70 },
+        8: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -285,8 +316,7 @@ const SasaranPage = () => {
         <TableSasaran
           tahun={selectedTahunNum}
           bulanLabel={bulanName}
-          sasaranPemda={PerencanaanSasaran}
-          targetRealisasiCapaian={TargetRealisasiCapaian}
+          sasaranPemda={groupedSasaranPemda}
           handleOpenPrintPreview={handleOpenPrintPreview}
           handleOpenModal={handleOpenModal}
         />
@@ -300,6 +330,7 @@ const SasaranPage = () => {
           <FormRealisasiSasaranPemda
             requestValues={SelectedSasaran}
             tahun={selectedTahunNum}
+            bulan={bulanKey}
             bulanLabel={bulanName}
             onClose={() => {
               setOpenModal(false);

@@ -194,8 +194,7 @@ export default function SasaranPage() {
       "Rumus Perhitungan",
       "Sumber Data",
       "Target",
-      "Realisasi",
-      "Satuan",
+      "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
     ]];
@@ -218,7 +217,6 @@ export default function SasaranPage() {
               "-",
               "-",
               "-",
-              "-",
             ]);
             return;
           }
@@ -229,8 +227,7 @@ export default function SasaranPage() {
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
               sanitizeForPdf(target.target),
-              target.realisasi ?? 0,
-              sanitizeForPdf(target.satuan),
+              sanitizeForPdf(target.realisasi ?? 0),
               sanitizeForPdf(formatPercentageText(target.capaian)),
               sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
             ]);
@@ -279,10 +276,9 @@ export default function SasaranPage() {
         3: { cellWidth: 200 },
         4: { cellWidth: 50, halign: "center" },
         5: { cellWidth: 50, halign: "center" },
-        6: { cellWidth: 50, halign: "center" },
+        6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 50, halign: "center" },
-        8: { cellWidth: 50, halign: "center" },
-        9: { cellWidth: 70 },
+        8: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },

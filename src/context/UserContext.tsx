@@ -3,7 +3,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { authenticate } from "@/lib/auth";
 import { User } from "@/types";
-import { clearSessionId, getSessionId } from "@/lib/session";
+import {
+  clearSessionId,
+  getSessionId,
+  SESSION_EXPIRED_EVENT,
+} from "@/lib/session";
 
 interface UserContextType {
   user: User | null;
@@ -11,6 +15,7 @@ interface UserContextType {
   error: string | null;
   setUser: (user: User | null) => void;
   setError: (err: string | null) => void;
+  logout: (reason?: string) => void;
   lastLoginAt: number | null;
   setLastLoginAt: (n: number | null) => void;
 }
@@ -22,6 +27,7 @@ const UserContext = createContext<UserContextType>({
   error: null,
   setUser: () => {},
   setError: () => {},
+  logout: () => {},
   lastLoginAt: null,
   setLastLoginAt: () => {},
 });
@@ -33,6 +39,13 @@ export function UserProvider({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastLoginAt, setLastLoginAt] = useState<number | null>(null);
+
+  const logout = (reason = "Session habis, silakan login kembali.") => {
+    clearSessionId();
+    setUser(null);
+    setError(reason);
+    setLastLoginAt(null);
+  };
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,15 +64,24 @@ export function UserProvider({
         setUser(user);
         setError(null);
       } catch (_) {
-        clearSessionId();
-        setUser(null);
-        setError("Session habis, silakan login kembali.");
+        logout();
       } finally {
         setLoading(false);
       }
     };
 
     fetchUser();
+  }, []);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      logout();
+    };
+
+    window.addEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    return () => {
+      window.removeEventListener(SESSION_EXPIRED_EVENT, handleSessionExpired);
+    };
   }, []);
 
   return (
@@ -70,6 +92,7 @@ export function UserProvider({
         error,
         setUser,
         setError,
+        logout,
         lastLoginAt,
         setLastLoginAt,
       }}

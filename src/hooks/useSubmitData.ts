@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SubmitResponse } from "@/types";
-import { getSessionId } from "@/lib/session";
+import { getSessionId, notifySessionExpired } from "@/lib/session";
 
 interface useSubmitDataProps {
   url: string;
@@ -34,6 +34,10 @@ export const useSubmitData = <T>({
       });
 
       if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          notifySessionExpired();
+          throw new Error("Session habis, silakan login kembali.");
+        }
         throw new Error("Failed to submit the request");
       }
 
