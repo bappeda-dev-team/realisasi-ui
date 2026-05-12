@@ -56,7 +56,6 @@ interface RenjaHierarchyNode {
     target?: RenjaNodeTargetValue[];
     pagu?: RenjaNodePaguValue[];
     indikator?: RenjaNodeIndikatorValue[];
-    bidang_urusan?: RenjaHierarchyNode[];
     program?: RenjaHierarchyNode[];
     kegiatan?: RenjaHierarchyNode[];
     subkegiatan?: RenjaHierarchyNode[];
@@ -68,7 +67,7 @@ interface RenjaOpdHierarchyResponse {
     bulan: string;
     pagu_total_realisasi: number;
     id_renja: string;
-    urusan?: RenjaHierarchyNode[];
+    program?: RenjaHierarchyNode[];
 }
 
 interface FlattenedRenjaRow {
@@ -76,8 +75,8 @@ interface FlattenedRenjaRow {
     kodeOpd: string;
     tahun: string;
     bulan: string;
-    urusanKey: string;
-    urusanNumber: number;
+    programKey: string;
+    programNumber: number;
     hierarchyLevel: number;
     kodeRenja: string;
     namaRenja: string;
@@ -123,15 +122,10 @@ interface FlattenedRenjaRow {
     }>;
 }
 
-const toJenisRenjaPayload = (jenisRenja: string | undefined): "URUSAN" | "BIDANGURUSAN" | "PROGRAM" | "KEGIATAN" | "SUBKEGIATAN" => {
+const toJenisRenjaPayload = (jenisRenja: string | undefined): "PROGRAM" | "KEGIATAN" | "SUBKEGIATAN" => {
     const normalized = (jenisRenja || "").toUpperCase();
 
     switch (normalized) {
-        case "URUSAN":
-            return "URUSAN";
-        case "BIDANGURUSAN":
-        case "BIDANG URUSAN":
-            return "BIDANGURUSAN";
         case "PROGRAM":
             return "PROGRAM";
         case "KEGIATAN":
@@ -162,7 +156,6 @@ const Table = () => {
     const getHeaderColorByJenisRenja = (jenisRenja: string | undefined) => {
         const normalizedJenisRenja = (jenisRenja || "").toLowerCase();
 
-        if (normalizedJenisRenja.includes("bidang urusan")) return "bg-red-600 text-white";
         if (normalizedJenisRenja.includes("program")) return "bg-blue-600 text-white";
         if (normalizedJenisRenja.includes("subkegiatan") || normalizedJenisRenja.includes("sub kegiatan")) return "bg-lime-500 text-white";
         if (normalizedJenisRenja.includes("kegiatan")) return "bg-green-700 text-white";
@@ -173,7 +166,6 @@ const Table = () => {
     const getHeaderFillColorByJenisRenja = (jenisRenja: string | undefined): [number, number, number] => {
         const normalizedJenisRenja = (jenisRenja || "").toLowerCase();
 
-        if (normalizedJenisRenja.includes("bidang urusan")) return [220, 38, 38];
         if (normalizedJenisRenja.includes("program")) return [37, 99, 235];
         if (normalizedJenisRenja.includes("subkegiatan") || normalizedJenisRenja.includes("sub kegiatan")) return [132, 204, 22];
         if (normalizedJenisRenja.includes("kegiatan")) return [21, 128, 61];
@@ -209,10 +201,6 @@ const Table = () => {
 
     const normalizeJenisRenja = (jenisRenja: string | undefined) => {
         switch ((jenisRenja || "").toUpperCase()) {
-            case "URUSAN":
-                return "Urusan";
-            case "BIDANGURUSAN":
-                return "Bidang Urusan";
             case "PROGRAM":
                 return "Program";
             case "KEGIATAN":
@@ -316,13 +304,12 @@ const Table = () => {
 
         const visitNode = (node: RenjaHierarchyNode) => {
             map.set(node.kode_renja, node);
-            node.bidang_urusan?.forEach(visitNode);
             node.program?.forEach(visitNode);
             node.kegiatan?.forEach(visitNode);
             node.subkegiatan?.forEach(visitNode);
         };
 
-        roots?.forEach((root) => root.urusan?.forEach(visitNode));
+        roots?.forEach((root) => root.program?.forEach(visitNode));
 
         return map;
     };
@@ -337,8 +324,8 @@ const Table = () => {
         const pushRows = (
             node: RenjaHierarchyNode,
             root: RenjaOpdHierarchyResponse,
-            urusanNode: RenjaHierarchyNode,
-            urusanNumber: number,
+            programNode: RenjaHierarchyNode,
+            programNumber: number,
             hierarchyLevel: number,
         ) => {
             const matchedPaguNode = paguMap.get(node.kode_renja);
@@ -356,8 +343,8 @@ const Table = () => {
                     kodeOpd: root.kode_opd ?? kodeOpd ?? "-",
                     tahun: root.tahun ?? activatedTahun ?? "",
                     bulan: root.bulan ?? bulanKey ?? "",
-                    urusanKey: urusanNode.kode_renja,
-                    urusanNumber,
+                    programKey: programNode.kode_renja,
+                    programNumber,
                     hierarchyLevel,
                     kodeRenja: node.kode_renja ?? "-",
                     namaRenja: node.nama_renja?.trim() || "-",
@@ -390,38 +377,37 @@ const Table = () => {
                 });
             });
 
-            node.bidang_urusan?.forEach((child) => pushRows(child, root, urusanNode, urusanNumber, hierarchyLevel + 1));
-            node.program?.forEach((child) => pushRows(child, root, urusanNode, urusanNumber, hierarchyLevel + 1));
-            node.kegiatan?.forEach((child) => pushRows(child, root, urusanNode, urusanNumber, hierarchyLevel + 1));
-            node.subkegiatan?.forEach((child) => pushRows(child, root, urusanNode, urusanNumber, hierarchyLevel + 1));
+            node.program?.forEach((child) => pushRows(child, root, programNode, programNumber, hierarchyLevel + 1));
+            node.kegiatan?.forEach((child) => pushRows(child, root, programNode, programNumber, hierarchyLevel + 1));
+            node.subkegiatan?.forEach((child) => pushRows(child, root, programNode, programNumber, hierarchyLevel + 1));
         };
 
-        let urusanNumber = 0;
+        let programNumber = 0;
 
-        targetRoots.forEach((root) => root.urusan?.forEach((node) => {
-            urusanNumber += 1;
-            pushRows(node, root, node, urusanNumber, 0);
+        targetRoots.forEach((root) => root.program?.forEach((node) => {
+            programNumber += 1;
+            pushRows(node, root, node, programNumber, 0);
         }));
 
         return flattenedRows;
     }, [activatedTahun, bulanKey, data?.data, kodeOpd, paguResponse?.data]);
 
-    const urusanRowSpans = useMemo(() => {
+    const programRowSpans = useMemo(() => {
         const rowSpanMap = new Map<string, number>();
 
         rows.forEach((row) => {
-            rowSpanMap.set(row.urusanKey, (rowSpanMap.get(row.urusanKey) ?? 0) + 1);
+            rowSpanMap.set(row.programKey, (rowSpanMap.get(row.programKey) ?? 0) + 1);
         });
 
         return rowSpanMap;
     }, [rows]);
 
-    const firstRowIdByUrusan = useMemo(() => {
+    const firstRowIdByProgram = useMemo(() => {
         const firstRowMap = new Map<string, string>();
 
         rows.forEach((row) => {
-            if (!firstRowMap.has(row.urusanKey)) {
-                firstRowMap.set(row.urusanKey, row.id);
+            if (!firstRowMap.has(row.programKey)) {
+                firstRowMap.set(row.programKey, row.id);
             }
         });
 
@@ -445,8 +431,6 @@ const Table = () => {
 
     const getHierarchyCellColorClass = (jenisRenja: string) => {
         switch ((jenisRenja || "").toLowerCase()) {
-            case "bidang urusan":
-                return "bg-red-600 text-white";
             case "program":
                 return "bg-blue-600 text-white";
             case "kegiatan":
@@ -460,8 +444,6 @@ const Table = () => {
 
     const getHierarchyCellColorForPdf = (jenisRenja: string): { fillColor?: [number, number, number]; textColor?: [number, number, number] } => {
         switch ((jenisRenja || "").toLowerCase()) {
-            case "bidang urusan":
-                return { fillColor: [220, 38, 38], textColor: [255, 255, 255] };
             case "program":
                 return { fillColor: [37, 99, 235], textColor: [255, 255, 255] };
             case "kegiatan":
@@ -510,7 +492,7 @@ const Table = () => {
         const tableHead: any[] = [
             [
                 { content: "No", rowSpan: 2 },
-                { content: "Bidang Urusan/Program/Kegiatan/Subkegiatan", rowSpan: 2 },
+                { content: "Program/Kegiatan/Subkegiatan", rowSpan: 2 },
                 { content: "Indikator", rowSpan: 2 },
                 { content: `Renja Target ${activatedTahun} - ${bulanName}`, colSpan: 4 },
                 { content: `Renja Pagu ${activatedTahun} - ${bulanName}`, colSpan: 4 },
@@ -529,18 +511,18 @@ const Table = () => {
 
         const tableBody: any[] = [];
 
-        const renderedUrusan = new Set<string>();
+        const renderedProgram = new Set<string>();
 
         rows.forEach((row) => {
             const target = row.targets[0];
-            const isFirstRowInUrusan = !renderedUrusan.has(row.urusanKey);
+            const isFirstRowInProgram = !renderedProgram.has(row.programKey);
 
-            if (isFirstRowInUrusan) {
-                renderedUrusan.add(row.urusanKey);
+            if (isFirstRowInProgram) {
+                renderedProgram.add(row.programKey);
             }
 
             tableBody.push([
-                ...(isFirstRowInUrusan ? [{ content: row.urusanNumber, rowSpan: urusanRowSpans.get(row.urusanKey) ?? 1 }] : []),
+                ...(isFirstRowInProgram ? [{ content: row.programNumber, rowSpan: programRowSpans.get(row.programKey) ?? 1 }] : []),
                 `${"    ".repeat(row.hierarchyLevel)}${row.jenisRenja}\n${row.namaRenja !== "-" ? row.namaRenja : "-"}\n(${row.kodeRenja || "-"})`,
                 row.indikator || "-",
                 target?.target || "-",
@@ -689,7 +671,7 @@ const Table = () => {
                     <thead>
                         <tr className={`text-xm ${headerColor}`}>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">Bidang Urusan/Program/Kegiatan/Subkegiatan</td>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">Program/Kegiatan/Subkegiatan</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
@@ -711,20 +693,20 @@ const Table = () => {
                             <tr key={row.id}>
                                 {(() => {
                                     const target = row.targets[0];
-                                    const isFirstRowInUrusan = firstRowIdByUrusan.get(row.urusanKey) === row.id;
+                                    const isFirstRowInProgram = firstRowIdByProgram.get(row.programKey) === row.id;
 
                                     return (
                                         <>
-                                            {isFirstRowInUrusan && (
-                                                <td rowSpan={urusanRowSpans.get(row.urusanKey) ?? 1} className="border-x border-b border-sky-600 py-4 px-3 text-center align-middle font-semibold">
-                                                    {row.urusanNumber}
+                                            {isFirstRowInProgram && (
+                                                <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-x border-b border-sky-600 py-4 px-3 text-center align-middle font-semibold">
+                                                    {row.programNumber}
                                                 </td>
                                             )}
                                             <td className={`border-r border-b border-sky-600 px-6 py-4 align-top ${getHierarchyCellColorClass(row.jenisRenja)}`}>
                                                 <div className={`flex flex-col gap-1 ${getHierarchyIndentClass(row.hierarchyLevel)}`}>
                                                     <span className="font-semibold">{row.jenisRenja || "-"}</span>
                                                     {/*<span>{row.namaRenja !== "-" ? row.namaRenja : "-"}</span>*/}
-                                                    <span className={`text-sm ${row.jenisRenja === "Subkegiatan" || row.jenisRenja === "Urusan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
+                                                    <span className={`text-sm ${row.jenisRenja === "Subkegiatan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line align-top">
@@ -772,8 +754,8 @@ const Table = () => {
                                             <td className="border-x border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.keteranganCapaianPagu || "-")}
                                             </td>
-                                            {isFirstRowInUrusan && (
-                                                <td rowSpan={urusanRowSpans.get(row.urusanKey) ?? 1} className="border-r border-b border-sky-600 px-6 py-4 text-center align-middle">
+                                            {isFirstRowInProgram && (
+                                                <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-r border-b border-sky-600 px-6 py-4 text-center align-middle">
                                                     <div className="flex flex-col items-center gap-2">
                                                         <ButtonGreenBorder
                                                             className="w-full"
