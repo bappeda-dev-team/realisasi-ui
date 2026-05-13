@@ -68,8 +68,6 @@ const FormRealisasiRenjaTarget: React.FC<FormRealisasiRenjaTargetProps> = ({ req
 
         const payload: RenjaBatchRequest[] = formData.map((item) => ({
             targetRealisasiId: item.targetRealisasiId,
-            renjaId: item.renjaId,
-            renja: item.renja,
             kodeRenja: item.kodeRenja,
             jenisRenja: item.jenisRenja,
             nip: item.nip,
@@ -109,7 +107,6 @@ const FormRealisasiRenjaTarget: React.FC<FormRealisasiRenjaTargetProps> = ({ req
         }
     };
 
-    const currentRenja = formData[0]?.renja ?? "-";
     const currentIndikator = formData[0]?.indikator ?? "-";
 
     return (
@@ -118,7 +115,6 @@ const FormRealisasiRenjaTarget: React.FC<FormRealisasiRenjaTargetProps> = ({ req
             className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto"
         >
             <div className="mb-4">
-                <h3 className="font-bold">Rencana Kerja: {currentRenja}</h3>
                 <p className="text-sm text-gray-600 mt-1">Indikator: {currentIndikator}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3 text-sm">
                     {formData.map((target) => (
