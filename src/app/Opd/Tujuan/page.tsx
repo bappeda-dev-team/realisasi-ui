@@ -1,22 +1,17 @@
 "use client";
 
 import { LoadingBeat } from "@/components/Global/Loading";
-import { FormModal } from "@/components/Global/Modal";
 import { useFilterContext } from "@/context/FilterContext";
-import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
-import { canEditOpdRealisasi } from "@/lib/rbac";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import {
   TujuanOpdRealisasiGrouped,
   TujuanOpdRealisasiResponse,
-  TujuanOpdTargetRealisasiCapaian,
 } from "@/types";
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
-import FormRealisasiTujuanOpd from "./_components/FormRealisasiTujuanOpd";
 import TableTujuanOpd from "./_components/TableTujuanOpd";
 
 const sanitizeForPdf = (value: unknown) => {
@@ -37,7 +32,6 @@ const sanitizeForPdf = (value: unknown) => {
 };
 
 export default function TujuanPage() {
-  const { user } = useUserContext();
   const {
     activatedDinas: kodeOpd,
     activatedTahun: selectedTahun,
@@ -53,7 +47,6 @@ export default function TujuanPage() {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
-    refetch: refetchRealisasi,
   } = useFetchData<TujuanOpdRealisasiResponse>({
     url:
       kodeOpd && selectedTahunValue && bulanKey
@@ -61,13 +54,10 @@ export default function TujuanPage() {
         : null,
   });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [tujuanOpdSelected, setTujuanOpdSelected] = useState<TujuanOpdTargetRealisasiCapaian[]>([]);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("tujuan-opd.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-  const canEdit = canEditOpdRealisasi(user);
 
   const groupedTujuanOpd = useMemo<TujuanOpdRealisasiGrouped[]>(() => {
     const source = realisasiData ?? [];
@@ -169,12 +159,6 @@ export default function TujuanPage() {
       </div>
     );
   }
-
-  const handleOpenModal = (dataTargetRealisasi: TujuanOpdTargetRealisasiCapaian[]) => {
-    if (!canEdit) return;
-    setTujuanOpdSelected(dataTargetRealisasi);
-    setIsModalOpen(true);
-  };
 
   const createPdfDocument = () => {
     const doc = new jsPDF({
@@ -332,31 +316,8 @@ export default function TujuanPage() {
         tahun={selectedTahunValue}
         bulanLabel={bulanName}
         tujuanOpd={groupedTujuanOpd}
-        canEdit={canEdit}
         handleOpenPrintPreview={handleOpenPrintPreview}
-        handleOpenModal={handleOpenModal}
       />
-      <FormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-        title={`Realisasi Tujuan OPD - ${tujuanOpdSelected[0]?.tujuanOpd || ""}`}
-      >
-        <FormRealisasiTujuanOpd
-          requestValues={tujuanOpdSelected}
-          tahun={selectedTahunValue}
-          bulan={bulanKey ?? ""}
-          bulanLabel={bulanName}
-          onClose={() => {
-            setIsModalOpen(false);
-          }}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            refetchRealisasi();
-          }}
-        />
-      </FormModal>
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>

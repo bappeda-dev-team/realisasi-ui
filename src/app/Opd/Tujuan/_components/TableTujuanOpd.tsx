@@ -6,18 +6,14 @@ interface TableTujuanProps {
   tahun: number;
   bulanLabel?: string;
   tujuanOpd: TujuanOpdRealisasiGrouped[];
-  canEdit: boolean;
   handleOpenPrintPreview: () => void;
-  handleOpenModal: (dataTargetRealisasi: TujuanOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
 }
 
 function TableTujuan({
   tahun,
   bulanLabel,
   tujuanOpd,
-  canEdit,
   handleOpenPrintPreview,
-  handleOpenModal,
 }: TableTujuanProps) {
   return (
     <table className="w-full">
@@ -89,9 +85,7 @@ function TableTujuan({
               no={index + 1}
               tujuan={tuj}
               tahun={tahun}
-              canEdit={canEdit}
               handleOpenPrintPreview={handleOpenPrintPreview}
-              handleOpenModal={handleOpenModal}
             />
           ))
         ) : (

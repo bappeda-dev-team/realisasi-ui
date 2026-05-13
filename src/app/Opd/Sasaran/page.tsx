@@ -1,22 +1,17 @@
 "use client";
 
 import { LoadingBeat } from "@/components/Global/Loading";
-import { FormModal } from "@/components/Global/Modal";
 import { useFilterContext } from "@/context/FilterContext";
-import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
-import { canEditOpdRealisasi } from "@/lib/rbac";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import {
   SasaranOpdRealisasiGrouped,
   SasaranOpdRealisasiResponse,
-  SasaranOpdTargetRealisasiCapaian,
 } from "@/types";
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
-import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
 import TableSasaranOpd from "./_components/TableSasaranOpd";
 
 const sanitizeForPdf = (value: unknown) => {
@@ -37,7 +32,6 @@ const sanitizeForPdf = (value: unknown) => {
 };
 
 export default function SasaranPage() {
-  const { user } = useUserContext();
   const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, activatedBulan, namaDinas: namaOpd } =
     useFilterContext();
 
@@ -49,7 +43,6 @@ export default function SasaranPage() {
     data: realisasiData,
     loading: realisasiLoading,
     error: realisasiError,
-    refetch: refetchRealisasi,
   } = useFetchData<SasaranOpdRealisasiResponse>({
     url:
       kodeOpd && selectedTahunValue && bulanKey
@@ -57,13 +50,10 @@ export default function SasaranPage() {
         : null,
   });
 
-  const [sasaranOpdSelected, setSasaranOpdSelected] = useState<SasaranOpdTargetRealisasiCapaian[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("sasaran-opd.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-  const canEdit = canEditOpdRealisasi(user);
 
   const groupedSasaranOpd = useMemo<SasaranOpdRealisasiGrouped[]>(() => {
     const source = realisasiData ?? [];
@@ -165,12 +155,6 @@ export default function SasaranPage() {
       </div>
     );
   }
-
-  const handleOpenModal = (dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => {
-    if (!canEdit) return;
-    setSasaranOpdSelected(dataTargetRealisasi);
-    setIsModalOpen(true);
-  };
 
   const createPdfDocument = () => {
     const doc = new jsPDF({
@@ -328,31 +312,8 @@ export default function SasaranPage() {
         tahun={selectedTahunValue}
         bulanLabel={bulanName}
         sasaranOpd={groupedSasaranOpd}
-        canEdit={canEdit}
         handleOpenPrintPreview={handleOpenPrintPreview}
-        handleOpenModal={handleOpenModal}
       />
-      <FormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-        title={`Realisasi Sasaran OPD - ${namaOpd || "-"} ${selectedTahunValue} - ${bulanName}`}
-      >
-        <FormRealisasiSasaranOpd
-          requestValues={sasaranOpdSelected}
-          tahun={selectedTahunValue}
-          bulan={bulanKey ?? ""}
-          bulanLabel={bulanName}
-          onClose={() => {
-            setIsModalOpen(false);
-          }}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            refetchRealisasi();
-          }}
-        />
-      </FormModal>
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>

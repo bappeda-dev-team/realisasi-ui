@@ -7,12 +7,10 @@ interface RowSasaranOpdComponentProps {
     no: number;
     sasaranOpd: SasaranOpdRealisasiGrouped;
     tahun: number;
-    canEdit: boolean;
     handleOpenPrintPreview: () => void;
-    handleOpenModal: (dataTargetRealisasi: SasaranOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
 }
 
-export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, handleOpenPrintPreview, handleOpenModal }: RowSasaranOpdComponentProps) {
+export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenPrintPreview }: RowSasaranOpdComponentProps) {
     const indikatorList = sasaranOpd.indikator ?? [];
 
     if (indikatorList.length === 0) {
@@ -36,13 +34,6 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
 
                 const targetsForRows = sortedTargets.length > 0 ? sortedTargets : [null];
                 const rowSpan = targetsForRows.length;
-                const handleClick = (targetIndex: number) => {
-                    const selectedTarget = targetsForRows[targetIndex];
-                    if (selectedTarget) {
-                        handleOpenModal([selectedTarget]);
-                    }
-                };
-
                 return targetsForRows.map((target, targetIndex) => (
                     <tr key={`${ind.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
                         {indikatorIndex === 0 && targetIndex === 0 && (
@@ -66,8 +57,6 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
                                 realisasi={target.realisasi}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
-                                canEdit={canEdit}
-                                handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
                             />
                         ) : (
                             <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={4}>
@@ -119,8 +108,6 @@ type TargetColProps = {
     realisasi: number;
     capaian: string;
     keteranganCapaian: string;
-    canEdit: boolean;
-    handleClick?: () => void;
 };
 
 const formatWithComma = (value: number | string): string => {
@@ -128,23 +115,13 @@ const formatWithComma = (value: number | string): string => {
         return value.toString().replace('.', ',');
     };
 
-const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian }) => {
 
     return (
         <>
             <td className="border border-emerald-500 px-6 py-4 text-center">{target}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">
-                <div className="flex flex-col items-center gap-2">
-                    <span>{formatWithComma(realisasi)}</span>
-                    {canEdit && handleClick && (
-                        <ButtonGreenBorder
-                            className="w-full"
-                            onClick={handleClick}
-                        >
-                            Realisasi
-                        </ButtonGreenBorder>
-                    )}
-                </div>
+                <span>{formatWithComma(realisasi)}</span>
             </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-emerald-500 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
@@ -12,8 +11,6 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenjaTargetOpdResponse } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import FormRealisasiRenjaTargetOpd from "./_components/FormRealisasiRenjaTargetOpd";
-import FormRealisasiRenjaPaguOpd from "./_components/FormRealisasiRenjaPaguOpd";
 
 interface ApiListResponse<T> {
     data?: T[];
@@ -139,13 +136,10 @@ const toJenisRenjaPayload = (jenisRenja: string | undefined): "PROGRAM" | "KEGIA
 };
 
 const Table = () => {
-    const [selectedRow, setSelectedRow] = useState<FlattenedRenjaRow | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState<string>("renja-opd.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-    const [modalType, setModalType] = useState<'target' | 'pagu'>('target');
     const { url } = useApiUrlContext();
 
     const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
@@ -181,8 +175,8 @@ const Table = () => {
         ? `${url}/api/v1/realisasi/renja_pagu/kodeOpd/${kodeOpd}/tahun/${activatedTahun}/bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
-    const { data, loading, error, refetch } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlTarget });
-    const { data: paguResponse, loading: loadingPagu, error: errorPagu, refetch: refetchPagu } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlPagu });
+    const { data, loading, error } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlTarget });
+    const { data: paguResponse, loading: loadingPagu, error: errorPagu } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlPagu });
 
     const parseNumericValue = (value: string | number | null | undefined) => {
         if (value === null || value === undefined || value === "") return null;
@@ -455,25 +449,6 @@ const Table = () => {
         }
     };
 
-    const handleSuccess = () => {
-        refetch();
-        refetchPagu();
-        setIsModalOpen(false);
-        setSelectedRow(null);
-    };
-
-    const openModal = (row: FlattenedRenjaRow, type: 'target' | 'pagu' = 'target') => {
-        setSelectedRow(row);
-        setModalType(type);
-        setIsModalOpen(true);
-    };
-
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedRow(null);
-        setModalType('target');
-    };
-
     const createPdfDocument = () => {
         const doc = new jsPDF({
             orientation: "landscape",
@@ -716,16 +691,7 @@ const Table = () => {
                                                 {target?.target || "-"}
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span>{target?.realisasi ?? "-"}</span>
-                                                    <ButtonGreenBorder
-                                                        className="w-full"
-                                                        onClick={() => openModal(row, 'target')}
-                                                        disabled={!row.targetRequest}
-                                                    >
-                                                        Realisasi
-                                                    </ButtonGreenBorder>
-                                                </div>
+                                                <span>{target?.realisasi ?? "-"}</span>
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.capaian || "-")}
@@ -737,16 +703,7 @@ const Table = () => {
                                                 {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                <div className="flex flex-col items-center gap-2">
-                                                    <span>{target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-"}</span>
-                                                    <ButtonGreenBorder
-                                                        className="w-full"
-                                                        onClick={() => openModal(row, 'pagu')}
-                                                        disabled={target?.pagu == null}
-                                                    >
-                                                        Realisasi
-                                                    </ButtonGreenBorder>
-                                                </div>
+                                                <span>{target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-"}</span>
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.capaianPagu || "-")}
@@ -774,25 +731,6 @@ const Table = () => {
                     </tbody>
                 </table>
             </div>
-            <FormModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.jenisRenja ?? "-"} (${selectedRow?.kodeRenja ?? "-"})`}
-            >
-                {modalType === 'pagu' ? (
-                    <FormRealisasiRenjaPaguOpd
-                        requestValues={selectedRow?.paguRequest ?? []}
-                        onClose={closeModal}
-                        onSuccess={handleSuccess}
-                    />
-                ) : (
-                    <FormRealisasiRenjaTargetOpd
-                        requestValues={selectedRow?.targetRequest ?? null}
-                        onClose={closeModal}
-                        onSuccess={handleSuccess}
-                    />
-                )}
-            </FormModal>
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div

@@ -7,12 +7,10 @@ interface TableSasaranOpdProps {
     tahun: number;
     bulanLabel?: string;
     sasaranOpd: SasaranOpdRealisasiGrouped[];
-    canEdit: boolean;
     handleOpenPrintPreview: () => void;
-    handleOpenModal: (dataTargetRealisasi: SasaranOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
 }
 
-export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, canEdit, handleOpenPrintPreview, handleOpenModal }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleOpenPrintPreview }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -40,9 +38,7 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, canEdit
                         no={index + 1}
                         sasaranOpd={sasOpd}
                         tahun={tahun}
-                        canEdit={canEdit}
                         handleOpenPrintPreview={handleOpenPrintPreview}
-                        handleOpenModal={handleOpenModal}
                     />
                 ))}
             </tbody>

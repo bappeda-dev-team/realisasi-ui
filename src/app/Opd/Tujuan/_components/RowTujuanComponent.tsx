@@ -7,18 +7,14 @@ interface RowTujuanComponentProps {
     no: number;
     tujuan: TujuanOpdRealisasiGrouped;
     tahun: number;
-    canEdit: boolean;
     handleOpenPrintPreview: () => void;
-    handleOpenModal: (dataTargetRealisasi: TujuanOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
 }
 
 const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     tujuan,
     tahun,
-    canEdit,
     handleOpenPrintPreview,
-    handleOpenModal
 }) => {
     const indikatorList = tujuan.indikator ?? [];
 
@@ -42,13 +38,6 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                 });
 
                 const targetsForRows = sortedTargets.length > 0 ? sortedTargets : [null];
-                const handleClick = (targetIndex: number) => {
-                    const selectedTarget = targetsForRows[targetIndex];
-                    if (selectedTarget) {
-                        handleOpenModal([selectedTarget]);
-                    }
-                };
-
                 return targetsForRows.map((target, targetIndex) => (
                     <tr key={`${ind.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
                         {indikatorIndex === 0 && targetIndex === 0 && (
@@ -72,8 +61,6 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 realisasi={target.realisasi}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
-                                canEdit={canEdit}
-                                handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
                             />
                         ) : (
                             <td className="border border-red-400 px-6 py-4 text-center" colSpan={4}>
@@ -128,27 +115,15 @@ type TargetColProps = {
     realisasi: number;
     capaian: string;
     keteranganCapaian: string;
-    canEdit: boolean;
-    handleClick?: () => void;
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian }) => {
 
     return (
         <>
             <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
             <td className="border border-red-400 px-6 py-4 text-center">
-                <div className="flex flex-col items-center gap-2">
-                    <span>{realisasi}</span>
-                    {canEdit && handleClick && (
-                        <ButtonGreenBorder
-                            className="w-full"
-                            onClick={handleClick}
-                        >
-                            Realisasi
-                        </ButtonGreenBorder>
-                    )}
-                </div>
+                <span>{realisasi}</span>
             </td>
             <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
