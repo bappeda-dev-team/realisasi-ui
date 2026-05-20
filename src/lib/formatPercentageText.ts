@@ -5,13 +5,23 @@ export const formatPercentageText = (value: unknown): string => {
 
   const text = String(value);
 
-  return text.replace(/(\d+)\.(\d+)%/g, (_match, integerPart: string, decimalPart: string) => {
+  return text.replace(/(\d+(?:\.(\d+))?)(%)?/g, (_match: string, numberPart: string, decimalPart: string | undefined, percentSign: string | undefined) => {
+    if (decimalPart === undefined) {
+      return numberPart + (percentSign || "");
+    }
+
     const trimmedDecimal = decimalPart.replace(/0+$/, "");
 
     if (trimmedDecimal.length === 0) {
-      return `${integerPart}%`;
+      return numberPart.split('.')[0] + (percentSign || "");
     }
 
-    return `${integerPart}.${trimmedDecimal}%`;
+    if (trimmedDecimal.length >= 3) {
+      const num = Number(numberPart);
+      const rounded = Math.round(num * 10) / 10;
+      return String(rounded) + (percentSign || "");
+    }
+
+    return numberPart.split('.')[0] + "." + trimmedDecimal + (percentSign || "");
   });
 };

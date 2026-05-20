@@ -8,7 +8,7 @@ import Select from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
-import { canAccessPemda, canAccessOpd } from "@/lib/rbac";
+import { canAccessPemda, canSelectAllOpdFilters } from "@/lib/rbac";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useUserContext } from "@/context/UserContext";
 
@@ -85,7 +85,7 @@ export default function TopFilter({ user }: FilterProps) {
   const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
   const isSuperAdmin = user ? canAccessPemda(user) : false;
-  const canEditOpd = user ? canAccessOpd(user) : false;
+  const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
   const {

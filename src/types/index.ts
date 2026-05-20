@@ -229,6 +229,7 @@ export interface RenaksiIndividuResponse {
   id: number;
   renaksiId: string;
   renaksi: string;
+  nama_pegawai?: string | null;
   nip: string;
   rekinId: string;
   rekin: string;
@@ -348,6 +349,7 @@ export interface RekinIndividuResponse {
   rekin: string;
   indikatorId: string;
   indikator: string;
+  nama_pegawai?: string | null;
   nip: string;
   idSasaran?: string | null;
   sasaran?: string | null;
@@ -647,6 +649,88 @@ export interface TujuanOpdRealisasiRequest {
   sumberData: string;
 }
 
+// ===== Tujuan OPD - Penetapan (from penetapan-service) =====
+export interface TujuanOpdPenetapanTarget {
+  kode_target: string;
+  target: number;
+  satuan: string;
+  realisasi: number | null;
+  capaian: number | null;
+  keterangan_capaian: string | null;
+}
+
+export interface TujuanOpdPenetapanIndikator {
+  id: number;
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  tahun_aktif: number;
+  target: TujuanOpdPenetapanTarget[];
+}
+
+export interface TujuanOpdPenetapan {
+  id: number;
+  kode_opd: string;
+  kode_tujuan_opd: string;
+  tujuan_opd: string;
+  periode: string;
+  tahun_aktif: number;
+  versi: number;
+  indikator: TujuanOpdPenetapanIndikator[];
+}
+
+export type TujuanOpdPenetapanResponse = TujuanOpdPenetapan[];
+
+// ===== Tujuan OPD - Realisasi (nested response from realisasi service) =====
+export interface TujuanOpdRealisasiBaruTarget {
+  id: number;
+  kode_target: string;
+  target: number;
+  satuan: string;
+  tahun: number;
+  bulan: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+}
+
+export interface TujuanOpdRealisasiBaruIndikator {
+  id: number;
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  tahun: number;
+  bulan: number;
+  target: TujuanOpdRealisasiBaruTarget[];
+}
+
+export interface TujuanOpdRealisasiBaruItem {
+  id: number;
+  kode_opd: string;
+  kode_tujuan_opd: string;
+  tujuan_opd: string;
+  tahun: number;
+  bulan: number;
+  indikator: TujuanOpdRealisasiBaruIndikator[];
+}
+
+export type TujuanOpdRealisasiBaruResponse = TujuanOpdRealisasiBaruItem[];
+
+// ===== Tujuan OPD - POST Realisasi (individual) =====
+export interface TujuanOpdRealisasiPayload {
+  kodeTujuanOpd: string;
+  kodeIndikatorTujuanOpd: string;
+  kodeTargetTujuanOpd: string;
+  realisasi: number;
+  tahun: number;
+  bulan: number;
+  kodeOpd: string;
+}
+
 export interface SasaranOpdPerencanaanResponse {
   code: number;
   status: string;
@@ -778,6 +862,8 @@ export interface SasaranIndividuRealisasiGroupedIndikator {
 export interface SasaranIndividuRealisasiGrouped {
   renjaId: string;
   renja: string;
+  nama_pegawai: string;
+  nip: string;
   indikator: SasaranIndividuRealisasiGroupedIndikator[];
 }
 
@@ -803,6 +889,7 @@ export interface RenjaTargetIndividuResponse {
   renja: string;
   kodeRenja: string;
   jenisRenja: "PROGRAM" | "KEGIATAN" | "SUB_KEGIATAN";
+  nama_pegawai?: string | null;
   nip: string;
   idIndikator: string;
   indikator: string;
@@ -871,6 +958,7 @@ export interface RenjaPaguIndividuResponse {
   renja: string;
   kodeRenja: string;
   jenisRenja: "PROGRAM" | "KEGIATAN" | "SUB_KEGIATAN";
+  nama_pegawai?: string | null;
   nip: string;
   idIndikator: string;
   indikator: string;
@@ -930,6 +1018,7 @@ export interface SasaranIndividuResponse {
   id: number;
   renjaId: string;
   renja: string;
+  nama_pegawai?: string | null;
   indikatorId: string;
   indikator: string;
   targetId: string;

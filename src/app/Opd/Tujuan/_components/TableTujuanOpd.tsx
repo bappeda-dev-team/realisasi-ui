@@ -7,6 +7,18 @@ interface TableTujuanProps {
   bulanLabel?: string;
   tujuanOpd: TujuanOpdRealisasiGrouped[];
   handleOpenPrintPreview: () => void;
+  onOpenRealisasi?: (targetInfo: {
+    kodeTujuanOpd: string;
+    kodeIndikatorTujuanOpd: string;
+    kodeTargetTujuanOpd: string;
+    tujuanOpd: string;
+    indikator: string;
+    target: string;
+    realisasi: number;
+    satuan: string;
+    rumusPerhitungan: string;
+    sumberData: string;
+  }) => void;
 }
 
 function TableTujuan({
@@ -14,6 +26,7 @@ function TableTujuan({
   bulanLabel,
   tujuanOpd,
   handleOpenPrintPreview,
+  onOpenRealisasi,
 }: TableTujuanProps) {
   return (
     <table className="w-full">
@@ -86,6 +99,7 @@ function TableTujuan({
               tujuan={tuj}
               tahun={tahun}
               handleOpenPrintPreview={handleOpenPrintPreview}
+              onOpenRealisasi={onOpenRealisasi}
             />
           ))
         ) : (

@@ -7,6 +7,7 @@ interface RowSasaranComponentProps {
   no: number;
   sasaran: SasaranPemdaRealisasiGrouped;
   tahun: number;
+  canEdit: boolean;
   handleOpenPrintPreview: () => void;
   handleOpenModal: (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
 }
@@ -15,6 +16,7 @@ export default function RowSasaranComponent({
   no,
   sasaran,
   tahun,
+  canEdit,
   handleOpenPrintPreview,
   handleOpenModal,
 }: RowSasaranComponentProps) {
@@ -51,7 +53,7 @@ export default function RowSasaranComponent({
               realisasi={target.realisasi}
               capaian={target.capaian}
               keteranganCapaian={target.keteranganCapaian}
-              handleClick={index === 0 ? () => handleOpenModal(indikatorList.flatMap((row) => row.targets)) : undefined}
+              handleClick={canEdit && index === 0 ? () => handleOpenModal(indikatorList.flatMap((row) => row.targets)) : undefined}
             />
           ) : (
             <td

@@ -6,6 +6,7 @@ interface TableSasaranProps {
   tahun: number;
   bulanLabel?: string;
   sasaranPemda: SasaranPemdaRealisasiGrouped[];
+  canEdit: boolean;
   handleOpenPrintPreview: () => void;
   handleOpenModal: (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
 }
@@ -14,6 +15,7 @@ function TableSasaran({
   tahun,
   bulanLabel,
   sasaranPemda,
+  canEdit,
   handleOpenPrintPreview,
   handleOpenModal,
 }: TableSasaranProps) {
@@ -87,6 +89,7 @@ function TableSasaran({
             no={index + 1}
             sasaran={sas}
             tahun={tahun}
+            canEdit={canEdit}
             handleOpenPrintPreview={handleOpenPrintPreview}
             handleOpenModal={handleOpenModal}
           />

@@ -4,7 +4,9 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
 import React, { useEffect, useMemo, useState } from "react";
 import { useFilterContext } from "@/context/FilterContext";
+import { useUserContext } from "@/context/UserContext";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { canEditPemdaRealisasi } from "@/lib/rbac";
 import {
   RealisasiSasaranResponse,
   SasaranPemdaRealisasiGrouped,
@@ -18,7 +20,9 @@ import autoTable from "jspdf-autotable";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 
 const SasaranPage = () => {
+  const { user } = useUserContext();
   const { activatedTahun: selectedTahun, activatedBulan } = useFilterContext();
+  const canEdit = canEditPemdaRealisasi(user);
   const selectedTahunNum = selectedTahun ? parseInt(selectedTahun) : 2025;
   const bulanKey = getMonthKey(activatedBulan ?? null);
   const bulanName = getMonthName(activatedBulan ?? null);
@@ -126,6 +130,7 @@ const SasaranPage = () => {
 
   // modal logic
   const handleOpenModal = (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => {
+    if (!canEdit) return;
     setSelectedSasaran(dataTargetRealisasi);
     setOpenModal(true);
   };
@@ -317,30 +322,33 @@ const SasaranPage = () => {
           tahun={selectedTahunNum}
           bulanLabel={bulanName}
           sasaranPemda={groupedSasaranPemda}
+          canEdit={canEdit}
           handleOpenPrintPreview={handleOpenPrintPreview}
           handleOpenModal={handleOpenModal}
         />
-        <FormModal
-          isOpen={OpenModal}
-          onClose={() => {
-            setOpenModal(false);
-          }}
-          title={`Realisasi Sasaran Pemda - ${selectedTahunNum} - ${bulanName} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
-        >
-          <FormRealisasiSasaranPemda
-            requestValues={SelectedSasaran}
-            tahun={selectedTahunNum}
-            bulan={bulanKey}
-            bulanLabel={bulanName}
+        {canEdit && (
+          <FormModal
+            isOpen={OpenModal}
             onClose={() => {
               setOpenModal(false);
             }}
-            onSuccess={() => {
-              setOpenModal(false);
-              refetchRealisasi();
-            }}
-          />
-        </FormModal>
+            title={`Realisasi Sasaran Pemda - ${selectedTahunNum} - ${bulanName} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
+          >
+            <FormRealisasiSasaranPemda
+              requestValues={SelectedSasaran}
+              tahun={selectedTahunNum}
+              bulan={bulanKey}
+              bulanLabel={bulanName}
+              onClose={() => {
+                setOpenModal(false);
+              }}
+              onSuccess={() => {
+                setOpenModal(false);
+                refetchRealisasi();
+              }}
+            />
+          </FormModal>
+        )}
       </div>
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

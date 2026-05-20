@@ -24,6 +24,7 @@ import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
 import { ROLES } from "@/constants/roles";
 import TableSasaranIndividu from "./_components/TableSasaranIndividu";
 import FormRealisasiSasaranIndividu from "./_components/FormRealisasiSasaranIndividu";
+import { canEditIndividuRenjaRealisasi } from "@/lib/rbac";
 
 interface RenjaRow {
     id: number;
@@ -69,10 +70,12 @@ const Table = () => {
     const [sasaranPdfFileName, setSasaranPdfFileName] = useState<string>("sasaran-individu.pdf");
     const [sasaranPreviewDoc, setSasaranPreviewDoc] = useState<jsPDF | null>(null);
 
-    const { tahun: selectedTahun, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const { user } = useUserContext();
     const { url } = useApiUrlContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
+    const canEditRealisasi = canEditIndividuRenjaRealisasi(user);
+    const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
@@ -101,15 +104,21 @@ const getHeaderColor = (level: string | undefined) => {
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
 
-    const apiUrlTarget = url && user?.nip && activatedTahun && bulanKey
+    const apiUrlTarget = url && activatedTahun && bulanKey && isOpdScopedView && activatedDinas
+        ? `${url}/api/v1/realisasi/renja_target_individu/by-kode-opd/${encodeURIComponent(activatedDinas)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
+        : url && user?.nip && activatedTahun && bulanKey
         ? `${url}/api/v1/realisasi/renja_target_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
-    const apiUrlPagu = url && user?.nip && activatedTahun && bulanKey
+    const apiUrlPagu = url && activatedTahun && bulanKey && isOpdScopedView && activatedDinas
+        ? `${url}/api/v1/realisasi/renja_pagu_individu/by-kode-opd/${encodeURIComponent(activatedDinas)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
+        : url && user?.nip && activatedTahun && bulanKey
         ? `${url}/api/v1/realisasi/renja_pagu_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
-    const apiUrlSasaran = url && user?.nip && activatedTahun && bulanKey
+    const apiUrlSasaran = url && activatedTahun && bulanKey && isOpdScopedView && activatedDinas
+        ? `${url}/api/v1/realisasi/sasaran_individu/by-kode-opd/${encodeURIComponent(activatedDinas)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
+        : url && user?.nip && activatedTahun && bulanKey
         ? `${url}/api/v1/realisasi/sasaran_individu/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
@@ -147,14 +156,17 @@ const getHeaderColor = (level: string | undefined) => {
         const renjaMap = new Map<string, SasaranIndividuRealisasiGrouped>();
 
         source.forEach((item) => {
-            const renjaKey = String(item.renjaId);
+            const ownerKey = item.nip ?? "-";
+            const renjaKey = `${ownerKey}::${String(item.renjaId)}`;
             const indikatorKey = String(item.indikatorId);
 
             let renja = renjaMap.get(renjaKey);
             if (!renja) {
                 renja = {
-                    renjaId: renjaKey,
+                    renjaId: String(item.renjaId),
                     renja: item.renja ?? "-",
+                    nama_pegawai: item.nama_pegawai ?? "-",
+                    nip: ownerKey,
                     indikator: [],
                 };
                 renjaMap.set(renjaKey, renja);
@@ -207,18 +219,17 @@ const getHeaderColor = (level: string | undefined) => {
             return;
         }
 
-        const namaPegawaiParts = [user?.firstName, user?.lastName].filter(Boolean);
-        const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
-
-        const paguMap = new Map(paguResponse.map(p => [p.idIndikator, p]));
+        const paguMap = new Map(
+            paguResponse.map((p) => [`${p.nip ?? "-"}::${p.idIndikator}`, p]),
+        );
 
         setRows(
             data.map((item) => {
-                const paguItem = paguMap.get(item.idIndikator);
+                const paguItem = paguMap.get(`${item.nip ?? "-"}::${item.idIndikator}`);
                 return {
                     id: item.id,
                     renja: item.renja ?? "-",
-                    nama_pegawai: namaPegawai,
+                    nama_pegawai: item.nama_pegawai ?? "-",
                     nip: item.nip ?? user?.nip ?? "-",
                     kodeRenja: item.kodeRenja ?? "-",
                     jenisRenja: item.jenisRenja ?? "-",
@@ -253,6 +264,7 @@ const getHeaderColor = (level: string | undefined) => {
     }, [data, paguResponse, user, activatedTahun, bulanKey]);
 
     const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
+        if (!canEditRealisasi) return;
         setSelectedRow(row);
         setModalType(type);
         setIsModalOpen(true);
@@ -426,6 +438,7 @@ const getHeaderColor = (level: string | undefined) => {
     };
 
     const handleOpenSasaranModal = (renjaId: string) => {
+        if (!canEditRealisasi) return;
         setSasaranSelectedRenjaId(renjaId);
         setIsSasaranModalOpen(true);
     };
@@ -452,6 +465,7 @@ const getHeaderColor = (level: string | undefined) => {
 
         const tableHead = [[
             "No",
+            "Nama Pemilik",
             "Rencana Kerja",
             "Indikator",
             "Rumus Perhitungan",
@@ -502,6 +516,7 @@ const getHeaderColor = (level: string | undefined) => {
                 if (detailIndex === 0) {
                     tableBody.push([
                         { content: renjaIndex + 1, rowSpan: detailRows.length },
+                        { content: `${sanitizeForPdf(renja.nama_pegawai)} (${sanitizeForPdf(renja.nip)})`, rowSpan: detailRows.length },
                         { content: sanitizeForPdf(renja.renja), rowSpan: detailRows.length },
                         ...detailRow,
                     ]);
@@ -534,14 +549,15 @@ const getHeaderColor = (level: string | undefined) => {
             },
             columnStyles: {
                 0: { cellWidth: 26, halign: "center" },
-                1: { cellWidth: 150 },
-                2: { cellWidth: 100 },
-                3: { cellWidth: 200 },
-                4: { cellWidth: 50, halign: "center" },
+                1: { cellWidth: 130 },
+                2: { cellWidth: 150 },
+                3: { cellWidth: 100 },
+                4: { cellWidth: 200 },
                 5: { cellWidth: 50, halign: "center" },
-                6: { cellWidth: 55, halign: "center" },
-                7: { cellWidth: 50, halign: "center" },
-                8: { cellWidth: 70 },
+                6: { cellWidth: 50, halign: "center" },
+                7: { cellWidth: 55, halign: "center" },
+                8: { cellWidth: 50, halign: "center" },
+                9: { cellWidth: 70 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -586,6 +602,8 @@ const getHeaderColor = (level: string | undefined) => {
 
     const infoMessage = !user || (!user?.nip && !canBypassNip)
         ? "Silakan login terlebih dahulu untuk melihat data renja individu."
+        : canBypassNip && !activatedDinas
+            ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renja individu muncul."
         : !activatedTahun || !bulanName
             ? "Pilih dan aktifkan tahun dan bulan agar data renja individu muncul."
             : undefined;
@@ -626,7 +644,7 @@ const getHeaderColor = (level: string | undefined) => {
                         tahun={activatedTahun ?? "-"}
                         bulanLabel={bulanName ?? undefined}
                         sasaranIndividu={groupedSasaranIndividu}
-                        canEdit={true}
+                        canEdit={Boolean(canEditRealisasi)}
                         handleOpenPrintPreview={handleOpenSasaranPrintPreview}
                         handleOpenModal={handleOpenSasaranModal}
                     />
@@ -690,12 +708,14 @@ const getHeaderColor = (level: string | undefined) => {
                                         <td className="border-r border-b border-emerald-500 px-6 py-4">
                                             <div className="flex flex-col items-center gap-2">
                                                 <span>{target?.realisasi ?? "-"}</span>
-                                                <ButtonGreenBorder
-                                                    className="w-full"
-                                                    onClick={() => openModal(row, 'target')}
-                                                >
-                                                    Realisasi
-                                                </ButtonGreenBorder>
+                                                {canEditRealisasi && (
+                                                    <ButtonGreenBorder
+                                                        className="w-full"
+                                                        onClick={() => openModal(row, 'target')}
+                                                    >
+                                                        Realisasi
+                                                    </ButtonGreenBorder>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -713,12 +733,14 @@ const getHeaderColor = (level: string | undefined) => {
                                         <td className="border-r border-b border-emerald-500 px-6 py-4">
                                             <div className="flex flex-col items-center gap-2">
                                                 <span>{target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}</span>
-                                                <ButtonGreenBorder
-                                                    className="w-full"
-                                                    onClick={() => openModal(row, 'pagu')}
-                                                >
-                                                    Realisasi
-                                                </ButtonGreenBorder>
+                                                {canEditRealisasi && (
+                                                    <ButtonGreenBorder
+                                                        className="w-full"
+                                                        onClick={() => openModal(row, 'pagu')}
+                                                    >
+                                                        Realisasi
+                                                    </ButtonGreenBorder>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -752,51 +774,55 @@ const getHeaderColor = (level: string | undefined) => {
                 )}
             </div>
 
-            <FormModal
-                isOpen={isSasaranModalOpen}
-                onClose={handleCloseSasaranModal}
-                title={`Realisasi Sasaran Individu - ${activatedTahun ?? "-"} ${bulanName ?? "-"}`}
-            >
-                {loadingSasaranByRenja ? (
-                    <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-                        <LoadingBeat loading={true} />
-                        <p className="text-sm text-gray-600 mt-2">Memuat data sasaran individu...</p>
-                    </div>
-                ) : errorSasaranByRenja ? (
-                    <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-                        Gagal memuat data sasaran untuk form: {errorSasaranByRenja}
-                    </div>
-                ) : (
-                    <FormRealisasiSasaranIndividu
-                        requestValues={sasaranByRenjaResponse ?? []}
+            {canEditRealisasi && (
+                <>
+                    <FormModal
+                        isOpen={isSasaranModalOpen}
                         onClose={handleCloseSasaranModal}
-                        onSuccess={() => {
-                            handleCloseSasaranModal();
-                            refetchSasaran();
-                        }}
-                    />
-                )}
-            </FormModal>
+                        title={`Realisasi Sasaran Individu - ${activatedTahun ?? "-"} ${bulanName ?? "-"}`}
+                    >
+                        {loadingSasaranByRenja ? (
+                            <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+                                <LoadingBeat loading={true} />
+                                <p className="text-sm text-gray-600 mt-2">Memuat data sasaran individu...</p>
+                            </div>
+                        ) : errorSasaranByRenja ? (
+                            <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+                                Gagal memuat data sasaran untuk form: {errorSasaranByRenja}
+                            </div>
+                        ) : (
+                            <FormRealisasiSasaranIndividu
+                                requestValues={sasaranByRenjaResponse ?? []}
+                                onClose={handleCloseSasaranModal}
+                                onSuccess={() => {
+                                    handleCloseSasaranModal();
+                                    refetchSasaran();
+                                }}
+                            />
+                        )}
+                    </FormModal>
 
-            <FormModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
-            >
-                {modalType === 'pagu' ? (
-                    <FormRealisasiRenjaPagu
-                        requestValues={selectedRow?.targets ?? []}
+                    <FormModal
+                        isOpen={isModalOpen}
                         onClose={closeModal}
-                        onSuccess={handleRealisasiSuccess}
-                    />
-                ) : (
-                    <FormRealisasiRenjaTarget
-                        requestValues={selectedRow?.targets ?? []}
-                        onClose={closeModal}
-                        onSuccess={handleRealisasiSuccess}
-                    />
-                )}
-            </FormModal>
+                        title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
+                    >
+                        {modalType === 'pagu' ? (
+                            <FormRealisasiRenjaPagu
+                                requestValues={selectedRow?.targets ?? []}
+                                onClose={closeModal}
+                                onSuccess={handleRealisasiSuccess}
+                            />
+                        ) : (
+                            <FormRealisasiRenjaTarget
+                                requestValues={selectedRow?.targets ?? []}
+                                onClose={closeModal}
+                                onSuccess={handleRealisasiSuccess}
+                            />
+                        )}
+                    </FormModal>
+                </>
+            )}
             {isSasaranPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div

@@ -15,6 +15,7 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenaksiIndividuResponse, RenaksiTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
+import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
 
 interface RenaksiRow {
   id: number;
@@ -34,9 +35,11 @@ const Table = () => {
   const [pdfFileName, setPdfFileName] = useState<string>("renaksi-individu.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
-  const { activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+  const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
   const { user } = useUserContext();
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
+  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user);
+  const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
 
   const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
@@ -67,7 +70,11 @@ const getHeaderColor = (level: string | undefined) => {
   const monthKey = getMonthKey(activatedBulan);
   const monthLabel = getMonthName(activatedBulan);
   const apiUrl =
-    activatedTahun && monthKey && user?.nip
+    activatedTahun && monthKey && isOpdScopedView && activatedDinas
+      ? `/api/v1/realisasi/renaksi/by-kode-opd/${encodeURIComponent(
+        activatedDinas,
+      )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
+      : activatedTahun && monthKey && user?.nip
       ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(
         user.nip,
       )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
@@ -82,9 +89,6 @@ const getHeaderColor = (level: string | undefined) => {
       setRows([]);
       return;
     }
-
-    const namaPegawaiParts = [user?.firstName, user?.lastName].filter(Boolean);
-    const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
 
     setRows(
       data.map((item) => {
@@ -110,7 +114,7 @@ const getHeaderColor = (level: string | undefined) => {
         return {
           id: item.id,
           renaksi: item.renaksi ?? "-",
-          nama_pegawai: namaPegawai,
+          nama_pegawai: item.nama_pegawai ?? "-",
           nip: item.nip ?? user?.nip ?? "-",
           rekin: item.rekin ?? "-",
           targets: [target],
@@ -122,6 +126,7 @@ const getHeaderColor = (level: string | undefined) => {
   const monthColumnLabel = `${activatedTahun} - ${monthLabel}`;
 
   const openModal = (row: RenaksiRow) => {
+    if (!canEditRealisasi) return;
     setSelectedRow(row);
     setIsModalOpen(true);
   };
@@ -259,6 +264,8 @@ const getHeaderColor = (level: string | undefined) => {
 
   const infoMessage = !user || (!user?.nip && !canBypassNip)
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
+    : canBypassNip && !activatedDinas
+      ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi individu muncul."
     : !activatedTahun || !monthLabel
       ? "Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul."
       : undefined;
@@ -374,12 +381,14 @@ const getHeaderColor = (level: string | undefined) => {
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
                       <span>{target?.realisasi ?? "-"}</span>
-                      <ButtonGreenBorder
-                        className="w-full"
-                        onClick={() => openModal(row)}
-                      >
-                        Realisasi
-                      </ButtonGreenBorder>
+                      {canEditRealisasi && (
+                        <ButtonGreenBorder
+                          className="w-full"
+                          onClick={() => openModal(row)}
+                        >
+                          Realisasi
+                        </ButtonGreenBorder>
+                      )}
                     </div>
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -407,17 +416,19 @@ const getHeaderColor = (level: string | undefined) => {
           </tbody>
         </table>
       </div>
-      <FormModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        title={`Realisasi Renaksi - ${selectedRow?.nama_pegawai ?? selectedRow?.renaksi ?? ""}`}
-      >
-        <FormRealisasiRenaksiIndividu
-          requestValues={selectedRow?.targets ?? []}
+      {canEditRealisasi && (
+        <FormModal
+          isOpen={isModalOpen}
           onClose={closeModal}
-          onSuccess={handleRealisasiSuccess}
-        />
-      </FormModal>
+          title={`Realisasi Renaksi - ${selectedRow?.nama_pegawai ?? selectedRow?.renaksi ?? ""}`}
+        >
+          <FormRealisasiRenaksiIndividu
+            requestValues={selectedRow?.targets ?? []}
+            onClose={closeModal}
+            onSuccess={handleRealisasiSuccess}
+          />
+        </FormModal>
+      )}
 
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

@@ -31,6 +31,7 @@ export default function RowSasaranIndividu({
         return (
             <tr key={sasaranIndividu.renjaId}>
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
+                <td className="border border-red-400 px-6 py-4 text-center">{sasaranIndividu.nama_pegawai} ({sasaranIndividu.nip})</td>
                 <td className="border border-red-400 px-6 py-4 text-center">{sasaranIndividu.renja}</td>
                 <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
@@ -67,6 +68,7 @@ export default function RowSasaranIndividu({
                         {indikatorIndex === 0 && targetIndex === 0 && (
                             <>
                                 <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-center">{no}</td>
+                                <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranIndividu.nama_pegawai} ({sasaranIndividu.nip})</td>
                                 <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranIndividu.renja}</td>
                             </>
                         )}

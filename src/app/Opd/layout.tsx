@@ -5,13 +5,13 @@ import { usePathname } from 'next/navigation'
 import React from 'react'
 import { RouteGuard } from '@/components/Global/RouteGuard'
 import { useUserContext } from '@/context/UserContext'
-import { canEditOpdRealisasi } from '@/lib/rbac'
+import { canAccessOpdOperational } from '@/lib/rbac'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { user } = useUserContext()
   const pathname = usePathname()
   const relativePath = pathname.replace(/^\/realisasi/, '')
-  const canEdit = canEditOpdRealisasi(user)
+  const canAccessOperational = canAccessOpdOperational(user)
   const navItems = [
     {
       label: 'Tujuan',
@@ -39,7 +39,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
       requiresEdit: true,
     },
-  ].filter((item) => !item.requiresEdit || canEdit)
+  ].filter((item) => !item.requiresEdit || canAccessOperational)
 
   return (
     <RouteGuard>

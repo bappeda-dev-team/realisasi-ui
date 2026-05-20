@@ -5,7 +5,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
-import { canEditOpdRealisasi } from "@/lib/rbac";
+import { canEditPemdaRealisasi } from "@/lib/rbac";
 import {
     RealisasiTujuanResponse,
     TargetRealisasiCapaian,
@@ -24,7 +24,7 @@ export default function Tujuan() {
         activatedTahun: selectedTahun,
         activatedBulan,
     } = useFilterContext();
-    const canEdit = canEditOpdRealisasi(user);
+    const canEdit = canEditPemdaRealisasi(user);
     const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
     const bulanKey = getMonthKey(activatedBulan ?? null);
     const bulanName = getMonthName(activatedBulan ?? null);
@@ -333,20 +333,22 @@ export default function Tujuan() {
                     handleOpenPrintPreview={handleOpenPrintPreview}
                     handleOpenModal={handleOpenModal}
                 />
-                <ModalTujuanPemda
-                    item={selectedTujuan}
-                    tahun={parseInt(selectedTahun)}
-                    bulan={bulanKey}
-                    bulanLabel={bulanName}
-                    isOpen={OpenModal}
-                    onClose={() => {
-                        setOpenModal(false);
-                    }}
-                    onSuccess={() => {
-                        setOpenModal(false);
-                        refetchRealisasi();
-                    }}
-                />
+                {canEdit && (
+                    <ModalTujuanPemda
+                        item={selectedTujuan}
+                        tahun={parseInt(selectedTahun)}
+                        bulan={bulanKey}
+                        bulanLabel={bulanName}
+                        isOpen={OpenModal}
+                        onClose={() => {
+                            setOpenModal(false);
+                        }}
+                        onSuccess={() => {
+                            setOpenModal(false);
+                            refetchRealisasi();
+                        }}
+                    />
+                )}
             </div>
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
