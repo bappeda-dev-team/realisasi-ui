@@ -1,12 +1,11 @@
 import React from 'react'
 import RowSasaranComponent from './RowSasaranComponent';
-import { SasaranOpdRealisasiGrouped } from '@/types'
-
+import { SasaranOpdPenetapanGrouped } from '@/types'
 
 interface TableSasaranOpdProps {
     tahun: number;
     bulanLabel?: string;
-    sasaranOpd: SasaranOpdRealisasiGrouped[];
+    sasaranOpd: SasaranOpdPenetapanGrouped[];
     handleOpenPrintPreview: () => void;
 }
 
@@ -17,7 +16,7 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleO
             <thead>
                 <tr className="text-xm bg-emerald-500 text-white">
                     <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Rencana Kerja</td>
+                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Sasaran</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">Indikator</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Rumus Perhitungan</td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Sumber Data</td>
@@ -34,7 +33,7 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleO
             <tbody>
                 {sasaranOpd.map((sasOpd, index) => (
                     <RowSasaranComponent
-                        key={sasOpd.renjaId}
+                        key={sasOpd.sasaranId}
                         no={index + 1}
                         sasaranOpd={sasOpd}
                         tahun={tahun}

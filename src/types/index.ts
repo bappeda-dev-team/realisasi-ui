@@ -759,6 +759,88 @@ export interface SasaranOpdPerencanaan {
   indikator: Indikator[];
 }
 
+export interface SasaranOpdPenetapanTarget {
+  kode_target: string;
+  satuan: string;
+  target: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+}
+
+export interface SasaranOpdPenetapanIndikator {
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  targets: SasaranOpdPenetapanTarget[];
+}
+
+export interface SasaranOpdPenetapanSasaran {
+  id: number;
+  kode_sasaran_opd: string;
+  sasaran_opd: string;
+  indikators: SasaranOpdPenetapanIndikator[];
+}
+
+export interface SasaranOpdPenetapanResponse {
+  kode_opd: string;
+  tahun: number;
+  bulan: number;
+  sasaranOpds: SasaranOpdPenetapanSasaran[];
+}
+
+export interface SasaranOpdRealisasiPayload {
+  kodeSasaranOpd: string;
+  kodeIndikatorSasaranOpd: string;
+  kodeTargetSasaranOpd: string;
+  realisasi: number;
+  tahun: number;
+  bulan: number;
+  kodeOpd: string;
+}
+
+export interface SasaranOpdRealisasiPenetapanTarget {
+  id: number;
+  kode_target: string;
+  target: number;
+  satuan: string;
+  tahun: number;
+  bulan: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+}
+
+export interface SasaranOpdRealisasiPenetapanIndikator {
+  id: number;
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  tahun: number;
+  bulan: number;
+  targets: SasaranOpdRealisasiPenetapanTarget[];
+}
+
+export interface SasaranOpdRealisasiPenetapanItem {
+  id: number;
+  kode_opd: string;
+  kode_sasaran_opd: string;
+  sasaran_opd: string;
+  tahun: number;
+  bulan: number;
+  indikators: SasaranOpdRealisasiPenetapanIndikator[];
+}
+
+export interface SasaranOpdRealisasiPenetapanResponse {
+  kode_opd: string;
+  tahun: number;
+  sasaran_opds: SasaranOpdRealisasiPenetapanItem[];
+}
+
 export interface SasaranOpdRealisasi {
   id: number;
   renjaId: string;
@@ -789,6 +871,8 @@ export interface SasaranOpdTargetRealisasiCapaian {
   targetRealisasiId: number | null;
   renja: string;
   renjaId: string;
+  sasaranOpd?: string;
+  sasaranId?: string;
   indikatorId: string;
   indikator: string;
   targetId: string;
@@ -814,6 +898,12 @@ export interface SasaranOpdRealisasiGroupedIndikator {
 export interface SasaranOpdRealisasiGrouped {
   renjaId: string;
   renja: string;
+  indikator: SasaranOpdRealisasiGroupedIndikator[];
+}
+
+export interface SasaranOpdPenetapanGrouped {
+  sasaranId: string;
+  sasaranOpd: string;
   indikator: SasaranOpdRealisasiGroupedIndikator[];
 }
 

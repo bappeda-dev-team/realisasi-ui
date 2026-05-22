@@ -1,11 +1,11 @@
 import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { SasaranOpdRealisasiGrouped } from '@/types'
+import { SasaranOpdPenetapanGrouped } from '@/types'
 import { formatPercentageText } from '@/lib/formatPercentageText'
 
 interface RowSasaranOpdComponentProps {
     no: number;
-    sasaranOpd: SasaranOpdRealisasiGrouped;
+    sasaranOpd: SasaranOpdPenetapanGrouped;
     tahun: number;
     handleOpenPrintPreview: () => void;
 }
@@ -39,7 +39,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenP
                         {indikatorIndex === 0 && targetIndex === 0 && (
                             <>
                                 <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-center">{no}</td>
-                                <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.renja}</td>
+                                <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.sasaranOpd}</td>
                             </>
                         )}
 
@@ -59,7 +59,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenP
                                 keteranganCapaian={target.keteranganCapaian}
                             />
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={4}>
+                            <td className="border border-emerald-500 px-6 py-4 text-center bg-emerald-100" colSpan={4}>
                                 Tidak ada target di tahun {tahun}
                             </td>
                         )}
@@ -80,7 +80,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenP
 
 
 interface EmptyIndikatorSasaran {
-    sasaranOpd: SasaranOpdRealisasiGrouped;
+    sasaranOpd: SasaranOpdPenetapanGrouped;
     no: number;
     tahun: number;
     handleOpenPrintPreview: () => void;
@@ -88,9 +88,9 @@ interface EmptyIndikatorSasaran {
 
 const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, tahun, handleOpenPrintPreview }) => {
     return (
-        <tr key={sasaranOpd.renjaId}>
+        <tr key={sasaranOpd.sasaranId}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.renja}</td>
+            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.sasaranOpd}</td>
                 <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
                 </td>
@@ -116,7 +116,6 @@ const formatWithComma = (value: number | string): string => {
     };
 
 const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian }) => {
-
     return (
         <>
             <td className="border border-emerald-500 px-6 py-4 text-center">{target}</td>
