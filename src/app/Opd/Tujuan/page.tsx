@@ -79,11 +79,12 @@ export default function TujuanPage() {
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
   const groupedTujuanOpd = useMemo<TujuanOpdRealisasiGrouped[]>(() => {
-    const penetapan = penetapanData ?? [];
+    const tujuanOpds = penetapanData?.tujuanOpds ?? [];
+    const topKodeOpd = penetapanData?.kode_opd ?? '';
 
     const tujuanMap = new Map<string, TujuanOpdRealisasiGrouped>();
 
-    penetapan.forEach((tujuan) => {
+    tujuanOpds.forEach((tujuan) => {
       const tujuanKey = tujuan.kode_tujuan_opd;
       const grouped: TujuanOpdRealisasiGrouped = {
         tujuanId: tujuanKey,
@@ -91,7 +92,7 @@ export default function TujuanPage() {
         indikator: [],
       };
 
-      tujuan.indikator.forEach((ind) => {
+      tujuan.indikators.forEach((ind) => {
         const indikatorItem: TujuanOpdRealisasiGroupedIndikator = {
           id: ind.kode_indikator,
           indikator: ind.indikator,
@@ -100,7 +101,7 @@ export default function TujuanPage() {
           targets: [],
         };
 
-        ind.target.forEach((tgt) => {
+        ind.targets.forEach((tgt) => {
           indikatorItem.targets.push({
             targetRealisasiId: null,
             tujuanOpd: tujuan.tujuan_opd,
@@ -114,7 +115,7 @@ export default function TujuanPage() {
             keteranganCapaian: tgt.keterangan_capaian ?? '-',
             satuan: tgt.satuan,
             tahun: String(selectedTahunValue),
-            kodeOpd: tujuan.kode_opd,
+            kodeOpd: topKodeOpd,
             rumusPerhitungan: ind.rumus_perhitungan ?? '-',
             sumberData: ind.sumber_data ?? '-',
           });

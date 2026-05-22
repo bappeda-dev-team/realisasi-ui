@@ -6,7 +6,7 @@ import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
 import { canEditOpdRealisasi } from '@/lib/rbac';
 import { useFilterContext } from '@/context/FilterContext';
-import { TujuanOpdRealisasiBaruItem, TujuanOpdRealisasiPayload } from '@/types';
+import { TujuanOpdRealisasiResponse, TujuanOpdRealisasiPayload } from '@/types';
 import React, { useState } from 'react';
 
 interface FormRealisasiTujuanOpdProps {
@@ -41,7 +41,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
   const { user } = useUserContext();
   const { activatedDinas: kodeOpd } = useFilterContext();
   const canEdit = canEditOpdRealisasi(user);
-  const { submit, loading } = useSubmitData<TujuanOpdRealisasiBaruItem>({ url: `${url}/api/v1/realisasi/tujuan_opd` });
+  const { submit, loading } = useSubmitData<TujuanOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd` });
   const normalizedBulan = getMonthKey(bulan);
 
   const [validationError, setValidationError] = useState<string | null>(null);
