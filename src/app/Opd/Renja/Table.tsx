@@ -8,13 +8,9 @@ import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenjaTargetOpdResponse } from "@/types";
+import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-
-interface ApiListResponse<T> {
-    data?: T[];
-}
 
 interface RenjaNodeTargetValue {
     targetRealisasiId?: number | null;
@@ -101,38 +97,152 @@ interface FlattenedRenjaRow {
         capaianPagu: string;
         keteranganCapaianPagu: string;
     }>;
-    targetRequest: RenjaTargetOpdResponse | null;
-    paguRequest: Array<{
-        targetRealisasiId: number | null;
-        renjaId: string;
-        renja: string;
-        kodeRenja: string;
-        jenisRenja: string;
-        indikator: string;
-        pagu: number | null;
-        realistasiPagu: number | null;
-        satuanPagu: string;
-        tahun: string;
-        jenisRealisasi: string;
-        capaianPagu: string;
-        keteranganCapaianPagu: string;
-    }>;
 }
 
-const toJenisRenjaPayload = (jenisRenja: string | undefined): "PROGRAM" | "KEGIATAN" | "SUBKEGIATAN" => {
-    const normalized = (jenisRenja || "").toUpperCase();
-
-    switch (normalized) {
+const normalizeJenisRenja = (jenisRenja: string | undefined) => {
+    switch ((jenisRenja || "").toUpperCase()) {
         case "PROGRAM":
-            return "PROGRAM";
+            return "Program";
         case "KEGIATAN":
-            return "KEGIATAN";
+            return "Kegiatan";
         case "SUBKEGIATAN":
-        case "SUB KEGIATAN":
-            return "SUBKEGIATAN";
+            return "Subkegiatan";
         default:
-            return "PROGRAM";
+            return jenisRenja || "-";
     }
+};
+
+const formatRenjaName = (node: RenjaHierarchyNode) => {
+    const label = normalizeJenisRenja(node.jenis_renja);
+    const name = node.nama_renja?.trim();
+
+    if (name) {
+        return `${label} - ${name}`;
+    }
+
+    return label;
+};
+
+const joinIndikator = (indikator: RenjaNodeIndikatorValue[] | undefined) => {
+    if (!indikator?.length) return "-";
+    return indikator
+        .map((item) => item.indikator?.trim())
+        .filter(Boolean)
+        .join("\n");
+};
+
+const joinTarget = (target: RenjaNodeTargetValue[] | undefined) => {
+    if (!target?.length) return "-";
+    return target
+        .map((item) => item.target?.trim())
+        .filter(Boolean)
+        .join("\n");
+};
+
+const parseNumericValue = (value: string | number | null | undefined) => {
+    if (value === null || value === undefined || value === "") return null;
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+
+    const normalized = value.toString().replace(/,/g, "").trim();
+    if (!normalized) return null;
+
+    const parsed = Number.parseFloat(normalized);
+    return Number.isNaN(parsed) ? null : parsed;
+};
+
+const convertIndikatorsToNode = (
+    indikators: RenjaPenetapanIndikator[],
+): { targetArray: RenjaNodeTargetValue[]; indikatorArray: RenjaNodeIndikatorValue[] } => {
+    const targetArray: RenjaNodeTargetValue[] = [];
+    const indikatorArray: RenjaNodeIndikatorValue[] = [];
+
+    indikators.forEach((ind) => {
+        indikatorArray.push({ id_indikator: ind.kode_indikator, indikator: ind.indikator });
+
+        ind.targets.forEach((tgt) => {
+            targetArray.push({
+                targetRealisasiId: null,
+                id_target: tgt.kode_target,
+                target: String(tgt.target),
+                realisasi: tgt.realisasi,
+                satuan: tgt.satuan,
+                capaian: tgt.capaian != null ? String(tgt.capaian) : null,
+                jenisRealisasi: null,
+                status: null,
+                createdBy: null,
+                lastModifiedBy: null,
+                keteranganCapaian: tgt.keterangan_capaian,
+            });
+        });
+    });
+
+    return { targetArray, indikatorArray };
+};
+
+const makePaguNode = (paguAnggaran: number | null): RenjaNodePaguValue[] => {
+    if (paguAnggaran == null) return [];
+    return [{
+        paguRealisasiId: null,
+        realisasi: null,
+        pagu: paguAnggaran,
+        status: null,
+        createdBy: null,
+        lastModifiedBy: null,
+        capaian: null,
+        keteranganCapaian: null,
+    }];
+};
+
+const buildHierarchyNode = (
+    kode: string,
+    nama: string,
+    jenis: string,
+    indikators: RenjaPenetapanIndikator[],
+    paguAnggaran: number | null,
+): RenjaHierarchyNode => {
+    const { targetArray, indikatorArray } = convertIndikatorsToNode(indikators);
+
+    return {
+        kode_renja: kode,
+        nama_renja: nama,
+        jenis_renja: jenis,
+        target: targetArray.length > 0 ? targetArray : undefined,
+        indikator: indikatorArray.length > 0 ? indikatorArray : undefined,
+        pagu: makePaguNode(paguAnggaran),
+    };
+};
+
+const transformPenetapanToHierarchy = (response: RenjaPenetapanResponse): RenjaOpdHierarchyResponse[] => {
+    const { kode_opd, tahun, bulan, programs, kegiatans, subkegiatans } = response;
+
+    const hierarchyPrograms: RenjaHierarchyNode[] = programs.map((prog) => {
+        const programNode = buildHierarchyNode(prog.kode_program, prog.program, "PROGRAM", prog.indikators, prog.pagu_anggaran);
+
+        const childKegiatans = kegiatans.filter((k) => k.kode_kegiatan.startsWith(prog.kode_program));
+
+        programNode.kegiatan = childKegiatans.map((keg) => {
+            const kegiatanNode = buildHierarchyNode(keg.kode_kegiatan, keg.kegiatan, "KEGIATAN", keg.indikators, keg.pagu_anggaran);
+
+            const childSubkegiatans = subkegiatans.filter((s) => s.kode_subkegiatan.startsWith(keg.kode_kegiatan));
+
+            kegiatanNode.subkegiatan = childSubkegiatans.map((sub) =>
+                buildHierarchyNode(sub.kode_subkegiatan, sub.subkegiatan, "SUBKEGIATAN", sub.indikators, sub.pagu_anggaran),
+            );
+
+            return kegiatanNode;
+        });
+
+        return programNode;
+    });
+
+    return [{
+        kode_opd,
+        tahun: String(tahun),
+        bulan: String(bulan),
+        pagu_total_realisasi: 0,
+        id_renja: `renja-penetapan-${kode_opd}-${tahun}-${bulan}`,
+        program: hierarchyPrograms,
+    }];
 };
 
 const Table = () => {
@@ -167,152 +277,21 @@ const Table = () => {
         return [2, 132, 199];
     };
 
-    const apiUrlTarget = kodeOpd && activatedTahun && bulanKey
-        ? `${url}/api/v1/realisasi/renja_target/kodeOpd/${kodeOpd}/tahun/${activatedTahun}/bulan/${encodeURIComponent(bulanKey)}`
+    const apiUrl = kodeOpd && activatedTahun && bulanKey
+        ? `/api/v1/realisasi/renja/${kodeOpd}/tahun/${activatedTahun}/penetapan?bulan=${encodeURIComponent(bulanKey)}`
         : null;
 
-    const apiUrlPagu = kodeOpd && activatedTahun && bulanKey
-        ? `${url}/api/v1/realisasi/renja_pagu/kodeOpd/${kodeOpd}/tahun/${activatedTahun}/bulan/${encodeURIComponent(bulanKey)}`
-        : null;
+    const { data, loading, error } = useFetchData<RenjaPenetapanResponse>({ url: apiUrl });
 
-    const { data, loading, error } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlTarget });
-    const { data: paguResponse, loading: loadingPagu, error: errorPagu } = useFetchData<ApiListResponse<RenjaOpdHierarchyResponse>>({ url: apiUrlPagu });
-
-    const parseNumericValue = (value: string | number | null | undefined) => {
-        if (value === null || value === undefined || value === "") return null;
-        if (typeof value === "number") return Number.isFinite(value) ? value : null;
-
-        const normalized = value.replace(/,/g, "").trim();
-        if (!normalized) return null;
-
-        const parsed = Number.parseFloat(normalized);
-        return Number.isNaN(parsed) ? null : parsed;
-    };
-
-    const normalizeJenisRealisasi = (value: string | null | undefined): "NAIK" | "TURUN" => {
-        return value === "TURUN" ? "TURUN" : "NAIK";
-    };
-
-    const normalizeJenisRenja = (jenisRenja: string | undefined) => {
-        switch ((jenisRenja || "").toUpperCase()) {
-            case "PROGRAM":
-                return "Program";
-            case "KEGIATAN":
-                return "Kegiatan";
-            case "SUBKEGIATAN":
-                return "Subkegiatan";
-            default:
-                return jenisRenja || "-";
-        }
-    };
-
-    const formatRenjaName = (node: RenjaHierarchyNode) => {
-        const label = normalizeJenisRenja(node.jenis_renja);
-        const name = node.nama_renja?.trim();
-
-        if (name) {
-            return `${label} - ${name}`;
-        }
-
-        return label;
-    };
-
-    const joinIndikator = (indikator: RenjaNodeIndikatorValue[] | undefined) => {
-        if (!indikator?.length) return "-";
-        return indikator
-            .map((item) => item.indikator?.trim())
-            .filter(Boolean)
-            .join("\n");
-    };
-
-    const joinTarget = (target: RenjaNodeTargetValue[] | undefined) => {
-        if (!target?.length) return "-";
-        return target
-            .map((item) => item.target?.trim())
-            .filter(Boolean)
-            .join("\n");
-    };
-
-    const getTargetRequest = (
-        targetItem: RenjaNodeTargetValue | undefined,
-        node: RenjaHierarchyNode,
-        root: RenjaOpdHierarchyResponse,
-    ): RenjaTargetOpdResponse | null => {
-        if (!targetItem) return null;
-
-        const indikator = node.indikator?.[0];
-
-        return {
-            id: targetItem.targetRealisasiId ?? null,
-            jenisRenjaId: node.kode_renja,
-            jenisRenjaTarget: toJenisRenjaPayload(node.jenis_renja),
-            indikatorId: indikator?.id_indikator ?? "",
-            indikator: joinIndikator(node.indikator),
-            targetId: targetItem.id_target,
-            target: targetItem.target ?? "-",
-            realisasi: parseNumericValue(targetItem.realisasi),
-            satuan: targetItem.satuan ?? "-",
-            tahun: root.tahun ?? activatedTahun ?? "",
-            bulan: root.bulan ?? bulanKey ?? "",
-            jenisRealisasi: normalizeJenisRealisasi(targetItem.jenisRealisasi),
-            kodeOpd: root.kode_opd ?? kodeOpd ?? "",
-            kodeRenja: node.kode_renja ?? "",
-            status: targetItem.status ?? "UNCHECKED",
-            createdBy: targetItem.createdBy ?? "",
-            createdDate: "",
-            lastModifiedDate: "",
-            lastModifiedBy: targetItem.lastModifiedBy ?? "",
-            version: 0,
-            capaian: targetItem.capaian ?? "-",
-            keteranganCapaian: targetItem.keteranganCapaian ?? "-",
-        };
-    };
-
-    const getPaguRequest = (
-        node: RenjaHierarchyNode,
-        root: RenjaOpdHierarchyResponse,
-    ) => {
-        const paguItem = node.pagu?.[0];
-
-        return [{
-        targetRealisasiId: paguItem?.paguRealisasiId ?? null,
-        renjaId: node.kode_renja,
-        renja: formatRenjaName(node),
-        kodeRenja: node.kode_renja,
-        jenisRenja: toJenisRenjaPayload(node.jenis_renja),
-        indikator: joinIndikator(node.indikator),
-        pagu: paguItem?.pagu ?? null,
-        realistasiPagu: parseNumericValue(paguItem?.realisasi),
-        satuanPagu: "Rupiah",
-        tahun: root.tahun ?? activatedTahun ?? "",
-        jenisRealisasi: "NAIK",
-        capaianPagu: paguItem?.capaian ?? "-",
-        keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
-    }];
-    };
-
-    const buildPaguNodeMap = (
-        roots: RenjaOpdHierarchyResponse[] | undefined,
-    ) => {
-        const map = new Map<string, RenjaHierarchyNode>();
-
-        const visitNode = (node: RenjaHierarchyNode) => {
-            map.set(node.kode_renja, node);
-            node.program?.forEach(visitNode);
-            node.kegiatan?.forEach(visitNode);
-            node.subkegiatan?.forEach(visitNode);
-        };
-
-        roots?.forEach((root) => root.program?.forEach(visitNode));
-
-        return map;
-    };
+    const hierarchyData = useMemo(() => {
+        if (!data) return [] as RenjaOpdHierarchyResponse[];
+        return transformPenetapanToHierarchy(data);
+    }, [data]);
 
     const rows = useMemo(() => {
-        const targetRoots = data?.data || [];
+        const targetRoots = hierarchyData;
         if (!targetRoots.length) return [] as FlattenedRenjaRow[];
 
-        const paguMap = buildPaguNodeMap(paguResponse?.data);
         const flattenedRows: FlattenedRenjaRow[] = [];
 
         const pushRows = (
@@ -322,15 +301,13 @@ const Table = () => {
             programNumber: number,
             hierarchyLevel: number,
         ) => {
-            const matchedPaguNode = paguMap.get(node.kode_renja);
             const targetItems = node.target?.length ? node.target : [undefined];
 
             targetItems.forEach((targetItem, index) => {
                 const indikatorId = node.indikator?.[0]?.id_indikator ?? "";
                 const indikatorText = joinIndikator(node.indikator);
                 const targetText = targetItem?.target ?? (index === 0 ? joinTarget(node.target) : "-");
-                const paguNode = matchedPaguNode ?? node;
-                const paguItem = paguNode.pagu?.[0];
+                const paguItem = node.pagu?.[0];
 
                 flattenedRows.push({
                     id: `${root.id_renja || 'renja'}-${node.kode_renja}-${targetItem?.id_target ?? 'row'}-${index}`,
@@ -357,17 +334,15 @@ const Table = () => {
                         realisasi: parseNumericValue(targetItem?.realisasi),
                         satuan: targetItem?.satuan ?? "-",
                         tahun: root.tahun ?? activatedTahun ?? "",
-                        jenisRealisasi: normalizeJenisRealisasi(targetItem?.jenisRealisasi),
+                        jenisRealisasi: "NAIK",
                         capaian: targetItem?.capaian ?? "-",
                         keteranganCapaian: targetItem?.keteranganCapaian ?? "-",
                         pagu: paguItem?.pagu ?? null,
-                        realistasiPagu: parseNumericValue(paguItem?.realisasi),
+                        realistasiPagu: null,
                         satuanPagu: "Rupiah",
-                        capaianPagu: paguItem?.capaian ?? "-",
-                        keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
+                        capaianPagu: "-",
+                        keteranganCapaianPagu: "-",
                     }],
-                    targetRequest: getTargetRequest(targetItem, node, root),
-                    paguRequest: getPaguRequest(paguNode, root),
                 });
             });
 
@@ -384,7 +359,7 @@ const Table = () => {
         }));
 
         return flattenedRows;
-    }, [activatedTahun, bulanKey, data?.data, kodeOpd, paguResponse?.data]);
+    }, [activatedTahun, bulanKey, hierarchyData, kodeOpd]);
 
     const programRowSpans = useMemo(() => {
         const rowSpanMap = new Map<string, number>();
@@ -612,7 +587,7 @@ const Table = () => {
         };
     }, [pdfPreviewUrl]);
 
-    if (loading || loadingPagu) {
+    if (loading) {
         return (
             <div className="rounded border border-sky-200 px-4 py-6 text-center">
                 <LoadingBeat loading={true} />
@@ -623,10 +598,10 @@ const Table = () => {
         );
     }
 
-    if (error || errorPagu) {
+    if (error) {
         return (
             <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-red-600">
-                Error: {error || errorPagu}
+                Error: {error}
             </div>
         );
     }
@@ -634,13 +609,18 @@ const Table = () => {
     if (!rows.length) {
         return (
             <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data renja target OPD dan renja pagu OPD tidak ada.
+                Data renja OPD tidak ada.
             </div>
         );
     }
 
     return (
         <>
+            <div className="flex justify-end mb-3">
+                <ButtonGreenBorder onClick={handleOpenPrintPreview}>
+                    Cetak
+                </ButtonGreenBorder>
+            </div>
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table id="print-area-renja" className="w-full">
                     <thead>
@@ -650,7 +630,6 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
-                            <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[160px] text-center">Aksi</td>
                         </tr>
                         <tr className={headerColor}>
                             <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
@@ -680,7 +659,6 @@ const Table = () => {
                                             <td className={`border-r border-b border-sky-600 px-6 py-4 align-top ${getHierarchyCellColorClass(row.jenisRenja)}`}>
                                                 <div className={`flex flex-col gap-1 ${getHierarchyIndentClass(row.hierarchyLevel)}`}>
                                                     <span className="font-semibold">{row.jenisRenja || "-"}</span>
-                                                    {/*<span>{row.namaRenja !== "-" ? row.namaRenja : "-"}</span>*/}
                                                     <span className={`text-sm ${row.jenisRenja === "Subkegiatan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
@@ -711,18 +689,6 @@ const Table = () => {
                                             <td className="border-x border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.keteranganCapaianPagu || "-")}
                                             </td>
-                                            {isFirstRowInProgram && (
-                                                <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-r border-b border-sky-600 px-6 py-4 text-center align-middle">
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <ButtonGreenBorder
-                                                            className="w-full"
-                                                            onClick={handleOpenPrintPreview}
-                                                        >
-                                                            Cetak
-                                                        </ButtonGreenBorder>
-                                                    </div>
-                                                </td>
-                                            )}
                                         </>
                                     );
                                 })()}

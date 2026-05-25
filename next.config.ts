@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 const API_REALISASI = process.env.NEXT_PUBLIC_API_REALISASI || "http://localhost:8080"
+const API_RENJA = process.env.NEXT_PUBLIC_API_RENJA || "http://localhost:9001"
 const ALLOWED_DEV_ORIGINS = process.env.NEXT_PUBLIC_DEV_ORIGINS || "http://localhost:9000"
 
 const nextConfig: NextConfig = {
@@ -18,6 +19,10 @@ const nextConfig: NextConfig = {
       {
         source: "/auth-api/:path*",
         destination: `${API_URL}/:path*` // backend
+      },
+      {
+        source: "/renja-service/:path*",
+        destination: `${API_RENJA}/:path*`
       },
       // {
       //   source: "/user-info/:path",
