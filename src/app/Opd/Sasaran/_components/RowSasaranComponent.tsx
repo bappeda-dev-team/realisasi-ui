@@ -1,18 +1,16 @@
 import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { SasaranOpdRealisasiGrouped } from '@/types'
+import { SasaranOpdPenetapanGrouped } from '@/types'
 import { formatPercentageText } from '@/lib/formatPercentageText'
 
 interface RowSasaranOpdComponentProps {
     no: number;
-    sasaranOpd: SasaranOpdRealisasiGrouped;
+    sasaranOpd: SasaranOpdPenetapanGrouped;
     tahun: number;
-    canEdit: boolean;
     handleOpenPrintPreview: () => void;
-    handleOpenModal: (dataTargetRealisasi: SasaranOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
 }
 
-export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, handleOpenPrintPreview, handleOpenModal }: RowSasaranOpdComponentProps) {
+export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenPrintPreview }: RowSasaranOpdComponentProps) {
     const indikatorList = sasaranOpd.indikator ?? [];
 
     if (indikatorList.length === 0) {
@@ -36,19 +34,12 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
 
                 const targetsForRows = sortedTargets.length > 0 ? sortedTargets : [null];
                 const rowSpan = targetsForRows.length;
-                const handleClick = (targetIndex: number) => {
-                    const selectedTarget = targetsForRows[targetIndex];
-                    if (selectedTarget) {
-                        handleOpenModal([selectedTarget]);
-                    }
-                };
-
                 return targetsForRows.map((target, targetIndex) => (
                     <tr key={`${ind.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
                         {indikatorIndex === 0 && targetIndex === 0 && (
                             <>
                                 <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-center">{no}</td>
-                                <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.renja}</td>
+                                <td rowSpan={totalRows} className="border-x border-b border-emerald-500 py-4 px-3 text-left">{sasaranOpd.sasaranOpd}</td>
                             </>
                         )}
 
@@ -64,14 +55,11 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
                             <ColTargetSasaranComponent
                                 target={target.target}
                                 realisasi={target.realisasi}
-                                satuan={target.satuan}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
-                                canEdit={canEdit}
-                                handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
                             />
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center bg-red-300" colSpan={5}>
+                            <td className="border border-emerald-500 px-6 py-4 text-center bg-emerald-100" colSpan={4}>
                                 Tidak ada target di tahun {tahun}
                             </td>
                         )}
@@ -92,7 +80,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, canEdit, ha
 
 
 interface EmptyIndikatorSasaran {
-    sasaranOpd: SasaranOpdRealisasiGrouped;
+    sasaranOpd: SasaranOpdPenetapanGrouped;
     no: number;
     tahun: number;
     handleOpenPrintPreview: () => void;
@@ -100,12 +88,12 @@ interface EmptyIndikatorSasaran {
 
 const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, tahun, handleOpenPrintPreview }) => {
     return (
-        <tr key={sasaranOpd.renjaId}>
+        <tr key={sasaranOpd.sasaranId}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.renja}</td>
-            <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
-                Tidak ada indikator dan target tahun {tahun}
-            </td>
+            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.sasaranOpd}</td>
+                <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+                    Tidak ada indikator dan target tahun {tahun}
+                </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">
                 <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
                     Cetak
@@ -118,11 +106,8 @@ const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, ta
 type TargetColProps = {
     target: string;
     realisasi: number;
-    satuan: string;
     capaian: string;
     keteranganCapaian: string;
-    canEdit: boolean;
-    handleClick?: () => void;
 };
 
 const formatWithComma = (value: number | string): string => {
@@ -130,25 +115,13 @@ const formatWithComma = (value: number | string): string => {
         return value.toString().replace('.', ',');
     };
 
-const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, canEdit, handleClick }) => {
-
+const ColTargetSasaranComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian }) => {
     return (
         <>
             <td className="border border-emerald-500 px-6 py-4 text-center">{target}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">
-                <div className="flex flex-col items-center gap-2">
-                    <span>{formatWithComma(realisasi)}</span>
-                    {canEdit && handleClick && (
-                        <ButtonGreenBorder
-                            className="w-full"
-                            onClick={handleClick}
-                        >
-                            Realisasi
-                        </ButtonGreenBorder>
-                    )}
-                </div>
+                <span>{formatWithComma(realisasi)}</span>
             </td>
-            <td className="border border-emerald-500 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-emerald-500 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
         </>

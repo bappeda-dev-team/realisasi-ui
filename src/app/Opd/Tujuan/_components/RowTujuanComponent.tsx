@@ -7,18 +7,27 @@ interface RowTujuanComponentProps {
     no: number;
     tujuan: TujuanOpdRealisasiGrouped;
     tahun: number;
-    canEdit: boolean;
     handleOpenPrintPreview: () => void;
-    handleOpenModal: (dataTargetRealisasi: TujuanOpdRealisasiGrouped["indikator"][number]["targets"]) => void;
+    onOpenRealisasi?: (targetInfo: {
+        kodeTujuanOpd: string;
+        kodeIndikatorTujuanOpd: string;
+        kodeTargetTujuanOpd: string;
+        tujuanOpd: string;
+        indikator: string;
+        target: string;
+        realisasi: number;
+        satuan: string;
+        rumusPerhitungan: string;
+        sumberData: string;
+    }) => void;
 }
 
 const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     tujuan,
     tahun,
-    canEdit,
     handleOpenPrintPreview,
-    handleOpenModal
+    onOpenRealisasi,
 }) => {
     const indikatorList = tujuan.indikator ?? [];
 
@@ -42,13 +51,6 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                 });
 
                 const targetsForRows = sortedTargets.length > 0 ? sortedTargets : [null];
-                const handleClick = (targetIndex: number) => {
-                    const selectedTarget = targetsForRows[targetIndex];
-                    if (selectedTarget) {
-                        handleOpenModal([selectedTarget]);
-                    }
-                };
-
                 return targetsForRows.map((target, targetIndex) => (
                     <tr key={`${ind.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
                         {indikatorIndex === 0 && targetIndex === 0 && (
@@ -70,20 +72,30 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                             <ColTargetTujuanComponent
                                 target={target.target}
                                 realisasi={target.realisasi}
-                                satuan={target.satuan}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
-                                canEdit={canEdit}
-                                handleClick={canEdit ? () => handleClick(targetIndex) : undefined}
+                                canEditRealisasi={!!onOpenRealisasi}
+                                handleClick={onOpenRealisasi ? () => onOpenRealisasi({
+                                    kodeTujuanOpd: tujuan.tujuanId,
+                                    kodeIndikatorTujuanOpd: ind.id,
+                                    kodeTargetTujuanOpd: target.targetId,
+                                    tujuanOpd: tujuan.tujuanOpd,
+                                    indikator: ind.indikator,
+                                    target: target.target,
+                                    realisasi: target.realisasi,
+                                    satuan: target.satuan,
+                                    rumusPerhitungan: ind.rumusPerhitungan,
+                                    sumberData: ind.sumberData,
+                                }) : undefined}
                             />
                         ) : (
-                            <td className="border border-red-400 px-6 py-4 text-center" colSpan={5}>
+                            <td className="border border-red-400 px-6 py-4 text-center" colSpan={4}>
                                 Tidak ada target
                             </td>
                         )}
 
                         <td className="border border-red-400 px-6 py-4 text-center">
-                            <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                            <ButtonGreenBorder className="w-full text-xs" onClick={handleOpenPrintPreview}>
                                 Cetak
                             </ButtonGreenBorder>
                         </td>
@@ -111,7 +123,7 @@ const EmptyIndikatorRow: React.FC<{
             <tr key={tujuan.tujuanId}>
                 <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
                 <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanOpd}</td>
-                <td colSpan={8} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
+                <td colSpan={7} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
                     Tidak ada indikator dan target tahun {tahun}
                 </td>
                 <td className="border border-red-400 px-6 py-4 text-center">
@@ -127,14 +139,13 @@ const EmptyIndikatorRow: React.FC<{
 type TargetColProps = {
     target: string;
     realisasi: number;
-    satuan: string;
     capaian: string;
     keteranganCapaian: string;
-    canEdit: boolean;
+    canEditRealisasi?: boolean;
     handleClick?: () => void;
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, canEditRealisasi, handleClick }) => {
 
     return (
         <>
@@ -142,7 +153,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
             <td className="border border-red-400 px-6 py-4 text-center">
                 <div className="flex flex-col items-center gap-2">
                     <span>{realisasi}</span>
-                    {canEdit && handleClick && (
+                    {canEditRealisasi && handleClick && (
                         <ButtonGreenBorder
                             className="w-full"
                             onClick={handleClick}
@@ -152,7 +163,6 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
                     )}
                 </div>
             </td>
-            <td className="border border-red-400 px-6 py-4 text-center">{satuan}</td>
             <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
             <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
         </>

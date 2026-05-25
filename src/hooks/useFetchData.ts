@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { FetchResponse } from '@/types'
-import { getSessionId } from "@/lib/session";
+import { getSessionId, notifySessionExpired } from "@/lib/session";
 
 interface useFetchDataProps {
     url: string | null;
@@ -12,17 +12,20 @@ export const useFetchData = <T>({ url, trigger }: useFetchDataProps): FetchRespo
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | undefined>(undefined);
     const [triggerInternal, setTriggerInternal] = useState(0);
+    const requestIdRef = useRef(0);
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (signal: AbortSignal, requestId: number) => {
         if (!url) {
+            setData(undefined)
             setLoading(false)
+            setError(undefined)
             return;
         }
-        let active = true;
 
         const sessionId = getSessionId()
 
         if (!sessionId) {
+            setData(undefined)
             setError("Silakan login.");
             setLoading(false);
             return;
@@ -35,27 +38,44 @@ export const useFetchData = <T>({ url, trigger }: useFetchDataProps): FetchRespo
             const response = await fetch(url, {
                 method: 'GET',
                 headers: { 'X-Session-Id': sessionId },
+                signal,
             });
             if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    notifySessionExpired();
+                    throw new Error("Session habis, silakan login kembali.");
+                }
                 throw new Error(`HTTP ${response.status} - ${response.statusText}`);
             }
             const responseData: T = await response.json();
-            if (active) {
+            if (!signal.aborted && requestIdRef.current === requestId) {
                 setData(responseData);
             }
         } catch (err) {
-            if (active) {
+            if (signal.aborted) {
+                return;
+            }
+
+            if (requestIdRef.current === requestId) {
                 setError(err instanceof Error ? err.message : 'An error occurred');
             }
         } finally {
-            if (active) {
+            if (!signal.aborted && requestIdRef.current === requestId) {
                 setLoading(false);
             }
         }
     }, [url]);
 
     useEffect(() => {
-        fetchData();
+        const controller = new AbortController();
+        requestIdRef.current += 1;
+        const requestId = requestIdRef.current;
+
+        fetchData(controller.signal, requestId);
+
+        return () => {
+            controller.abort();
+        };
     }, [url, trigger, triggerInternal, fetchData]);
 
     const refetch = useCallback(() => {

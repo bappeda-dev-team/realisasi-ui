@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
@@ -10,13 +10,18 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenjaTargetIndividuResponse, RenjaTarget, RenjaPaguIndividuResponse } from "@/types";
+import {
+    RenjaTargetIndividuResponse,
+    RenjaTarget,
+    RenjaPaguIndividuResponse,
+} from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
 import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
-import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
+import { canEditIndividuRenjaRealisasi } from "@/lib/rbac";
+import SasaranIndividuTable from "./sasaran-individu/Table";
 
 interface RenjaRow {
     id: number;
@@ -29,6 +34,23 @@ interface RenjaRow {
     targets: RenjaTarget[];
 }
 
+const sanitizeForPdf = (value: unknown) => {
+    if (value == null) return "-";
+    let text = String(value);
+
+    try {
+        text = text.normalize("NFKC");
+    } catch {
+        // ignore
+    }
+
+    text = text.replace(/\u2265/g, ">=").replace(/\u2264/g, "<=").replace(/\u00b1/g, "+/-");
+    text = text.replace(/[\u200B-\u200F\u202A-\u202E\u2060-\u206F]/g, "");
+    text = text.replace(/\s+/g, " ").trim();
+
+    return text.length ? text : "-";
+};
+
 const Table = () => {
     const [rows, setRows] = useState<RenjaRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<RenjaRow | null>(null);
@@ -39,14 +61,16 @@ const Table = () => {
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
     const [modalType, setModalType] = useState<'target' | 'pagu'>('target');
 
-    const { tahun: selectedTahun, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const { user } = useUserContext();
     const { url } = useApiUrlContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
+    const canEditRealisasi = canEditIndividuRenjaRealisasi(user);
+    const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
-const getHeaderColor = (level: string | undefined) => {
+    const getHeaderColor = (level: string | undefined) => {
         switch (level) {
             case ROLES.LEVEL_1: return 'bg-red-600 text-white';
             case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
@@ -71,11 +95,15 @@ const getHeaderColor = (level: string | undefined) => {
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
 
-    const apiUrlTarget = url && user?.nip && activatedTahun && bulanKey
+    const apiUrlTarget = url && activatedTahun && bulanKey && isOpdScopedView && activatedDinas
+        ? `${url}/api/v1/realisasi/renja_target_individu/by-kode-opd/${encodeURIComponent(activatedDinas)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
+        : url && user?.nip && activatedTahun && bulanKey
         ? `${url}/api/v1/realisasi/renja_target_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
-    const apiUrlPagu = url && user?.nip && activatedTahun && bulanKey
+    const apiUrlPagu = url && activatedTahun && bulanKey && isOpdScopedView && activatedDinas
+        ? `${url}/api/v1/realisasi/renja_pagu_individu/by-kode-opd/${encodeURIComponent(activatedDinas)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
+        : url && user?.nip && activatedTahun && bulanKey
         ? `${url}/api/v1/realisasi/renja_pagu_individu/by-nip/${encodeURIComponent(user.nip)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(bulanKey)}`
         : null;
 
@@ -98,18 +126,17 @@ const getHeaderColor = (level: string | undefined) => {
             return;
         }
 
-        const namaPegawaiParts = [user?.firstName, user?.lastName].filter(Boolean);
-        const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
-
-        const paguMap = new Map(paguResponse.map(p => [p.idIndikator, p]));
+        const paguMap = new Map(
+            paguResponse.map((p) => [`${p.nip ?? "-"}::${p.idIndikator}`, p]),
+        );
 
         setRows(
             data.map((item) => {
-                const paguItem = paguMap.get(item.idIndikator);
+                const paguItem = paguMap.get(`${item.nip ?? "-"}::${item.idIndikator}`);
                 return {
                     id: item.id,
                     renja: item.renja ?? "-",
-                    nama_pegawai: namaPegawai,
+                    nama_pegawai: item.nama_pegawai ?? "-",
                     nip: item.nip ?? user?.nip ?? "-",
                     kodeRenja: item.kodeRenja ?? "-",
                     jenisRenja: item.jenisRenja ?? "-",
@@ -144,6 +171,7 @@ const getHeaderColor = (level: string | undefined) => {
     }, [data, paguResponse, user, activatedTahun, bulanKey]);
 
     const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
+        if (!canEditRealisasi) return;
         setSelectedRow(row);
         setModalType(type);
         setIsModalOpen(true);
@@ -184,9 +212,8 @@ const getHeaderColor = (level: string | undefined) => {
         const tableHead: any[] = [
             [
                 { content: "No", rowSpan: 2 },
-                { content: "Rencana Kerja", rowSpan: 2 },
                 { content: "Nama Pemilik", rowSpan: 2 },
-                { content: "Bidang Urusan/Program/Kegiatan/Subkegiatan", rowSpan: 2 },
+                { content: "Program/Kegiatan/Subkegiatan", rowSpan: 2 },
                 { content: "Indikator", rowSpan: 2 },
                 { content: `Renja Target ${activatedTahun} - ${bulanName}`, colSpan: 5 },
                 { content: `Renja Pagu ${activatedTahun} - ${bulanName}`, colSpan: 5 },
@@ -227,7 +254,6 @@ const getHeaderColor = (level: string | undefined) => {
                 if (targetIndex === 0) {
                     tableBody.push([
                         { content: index + 1, rowSpan: targets.length },
-                        { content: row.renja || "-", rowSpan: targets.length },
                         { content: `${row.nama_pegawai || "-"} (${row.nip || "-"})`, rowSpan: targets.length },
                         { content: `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`, rowSpan: targets.length },
                         { content: row.indikator || "-", rowSpan: targets.length },
@@ -264,20 +290,19 @@ const getHeaderColor = (level: string | undefined) => {
             },
             columnStyles: {
                 0: { cellWidth: 26, halign: "center" },
-                1: { cellWidth: 140 },
-                2: { cellWidth: 100 },
-                3: { cellWidth: 118 },
-                4: { cellWidth: 128 },
-                5: { cellWidth: 48, halign: "center" },
-                6: { cellWidth: 52, halign: "center" },
-                7: { cellWidth: 46, halign: "center" },
-                8: { cellWidth: 50, halign: "center" },
-                9: { cellWidth: 100 },
-                10: { cellWidth: 58, halign: "center" },
-                11: { cellWidth: 62, halign: "center" },
-                12: { cellWidth: 52, halign: "center" },
-                13: { cellWidth: 54, halign: "center" },
-                14: { cellWidth: 110 },
+                1: { cellWidth: 100 },
+                2: { cellWidth: 118 },
+                3: { cellWidth: 128 },
+                4: { cellWidth: 48, halign: "center" },
+                5: { cellWidth: 52, halign: "center" },
+                6: { cellWidth: 46, halign: "center" },
+                7: { cellWidth: 50, halign: "center" },
+                8: { cellWidth: 100 },
+                9: { cellWidth: 58, halign: "center" },
+                10: { cellWidth: 62, halign: "center" },
+                11: { cellWidth: 52, halign: "center" },
+                12: { cellWidth: 54, halign: "center" },
+                13: { cellWidth: 110 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -319,179 +344,162 @@ const getHeaderColor = (level: string | undefined) => {
         previewDoc.save(pdfFileName);
     };
 
-    const infoMessage = !user || (!user?.nip && !canBypassNip)
-        ? "Silakan login terlebih dahulu untuk melihat data renja individu."
-        : !activatedTahun || !bulanName
-            ? "Pilih dan aktifkan tahun dan bulan agar data renja individu muncul."
-            : undefined;
-
-    if (infoMessage) {
-        return (
-            <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-                {infoMessage}
-            </div>
-        );
-    }
-
-    if (loading || loadingPagu) {
-        return (
-            <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-                <LoadingBeat loading={true} />
-                <p className="text-sm text-gray-600 mt-2">
-                    Memuat data renja individu...
-                </p>
-            </div>
-        );
-    }
-
-    if (error || errorPagu) {
-        return (
-            <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-                Gagal memuat data renja: {error || errorPagu}
-            </div>
-        );
-    }
-
-    if (!rows.length) {
-        return (
-            <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data renja individu tidak ada.
-            </div>
-        );
-    }
-
     return (
         <>
+            <SasaranIndividuTable />
+
             <div className="overflow-auto m-2 rounded-t-xl">
-                <table id="print-area-renja" className="w-full">
-                    <thead>
-                        <tr className={`text-xm ${headerColor}`}>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">Rencana Kerja</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Bidang Urusan/Program/Kegitan/Subkegitan</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun} - ${bulanName}`}</th>
-                            <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun} - ${bulanName}`}</th>
-                            <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
-                        </tr>
-                        <tr className={headerColor}>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((row, index) => {
-                            const target = row.targets[0];
-                            return (
-                                <tr key={row.id}>
-                                    <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
-                                        {index + 1}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {row.renja || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {row.nama_pegawai || "-"} ({row.nip || "-"})
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <span>{row.jenisRenja || "-"}</span>
-                                            <span className="text-sm text-gray-500">({row.kodeRenja || "-"})</span>
-                                        </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {row.indikator || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.target || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <span>{target?.realisasi ?? "-"}</span>
-                                            <ButtonGreenBorder
-                                                className="w-full"
-                                                onClick={() => openModal(row, 'target')}
-                                            >
-                                                Realisasi
-                                            </ButtonGreenBorder>
-                                        </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.satuan || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {formatPercentageText(target?.capaian || "-")}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {formatPercentageText(target?.keteranganCapaian || "-")}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <span>{target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}</span>
-                                            <ButtonGreenBorder
-                                                className="w-full"
-                                                onClick={() => openModal(row, 'pagu')}
-                                            >
-                                                Realisasi
-                                            </ButtonGreenBorder>
-                                        </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.satuanPagu || "-"}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {formatPercentageText(target?.capaianPagu || "-")}
-                                    </td>
-                                    <td className="border-x border-b border-emerald-500 px-6 py-4">
-                                        {formatPercentageText(target?.keteranganCapaianPagu || "-")}
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <ButtonGreenBorder
-                                                className="w-full"
-                                            onClick={handleOpenPrintPreview}
-                                            >
-                                                Cetak
-                                            </ButtonGreenBorder>
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
-            </div>
-            <FormModal
-                isOpen={isModalOpen}
-                onClose={closeModal}
-                title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
-            >
-                {modalType === 'pagu' ? (
-                    <FormRealisasiRenjaPagu
-                        requestValues={selectedRow?.targets ?? []}
-                        onClose={closeModal}
-                        onSuccess={handleRealisasiSuccess}
-                    />
+                <h3 className="px-4 py-3 font-semibold text-gray-800">Renja Individu</h3>
+                {loading || loadingPagu ? (
+                    <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+                        <LoadingBeat loading={true} />
+                        <p className="text-sm text-gray-600 mt-2">
+                            Memuat data renja individu...
+                        </p>
+                    </div>
+                ) : error || errorPagu ? (
+                    <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+                        Gagal memuat data renja: {error || errorPagu}
+                    </div>
+                ) : rows.length ? (
+                    <table id="print-area-renja" className="w-full">
+                        <thead>
+                            <tr className={`text-xm ${headerColor}`}>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama Pemilik</td>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Program/Kegitan/Subkegitan</td>
+                                <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
+                                <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun} - ${bulanName}`}</th>
+                                <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun} - ${bulanName}`}</th>
+                                <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
+                            </tr>
+                            <tr className={headerColor}>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                                <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {rows.map((row, index) => {
+                                const target = row.targets[0];
+                                return (
+                                    <tr key={row.id}>
+                                        <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
+                                            {index + 1}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {row.nama_pegawai || "-"} ({row.nip || "-"})
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <div className="flex flex-col">
+                                                <span>{row.jenisRenja || "-"}</span>
+                                                <span className="text-sm text-gray-500">({row.kodeRenja || "-"})</span>
+                                            </div>
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {row.indikator || "-"}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {target?.target || "-"}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span>{target?.realisasi ?? "-"}</span>
+                                                {canEditRealisasi && (
+                                                    <ButtonGreenBorder
+                                                        className="w-full"
+                                                        onClick={() => openModal(row, 'target')}
+                                                    >
+                                                        Realisasi
+                                                    </ButtonGreenBorder>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {target?.satuan || "-"}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {formatPercentageText(target?.capaian || "-")}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {formatPercentageText(target?.keteranganCapaian || "-")}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <span>{target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}</span>
+                                                {canEditRealisasi && (
+                                                    <ButtonGreenBorder
+                                                        className="w-full"
+                                                        onClick={() => openModal(row, 'pagu')}
+                                                    >
+                                                        Realisasi
+                                                    </ButtonGreenBorder>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {target?.satuanPagu || "-"}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            {formatPercentageText(target?.capaianPagu || "-")}
+                                        </td>
+                                        <td className="border-x border-b border-emerald-500 px-6 py-4">
+                                            {formatPercentageText(target?.keteranganCapaianPagu || "-")}
+                                        </td>
+                                        <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <ButtonGreenBorder
+                                                    className="w-full"
+                                                    onClick={handleOpenPrintPreview}
+                                                >
+                                                    Cetak
+                                                </ButtonGreenBorder>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
                 ) : (
-                    <FormRealisasiRenjaTarget
-                        requestValues={selectedRow?.targets ?? []}
-                        onClose={closeModal}
-                        onSuccess={handleRealisasiSuccess}
-                    />
+                    <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+                        Data renja individu tidak ada.
+                    </div>
                 )}
-            </FormModal>
+            </div>
+
+            {canEditRealisasi && (
+                <FormModal
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                    title={`Realisasi Renja ${modalType === 'pagu' ? 'Pagu' : 'Target'} - ${selectedRow?.nama_pegawai ?? selectedRow?.renja ?? ""}`}
+                >
+                    {modalType === 'pagu' ? (
+                        <FormRealisasiRenjaPagu
+                            requestValues={selectedRow?.targets ?? []}
+                            onClose={closeModal}
+                            onSuccess={handleRealisasiSuccess}
+                        />
+                    ) : (
+                        <FormRealisasiRenjaTarget
+                            requestValues={selectedRow?.targets ?? []}
+                            onClose={closeModal}
+                            onSuccess={handleRealisasiSuccess}
+                        />
+                    )}
+                </FormModal>
+            )}
+
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div

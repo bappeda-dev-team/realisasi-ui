@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation'
 import React from 'react'
 import { RouteGuard } from '@/components/Global/RouteGuard'
 import { useUserContext } from '@/context/UserContext'
-import { canAccessIndividuRenja } from '@/lib/rbac'
+import { canAccessIndividuRenaksi, canAccessIndividuRenja } from '@/lib/rbac'
 
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -32,8 +32,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
     },
   ].filter((item) => {
-    if (item.href !== '/Individu/Renja') return true
-    return canAccessIndividuRenja(user)
+    if (item.href === '/Individu/Renja') return canAccessIndividuRenja(user)
+    if (item.href === '/Individu/Renaksi') return canAccessIndividuRenaksi(user)
+    return true
   })
 
   return (

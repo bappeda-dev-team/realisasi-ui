@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   TbBuildingFortress,
   TbBuilding,
@@ -17,6 +18,7 @@ import { getAccessibleMenus } from "@/lib/rbac";
 
 export const Header = () => {
   const { user, loading, error, lastLoginAt } = useUserContext();
+  const pathname = usePathname();
   const [ShowToastSuccess, setShowToastSuccess] = useState(false);
   const [ShowToastError, setShowToastError] = useState(false);
   const [ModalLogin, setModalLogin] = useState(false);
@@ -48,18 +50,27 @@ export const Header = () => {
         <div className="mx-auto flex md:justify-start justify-between gap-5 items-center px-4 py-3">
           {user && (
             <ul className="hidden md:flex space-x-6">
-              {getAccessibleMenus(user).map((menu) => (
+              {getAccessibleMenus(user).map((menu) => {
+                const isActive =
+                  pathname === menu.href || pathname.startsWith(`${menu.href}/`);
+
+                return (
                 <Link
                   key={menu.href}
                   href={menu.href}
-                  className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 hover:text-black text-white hover:bg-white border border-white`}
+                  className={`flex items-center gap-1 font-bold rounded-lg cursor-pointer py-1 px-5 border border-white transition-colors duration-200 ${
+                    isActive
+                      ? "bg-white text-black"
+                      : "text-white hover:text-black hover:bg-white"
+                  }`}
                 >
                   {menu.href === '/Pemda' && <TbBuildingFortress />}
                   {menu.href === '/Opd' && <TbBuilding />}
                   {menu.href === '/Individu' && <TbUserSquareRounded />}
                   {menu.name}
                 </Link>
-              ))}
+                );
+              })}
             </ul>
           )}
           <div className="flex items-center gap-6 ml-auto">

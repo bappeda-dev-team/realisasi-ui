@@ -1,22 +1,18 @@
 "use client";
 
 import { LoadingBeat } from "@/components/Global/Loading";
-import { FormModal } from "@/components/Global/Modal";
 import { useFilterContext } from "@/context/FilterContext";
-import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
-import { canEditOpdRealisasi } from "@/lib/rbac";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import {
-  SasaranOpdRealisasiGrouped,
-  SasaranOpdRealisasiResponse,
-  SasaranOpdTargetRealisasiCapaian,
+  SasaranOpdPenetapanResponse,
+  SasaranOpdPenetapanGrouped,
+  SasaranOpdRealisasiGroupedIndikator,
 } from "@/types";
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
-import FormRealisasiSasaranOpd from "./_components/FormRealisasiSasaranOpd";
 import TableSasaranOpd from "./_components/TableSasaranOpd";
 
 const sanitizeForPdf = (value: unknown) => {
@@ -37,7 +33,6 @@ const sanitizeForPdf = (value: unknown) => {
 };
 
 export default function SasaranPage() {
-  const { user } = useUserContext();
   const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, activatedBulan, namaDinas: namaOpd } =
     useFilterContext();
 
@@ -46,76 +41,74 @@ export default function SasaranPage() {
   const bulanName = getMonthName(activatedBulan) ?? "Bulan";
 
   const {
-    data: realisasiData,
-    loading: realisasiLoading,
-    error: realisasiError,
-    refetch: refetchRealisasi,
-  } = useFetchData<SasaranOpdRealisasiResponse>({
+    data: penetapanData,
+    loading: penetapanLoading,
+    error: penetapanError,
+  } = useFetchData<SasaranOpdPenetapanResponse>({
     url:
       kodeOpd && selectedTahunValue && bulanKey
-        ? `/api/v1/realisasi/sasaran_opd/${kodeOpd}/by-tahun/${selectedTahunValue}/bulan/${encodeURIComponent(bulanKey)}`
+        ? `/api/v1/realisasi/sasaran_opd/${kodeOpd}/tahun/${selectedTahunValue}/penetapan?bulan=${encodeURIComponent(bulanKey ?? "")}`
         : null,
   });
 
-  const [sasaranOpdSelected, setSasaranOpdSelected] = useState<SasaranOpdTargetRealisasiCapaian[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("sasaran-opd.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-  const canEdit = canEditOpdRealisasi(user);
 
-  const groupedSasaranOpd = useMemo<SasaranOpdRealisasiGrouped[]>(() => {
-    const source = realisasiData ?? [];
-    const renjaMap = new Map<string, SasaranOpdRealisasiGrouped>();
+  const groupedSasaranOpd = useMemo<SasaranOpdPenetapanGrouped[]>(() => {
+    const sasaranOpds = penetapanData?.sasaranOpds ?? [];
+    const topKodeOpd = penetapanData?.kode_opd ?? '';
 
-    source.forEach((item) => {
-      const renjaKey = String(item.renjaId);
-      const indikatorKey = String(item.indikatorId);
+    const sasaranMap = new Map<string, SasaranOpdPenetapanGrouped>();
 
-      let renja = renjaMap.get(renjaKey);
-      if (!renja) {
-        renja = {
-          renjaId: renjaKey,
-          renja: item.renja ?? "-",
-          indikator: [],
-        };
-        renjaMap.set(renjaKey, renja);
-      }
+    sasaranOpds.forEach((sasaran) => {
+      const sasaranKey = sasaran.kode_sasaran_opd;
+      const grouped: SasaranOpdPenetapanGrouped = {
+        sasaranId: sasaranKey,
+        sasaranOpd: sasaran.sasaran_opd,
+        indikator: [],
+      };
 
-      let indikator = renja.indikator.find((row) => row.id === indikatorKey);
-      if (!indikator) {
-        indikator = {
-          id: indikatorKey,
-          indikator: item.indikator ?? "-",
-          rumusPerhitungan: item.rumusPerhitungan ?? "-",
-          sumberData: item.sumberData ?? "-",
+      sasaran.indikators.forEach((ind) => {
+        const indikatorItem: SasaranOpdRealisasiGroupedIndikator = {
+          id: ind.kode_indikator,
+          indikator: ind.indikator,
+          rumusPerhitungan: ind.rumus_perhitungan ?? '-',
+          sumberData: ind.sumber_data ?? '-',
           targets: [],
         };
-        renja.indikator.push(indikator);
-      }
 
-      indikator.targets.push({
-        targetRealisasiId: item.id ?? null,
-        renja: item.renja ?? "-",
-        renjaId: String(item.renjaId),
-        indikatorId: String(item.indikatorId),
-        indikator: item.indikator ?? "-",
-        targetId: String(item.targetId),
-        target: item.target ?? "-",
-        realisasi: item.realisasi ?? 0,
-        capaian: item.capaian ?? "-",
-        keteranganCapaian: item.keteranganCapaian ?? "-",
-        satuan: item.satuan ?? "-",
-        tahun: String(item.tahun ?? ""),
-        kodeOpd: item.kodeOpd ?? kodeOpd ?? "",
-        rumusPerhitungan: item.rumusPerhitungan ?? "-",
-        sumberData: item.sumberData ?? "-",
+        ind.targets.forEach((tgt) => {
+          indikatorItem.targets.push({
+            targetRealisasiId: null,
+            renja: sasaran.sasaran_opd,
+            renjaId: sasaranKey,
+            sasaranOpd: sasaran.sasaran_opd,
+            sasaranId: sasaranKey,
+            indikatorId: ind.kode_indikator,
+            indikator: ind.indikator,
+            targetId: tgt.kode_target,
+            target: String(tgt.target),
+            realisasi: tgt.realisasi ?? 0,
+            capaian: tgt.capaian != null ? String(tgt.capaian) : '-',
+            keteranganCapaian: tgt.keterangan_capaian ?? '-',
+            satuan: tgt.satuan,
+            tahun: String(selectedTahunValue),
+            kodeOpd: topKodeOpd,
+            rumusPerhitungan: ind.rumus_perhitungan ?? '-',
+            sumberData: ind.sumber_data ?? '-',
+          });
+        });
+
+        grouped.indikator.push(indikatorItem);
       });
+
+      sasaranMap.set(sasaranKey, grouped);
     });
 
-    return Array.from(renjaMap.values());
-  }, [realisasiData, kodeOpd]);
+    return Array.from(sasaranMap.values());
+  }, [penetapanData, selectedTahunValue]);
 
   useEffect(() => {
     return () => {
@@ -141,7 +134,7 @@ export default function SasaranPage() {
     );
   }
 
-  if (realisasiLoading) {
+  if (penetapanLoading) {
     return (
       <div className="rounded border border-emerald-200 px-4 py-6 text-center">
         <LoadingBeat loading={true} />
@@ -150,10 +143,10 @@ export default function SasaranPage() {
     );
   }
 
-  if (realisasiError) {
+  if (penetapanError) {
     return (
       <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-        Error fetching realisasi: {realisasiError}
+        Error: {penetapanError}
       </div>
     );
   }
@@ -165,12 +158,6 @@ export default function SasaranPage() {
       </div>
     );
   }
-
-  const handleOpenModal = (dataTargetRealisasi: SasaranOpdTargetRealisasiCapaian[]) => {
-    if (!canEdit) return;
-    setSasaranOpdSelected(dataTargetRealisasi);
-    setIsModalOpen(true);
-  };
 
   const createPdfDocument = () => {
     const doc = new jsPDF({
@@ -189,32 +176,30 @@ export default function SasaranPage() {
 
     const tableHead = [[
       "No",
-      "Rencana Kerja",
+      "Sasaran",
       "Indikator",
       "Rumus Perhitungan",
       "Sumber Data",
       "Target",
-      "Realisasi",
-      "Satuan",
+      "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
     ]];
 
     const tableBody: any[] = [];
 
-    groupedSasaranOpd.forEach((renja, renjaIndex) => {
+    groupedSasaranOpd.forEach((sasaran, sasaranIndex) => {
       const detailRows: Array<Array<string | number>> = [];
 
-      if (!renja.indikator.length) {
+      if (!sasaran.indikator.length) {
         detailRows.push(["-", "-", "-", "-", "-", "-", "-", "-"]);
       } else {
-        renja.indikator.forEach((indikator) => {
+        sasaran.indikator.forEach((indikator) => {
           if (!indikator.targets.length) {
             detailRows.push([
               sanitizeForPdf(indikator.indikator),
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
-              "-",
               "-",
               "-",
               "-",
@@ -229,8 +214,7 @@ export default function SasaranPage() {
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
               sanitizeForPdf(target.target),
-              target.realisasi ?? 0,
-              sanitizeForPdf(target.satuan),
+              sanitizeForPdf(target.realisasi ?? 0),
               sanitizeForPdf(formatPercentageText(target.capaian)),
               sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
             ]);
@@ -241,8 +225,8 @@ export default function SasaranPage() {
       detailRows.forEach((detailRow, detailIndex) => {
         if (detailIndex === 0) {
             tableBody.push([
-            { content: renjaIndex + 1, rowSpan: detailRows.length },
-            { content: sanitizeForPdf(renja.renja), rowSpan: detailRows.length },
+            { content: sasaranIndex + 1, rowSpan: detailRows.length },
+            { content: sanitizeForPdf(sasaran.sasaranOpd), rowSpan: detailRows.length },
             ...detailRow,
           ]);
           return;
@@ -279,10 +263,9 @@ export default function SasaranPage() {
         3: { cellWidth: 200 },
         4: { cellWidth: 50, halign: "center" },
         5: { cellWidth: 50, halign: "center" },
-        6: { cellWidth: 50, halign: "center" },
+        6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 50, halign: "center" },
-        8: { cellWidth: 50, halign: "center" },
-        9: { cellWidth: 70 },
+        8: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -332,31 +315,8 @@ export default function SasaranPage() {
         tahun={selectedTahunValue}
         bulanLabel={bulanName}
         sasaranOpd={groupedSasaranOpd}
-        canEdit={canEdit}
         handleOpenPrintPreview={handleOpenPrintPreview}
-        handleOpenModal={handleOpenModal}
       />
-      <FormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-        }}
-        title={`Realisasi Sasaran OPD - ${namaOpd || "-"} ${selectedTahunValue} - ${bulanName}`}
-      >
-        <FormRealisasiSasaranOpd
-          requestValues={sasaranOpdSelected}
-          tahun={selectedTahunValue}
-          bulan={bulanKey ?? ""}
-          bulanLabel={bulanName}
-          onClose={() => {
-            setIsModalOpen(false);
-          }}
-          onSuccess={() => {
-            setIsModalOpen(false);
-            refetchRealisasi();
-          }}
-        />
-      </FormModal>
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>

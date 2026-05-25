@@ -15,6 +15,7 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RekinIndividuResponse, RekinTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
+import { canEditIndividuRekinRealisasi } from "@/lib/rbac";
 
 interface TableRow {
     id: number;
@@ -28,8 +29,10 @@ interface TableRow {
 
 const Table = () => {
     const { user } = useUserContext();
-    const { tahun: selectedTahun, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
+    const canEditRealisasi = canEditIndividuRekinRealisasi(user);
+    const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
     const [rows, setRows] = useState<TableRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,11 +70,17 @@ const getHeaderColor = (level: string | undefined) => {
     const monthLabel = getMonthName(activatedBulan);
 
     const apiUrl = useMemo(() => {
-        if (!user?.nip || !yearLabel || !monthKey) return null;
+        if (!yearLabel || !monthKey) return null;
+        if (isOpdScopedView && activatedDinas) {
+            return `/api/v1/realisasi/rekin/by-kode-opd/${encodeURIComponent(
+                activatedDinas,
+            )}/by-tahun/${encodeURIComponent(yearLabel)}/by-bulan/${encodeURIComponent(monthKey)}`;
+        }
+        if (!user?.nip) return null;
         return `/api/v1/realisasi/rekin/by-nip/${encodeURIComponent(
             user.nip,
         )}/by-tahun/${encodeURIComponent(yearLabel)}/by-bulan/${encodeURIComponent(monthKey)}`;
-    }, [user?.nip, yearLabel, monthKey]);
+    }, [activatedDinas, isOpdScopedView, user?.nip, yearLabel, monthKey]);
 
     const { data, loading, error } = useFetchData<RekinIndividuResponse[]>({
         url: apiUrl,
@@ -89,9 +98,6 @@ const getHeaderColor = (level: string | undefined) => {
             setRows([]);
             return;
         }
-
-        const namaPegawaiParts = [user.firstName, user.lastName].filter(Boolean);
-        const namaPegawai = namaPegawaiParts.join(" ").trim() || "Pengguna";
 
         setRows(
             data.map((item) => {
@@ -118,7 +124,7 @@ const getHeaderColor = (level: string | undefined) => {
                 return {
                     id: item.id,
                     rekin: item.rekin ?? "-",
-                    nama_pegawai: namaPegawai,
+                    nama_pegawai: item.nama_pegawai ?? "-",
                     nip: item.nip ?? user.nip ?? "-",
                     indikator: item.indikator ?? "-",
                     sasaran: item.sasaran ?? "-",
@@ -129,6 +135,7 @@ const getHeaderColor = (level: string | undefined) => {
     }, [data, user, yearLabel]);
 
     const handleOpenModal = (row: TableRow) => {
+        if (!canEditRealisasi) return;
         setSelectedRow(row);
         setIsModalOpen(true);
     };
@@ -277,6 +284,8 @@ const getHeaderColor = (level: string | undefined) => {
 
     const infoMessage = !user || (!user?.nip && !canBypassNip)
         ? "Silakan login terlebih dahulu untuk melihat data rekin individu."
+        : canBypassNip && !activatedDinas
+            ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data rekin individu muncul."
         : !yearLabel || !monthLabel
             ? "Pilih dan aktifkan tahun dan bulan agar data rekin individu muncul."
             : undefined;
@@ -401,12 +410,14 @@ const getHeaderColor = (level: string | undefined) => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4 align-top">
                                         <div className="flex flex-col items-center gap-2">
                                             <span>{target?.realisasi ?? "-"}</span>
-                                            <ButtonGreenBorder
-                                                className="w-full"
-                                                onClick={() => handleOpenModal(item)}
-                                            >
-                                                Realisasi
-                                            </ButtonGreenBorder>
+                                            {canEditRealisasi && (
+                                                <ButtonGreenBorder
+                                                    className="w-full"
+                                                    onClick={() => handleOpenModal(item)}
+                                                >
+                                                    Realisasi
+                                                </ButtonGreenBorder>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -434,17 +445,19 @@ const getHeaderColor = (level: string | undefined) => {
                     </tbody>
                 </table>
             </div>
-            <FormModal
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                title={`Realisasi ${selectedRow?.rekin ?? ""}`}
-            >
-                <FormRealisasiRekinIndividu
-                    requestValues={modalValues}
+            {canEditRealisasi && (
+                <FormModal
+                    isOpen={isModalOpen}
                     onClose={handleCloseModal}
-                    onSuccess={handleRealisasiSuccess}
-                />
-            </FormModal>
+                    title={`Realisasi ${selectedRow?.rekin ?? ""}`}
+                >
+                    <FormRealisasiRekinIndividu
+                        requestValues={modalValues}
+                        onClose={handleCloseModal}
+                        onSuccess={handleRealisasiSuccess}
+                    />
+                </FormModal>
+            )}
 
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">

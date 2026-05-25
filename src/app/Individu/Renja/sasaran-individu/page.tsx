@@ -6,18 +6,24 @@ import { useUserContext } from '@/context/UserContext'
 import { ROLES } from '@/constants/roles'
 import Table from './Table'
 
-const SasaranPage = () => {
+const SasaranIndividuPage = () => {
   const { user } = useUserContext()
   const { activatedDinas, activatedTahun, activatedBulan } = useFilterContext()
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD)
   const needsOpdSelection = canBypassNip && !activatedDinas
 
-  if ((!user?.nip && !canBypassNip) || needsOpdSelection || !activatedTahun || !activatedBulan) {
+  if (!activatedTahun || !activatedBulan) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-        {needsOpdSelection
-          ? 'Pilih dan aktifkan OPD, tahun, dan bulan agar data renja individu muncul.'
-          : 'Pilih dan aktifkan tahun dan bulan agar data renja individu muncul.'}
+        Pilih dan aktifkan tahun dan bulan agar data sasaran individu muncul.
+      </div>
+    )
+  }
+
+  if (needsOpdSelection) {
+    return (
+      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
+        Pilih dan aktifkan OPD, tahun, dan bulan agar data sasaran individu muncul.
       </div>
     )
   }
@@ -30,4 +36,4 @@ const SasaranPage = () => {
   )
 }
 
-export default SasaranPage
+export default SasaranIndividuPage

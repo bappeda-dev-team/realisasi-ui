@@ -2,72 +2,32 @@
 
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
-import { getMonthName } from "@/lib/months";
+import { getMonthKey, getMonthName } from "@/lib/months";
 import { useFilterContext } from "@/context/FilterContext";
+import { useUserContext } from "@/context/UserContext";
+import { canEditPemdaRealisasi } from "@/lib/rbac";
 import {
-    PerencanaanTujuanPemda,
-    PerencanaanTujuanPemdaResponse,
     RealisasiTujuanResponse,
     TargetRealisasiCapaian,
-    TujuanPemda,
+    TujuanPemdaRealisasiGrouped,
 } from "@/types";
 import React, { useEffect, useState, useMemo } from "react";
 import { ModalTujuanPemda } from "./_components/ModalTujuan";
 import TableTujuan from "./_components/TableTujuan";
-import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataPerencanaanRealisasi";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 
 export default function Tujuan() {
+    const { user } = useUserContext();
     const {
-        periode: selectedPeriode,
         activatedTahun: selectedTahun,
         activatedBulan,
     } = useFilterContext();
+    const canEdit = canEditPemdaRealisasi(user);
     const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
+    const bulanKey = getMonthKey(activatedBulan ?? null);
     const bulanName = getMonthName(activatedBulan ?? null);
-    const periode = useMemo<number[]>(() => {
-        if (!selectedPeriode) return [];
-
-        const [awalStr, akhirStr] = selectedPeriode.split("-").map(t => t.trim());
-        const awal = Number(awalStr);
-        const akhir = Number(akhirStr);
-
-        if (Number.isNaN(awal) || Number.isNaN(akhir)) return [];
-
-        return Array.from({ length: akhir - awal + 1 }, (_, i) => awal + i);
-    }, [selectedPeriode]);
-
-    const years: number[] = [];
-    if (selectedPeriode) {
-        const [awalStr, akhirStr] = selectedPeriode.split("-").map((t) => t.trim());
-        const awal = parseInt(awalStr);
-        const akhir = parseInt(akhirStr);
-
-        for (let y = awal; y <= akhir; y++) {
-            years.push(y);
-        }
-    }
-
-    const tahunAwal = periode[0];
-    const tahunAkhir = periode[periode.length - 1];
-    const jenisPeriode = "rpjmd";
-
-    const canFetchPerencanaan =
-        typeof tahunAwal === "number" && typeof tahunAkhir === "number";
-
-
-    // FETCH DATA
-    const {
-        data: perencanaanData,
-        loading: perencanaanLoading,
-        error: perencanaanError,
-    } = useFetchData<PerencanaanTujuanPemdaResponse>({
-        url: canFetchPerencanaan
-            ? `/api/perencanaan/tujuan_pemda/findall_with_pokin/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`
-            : null,
-    });
 
     const {
         data: realisasiData,
@@ -75,43 +35,75 @@ export default function Tujuan() {
         error: realisasiError,
         refetch: refetchRealisasi,
     } = useFetchData<RealisasiTujuanResponse>({
-        url: selectedTahun && bulanName
-            ? `/api/v1/realisasi/tujuans/by-tahun/${selectedTahunValue}/by-bulan/${encodeURIComponent(bulanName)}`
+        url: selectedTahun && bulanKey
+            ? `/api/v1/realisasi/tujuans/by-tahun/${selectedTahunValue}/by-bulan/${encodeURIComponent(bulanKey)}`
             : null,
     });
 
-
-    // state
-    const [dataTargetRealisasi, setDataTargetRealisasi] =
-        useState<TargetRealisasiCapaian[]>([]);
-    const [tujuansPemda, setTujuansPemda] = useState<TujuanPemda[]>([]);
     const [OpenModal, setOpenModal] = useState<boolean>(false);
     const [selectedTujuan, setSelectedTujuan] = useState<
         TargetRealisasiCapaian[]
-    >([]);
-    const [perencanaanTujuan, setPerencanaanTujuan] = useState<
-        PerencanaanTujuanPemda[]
     >([]);
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState("tujuan-pemda.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
-    // Effect
-    useEffect(() => {
-        if (!perencanaanData?.data || !realisasiData) return;
+    const dataTargetRealisasi = useMemo<TargetRealisasiCapaian[]>(() => {
+        return (realisasiData ?? []).map((item) => ({
+            targetRealisasiId: item.id ?? null,
+            tujuanPemda: item.tujuan ?? "-",
+            tujuanId: String(item.tujuanId),
+            visiMisi: item.visiMisi ?? "-",
+            indikatorId: String(item.indikatorId),
+            indikator: item.indikator ?? "-",
+            rumusPerhitungan: item.rumusPerhitungan ?? "-",
+            sumberData: item.sumberData ?? "-",
+            targetId: String(item.targetId),
+            target: item.target ?? "-",
+            realisasi: item.realisasi ?? 0,
+            capaian: item.capaian ?? "-",
+            keteranganCapaian: item.keteranganCapaian ?? "-",
+            satuan: item.satuan ?? "-",
+            tahun: String(item.tahun ?? ""),
+        }));
+    }, [realisasiData]);
 
-        const perencanaan = perencanaanData.data;
-        setPerencanaanTujuan(perencanaan);
+    const groupedTujuanPemda = useMemo<TujuanPemdaRealisasiGrouped[]>(() => {
+        const tujuanMap = new Map<string, TujuanPemdaRealisasiGrouped>();
 
-        setDataTargetRealisasi(
-            gabunganDataPerencanaanRealisasi(perencanaan, realisasiData),
-        );
+        dataTargetRealisasi.forEach((item) => {
+            const tujuanKey = item.tujuanId;
+            const indikatorKey = item.indikatorId;
 
-        setTujuansPemda(
-            perencanaan.flatMap(pokin => pokin.tujuan_pemda),
-        );
-    }, [perencanaanData, realisasiData]);
+            let tujuan = tujuanMap.get(tujuanKey);
+            if (!tujuan) {
+                tujuan = {
+                    tujuanId: tujuanKey,
+                    tujuanPemda: item.tujuanPemda,
+                    visiMisi: item.visiMisi,
+                    indikator: [],
+                };
+                tujuanMap.set(tujuanKey, tujuan);
+            }
+
+            let indikator = tujuan.indikator.find((row) => row.id === indikatorKey);
+            if (!indikator) {
+                indikator = {
+                    id: indikatorKey,
+                    indikator: item.indikator,
+                    rumusPerhitungan: item.rumusPerhitungan,
+                    sumberData: item.sumberData,
+                    targets: [],
+                };
+                tujuan.indikator.push(indikator);
+            }
+
+            indikator.targets.push(item);
+        });
+
+        return Array.from(tujuanMap.values());
+    }, [dataTargetRealisasi]);
 
     useEffect(() => {
         return () => {
@@ -121,42 +113,27 @@ export default function Tujuan() {
         };
     }, [pdfPreviewUrl]);
 
-    if (selectedTahun === null || activatedBulan === null || !bulanName || periode.length === 0)
+    if (selectedTahun === null || activatedBulan === null || !bulanKey || !bulanName)
         return (
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
                 Pilih dan aktifkan periode, tahun, dan bulan agar data tujuan pemda muncul.
             </div>
         );
-    /* if (!perencanaanData || !realisasiData) return <LoadingBeat loading={perencanaanLoading} />; */
-    if (perencanaanLoading || realisasiLoading)
-        return <LoadingBeat loading={perencanaanLoading} />;
-    if (perencanaanError)
-        return <div>Error fetching perencanaan: {perencanaanError}</div>;
+    if (realisasiLoading)
+        return <LoadingBeat loading={realisasiLoading} />;
     if (realisasiError)
         return <div>Error fetching realisasi: {realisasiError}</div>;
 
-    if (tujuansPemda.length === 0)
+    if (groupedTujuanPemda.length === 0)
         return (
             <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
                 Data tujuan pemda tidak ada.
             </div>
         );
 
-    const handleOpenModal = (
-        tujuan: TujuanPemda,
-        data: TargetRealisasiCapaian[],
-    ) => {
-        // tujuan -> buat text diatas sama filter
-        const targetCapaian = data.filter(
-            (tc) => tc.tujuanId === tujuan.id.toString(),
-        );
-
-        if (targetCapaian) {
-            setSelectedTujuan(targetCapaian); // Set the selected purpose to the found target capaian
-        } else {
-            console.warn("No matching target capaian found for the selected tujuan");
-            setSelectedTujuan([]); // Optionally reset if nothing is found to avoid stale data
-        }
+    const handleOpenModal = (data: TargetRealisasiCapaian[]) => {
+        if (!canEdit) return;
+        setSelectedTujuan(data);
         setOpenModal(true);
     };
 
@@ -203,23 +180,19 @@ export default function Tujuan() {
             "Rumus Perhitungan",
             "Sumber Data",
             "Target",
-            "Realisasi",
-            "Satuan",
+            "Realisasi (%)",
             "Capaian",
             "Keterangan Capaian",
         ]];
 
         const tableBody: any[] = [];
 
-        tujuansPemda.forEach((tujuan, tujuanIndex) => {
-            const indikatorList = tujuan.indikator ?? [];
-
-            if (indikatorList.length === 0) {
+        groupedTujuanPemda.forEach((tujuan, tujuanIndex) => {
+            if (!tujuan.indikator.length) {
                 tableBody.push([
                     tujuanIndex + 1,
-                    sanitizeForPdf(tujuan.tujuan_pemda),
-                    sanitizeForPdf(tujuan.misi),
-                    "-",
+                    sanitizeForPdf(tujuan.tujuanPemda),
+                    sanitizeForPdf(tujuan.visiMisi),
                     "-",
                     "-",
                     "-",
@@ -231,26 +204,48 @@ export default function Tujuan() {
                 return;
             }
 
-            indikatorList.forEach((indikator: any, indikatorIndex: number) => {
-                const targetData = dataTargetRealisasi.find(
-                    (r) =>
-                        r.indikatorId === indikator.id.toString() &&
-                        r.tahun === selectedTahunValue.toString(),
-                );
+            const detailRows: Array<Array<string | number>> = [];
 
-                tableBody.push([
-                    indikatorIndex === 0 ? tujuanIndex + 1 : "",
-                    indikatorIndex === 0 ? sanitizeForPdf(tujuan.tujuan_pemda) : "",
-                    indikatorIndex === 0 ? sanitizeForPdf(tujuan.misi) : "",
-                    sanitizeForPdf(indikator.indikator),
-                    sanitizeForPdf(indikator.rumus_perhitungan),
-                    sanitizeForPdf(indikator.sumber_data),
-                    sanitizeForPdf(targetData?.target),
-                    sanitizeForPdf(targetData?.realisasi ?? 0),
-                    sanitizeForPdf(targetData?.satuan),
-                    sanitizeForPdf(formatPercentageText(targetData?.capaian)),
-                    sanitizeForPdf(formatPercentageText(targetData?.keteranganCapaian)),
-                ]);
+            tujuan.indikator.forEach((indikator) => {
+                if (!indikator.targets.length) {
+                    detailRows.push([
+                        sanitizeForPdf(indikator.indikator),
+                        sanitizeForPdf(indikator.rumusPerhitungan),
+                        "-",
+                        "-",
+                        "-",
+                        "-",
+                        "-",
+                        "-",
+                    ]);
+                    return;
+                }
+
+                indikator.targets.forEach((target) => {
+                    detailRows.push([
+                        sanitizeForPdf(indikator.indikator),
+                        sanitizeForPdf(indikator.rumusPerhitungan),
+                        sanitizeForPdf(indikator.sumberData),
+                        sanitizeForPdf(target.target),
+                        sanitizeForPdf(target.realisasi ?? 0),
+                        sanitizeForPdf(formatPercentageText(target.capaian)),
+                        sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+                    ]);
+                });
+            });
+
+            detailRows.forEach((detailRow, detailIndex) => {
+                if (detailIndex === 0) {
+                    tableBody.push([
+                        { content: tujuanIndex + 1, rowSpan: detailRows.length },
+                        { content: sanitizeForPdf(tujuan.tujuanPemda), rowSpan: detailRows.length },
+                        { content: sanitizeForPdf(tujuan.visiMisi), rowSpan: detailRows.length },
+                        ...detailRow,
+                    ]);
+                    return;
+                }
+
+                tableBody.push(detailRow);
             });
         });
 
@@ -282,10 +277,9 @@ export default function Tujuan() {
                 4: { cellWidth: 100, halign: "center" },
                 5: { cellWidth: 50, halign: "center" },
                 6: { cellWidth: 50, halign: "center" },
-                7: { cellWidth: 50, halign: "center" },
+                7: { cellWidth: 65, halign: "center" },
                 8: { cellWidth: 50, halign: "center" },
-                9: { cellWidth: 50, halign: "center" },
-                10: { cellWidth: 70 },
+                9: { cellWidth: 70 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -327,10 +321,6 @@ export default function Tujuan() {
         previewDoc.save(pdfFileName);
     };
 
-    // here's the magic
-    // filter the fkin periode
-    const periodeTampil = years.filter((p) => p === parseInt(selectedTahun));
-
     return (
         <div className="overflow-auto grid gap-2">
             <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan Pemda</h2>
@@ -338,24 +328,27 @@ export default function Tujuan() {
                 <TableTujuan
                     tahun={parseInt(selectedTahun)}
                     bulanLabel={bulanName}
-                    tujuansPemda={tujuansPemda}
-                    targetRealisasiCapaians={dataTargetRealisasi}
+                    tujuansPemda={groupedTujuanPemda}
+                    canEdit={canEdit}
                     handleOpenPrintPreview={handleOpenPrintPreview}
                     handleOpenModal={handleOpenModal}
                 />
-                <ModalTujuanPemda
-                    item={selectedTujuan}
-                    tahun={parseInt(selectedTahun)}
-                    bulanLabel={bulanName}
-                    isOpen={OpenModal}
-                    onClose={() => {
-                        setOpenModal(false);
-                    }}
-                    onSuccess={() => {
-                        setOpenModal(false);
-                        refetchRealisasi();
-                    }}
-                />
+                {canEdit && (
+                    <ModalTujuanPemda
+                        item={selectedTujuan}
+                        tahun={parseInt(selectedTahun)}
+                        bulan={bulanKey}
+                        bulanLabel={bulanName}
+                        isOpen={OpenModal}
+                        onClose={() => {
+                            setOpenModal(false);
+                        }}
+                        onSuccess={() => {
+                            setOpenModal(false);
+                            refetchRealisasi();
+                        }}
+                    />
+                )}
             </div>
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
