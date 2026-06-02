@@ -21,7 +21,6 @@ import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
 import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenjaRealisasi } from "@/lib/rbac";
-import SasaranIndividuTable from "./sasaran-individu/Table";
 
 interface RenjaRow {
     id: number;
@@ -346,8 +345,6 @@ const Table = () => {
 
     return (
         <>
-            <SasaranIndividuTable />
-
             <div className="overflow-auto m-2 rounded-t-xl">
                 <h3 className="px-4 py-3 font-semibold text-gray-800">Renja Individu</h3>
                 {loading || loadingPagu ? (

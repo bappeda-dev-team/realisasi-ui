@@ -97,6 +97,7 @@ const getHeaderColor = (level: string | undefined) => {
           renaksiId: item.renaksiId,
           renaksi: item.renaksi ?? "-",
           nip: item.nip ?? user?.nip ?? "-",
+          namaPegawai: item.nama_pegawai ?? user?.firstName ?? "-",
           rekinId: item.rekinId,
           rekin: item.rekin ?? "-",
           targetId: item.targetId,
@@ -109,6 +110,7 @@ const getHeaderColor = (level: string | undefined) => {
           capaian: item.capaian ?? "-",
           keteranganCapaian: item.keteranganCapaian ?? "-",
           rencanaKinerja: item.rekin,
+          kodeOpd: item.kodeOpd ?? user?.kode_opd ?? "",
         };
 
         return {

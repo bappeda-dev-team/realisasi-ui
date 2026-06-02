@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenaksiTarget, RenaksiBatchRequest, RenaksiIndividuResponse } from "@/types";
+import { FormProps, RenaksiTarget, RenaksiRealisasiRequest, RenaksiIndividuResponse } from "@/types";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -18,10 +18,10 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const { tahun: selectedTahun, bulan: selectedBulan, activatedTahun, activatedBulan } = useFilterContext();
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
-        () => (url ? `${url}/api/v1/realisasi/renaksi/batch` : "/api/v1/realisasi/renaksi/batch"),
+        () => (url ? `${url}/api/v1/realisasi/renaksi` : "/api/v1/realisasi/renaksi"),
         [url],
     );
-    const { submit, loading, error } = useSubmitData<RenaksiIndividuResponse[]>({ url: submitUrl });
+    const { submit, loading, error } = useSubmitData<RenaksiIndividuResponse>({ url: submitUrl });
     const activeMonthKey = getMonthKey(activatedBulan);
     const activeMonthLabel = activeMonthKey
         ? getMonthName(activatedBulan) ?? `Bulan ${activeMonthKey}`
@@ -63,71 +63,58 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             return;
         }
 
-        const [first] = formData;
-        const baseRenaksiId = first.renaksiId;
-        const baseNip = first.nip;
-        const baseBulan = getMonthKey(first.bulan);
-        const baseRekinId = first.rekinId;
+        const first = formData[0];
+        const bulanKey = getMonthKey(first.bulan);
 
-        const isBatchValid = formData.every((item) =>
-            item.renaksiId === baseRenaksiId &&
-            item.nip === baseNip &&
-            getMonthKey(item.bulan) === baseBulan &&
-            item.rekinId === baseRekinId
-        );
-
-        if (!isBatchValid) {
-            setValidationError(
-                "Batch harus memiliki renaksi, nip, bulan, dan rencana kinerja yang sama.",
-            );
-            return;
-        }
-
-        if (!baseBulan) {
+        if (!bulanKey) {
             setValidationError("Bulan belum dipilih atau belum aktif.");
             return;
         }
 
-        const payload: RenaksiBatchRequest[] = formData.map((item) => ({
-            targetRealisasiId: item.targetRealisasiId,
-            renaksiId: item.renaksiId,
-            renaksi: item.renaksi,
-            nip: item.nip,
-            rekinId: item.rekinId,
-            rekin: item.rekin,
-            targetId: item.targetId,
-            target: item.target,
-            realisasi: item.realisasi,
-            satuan: item.satuan,
-            bulan: getMonthKey(item.bulan) ?? baseBulan,
-            tahun: item.tahun,
-            jenisRealisasi: item.jenisRealisasi,
-        }));
+        const payload: RenaksiRealisasiRequest = {
+            targetRealisasiId: first.targetRealisasiId,
+            renaksiId: first.renaksiId,
+            renaksi: first.renaksi,
+            nip: first.nip,
+            namaPegawai: first.namaPegawai ?? "",
+            rekinId: first.rekinId,
+            rekin: first.rekin,
+            targetId: first.targetId,
+            target: first.target,
+            realisasi: first.realisasi,
+            satuan: first.satuan,
+            bulan: bulanKey,
+            tahun: first.tahun,
+            jenisRealisasi: first.jenisRealisasi,
+            kodeOpd: first.kodeOpd ?? "",
+        };
 
         setIsSubmitting(true);
         const result = await submit(payload);
         setIsSubmitting(false);
 
         if (result) {
-            const updatedTargets: RenaksiTarget[] = result.map((item) => ({
-                targetRealisasiId: item.id,
-                renaksiId: item.renaksiId,
-                renaksi: item.renaksi,
-                nip: item.nip,
-                rekinId: item.rekinId,
-                rekin: item.rekin,
-                targetId: item.targetId,
-                target: item.target,
-                realisasi: item.realisasi,
-                satuan: item.satuan,
-                bulan: item.bulan,
-                tahun: item.tahun,
-                jenisRealisasi: item.jenisRealisasi,
-                capaian: item.capaian,
-                keteranganCapaian: item.keteranganCapaian ?? undefined,
-                rencanaKinerja: item.rekin,
-            }));
-            onSuccess?.(updatedTargets);
+            const updatedTarget: RenaksiTarget = {
+                targetRealisasiId: result.id,
+                renaksiId: result.renaksiId,
+                renaksi: result.renaksi,
+                nip: result.nip,
+                namaPegawai: result.nama_pegawai ?? undefined,
+                rekinId: result.rekinId,
+                rekin: result.rekin,
+                targetId: result.targetId,
+                target: result.target,
+                realisasi: result.realisasi,
+                satuan: result.satuan,
+                bulan: result.bulan,
+                tahun: result.tahun,
+                jenisRealisasi: result.jenisRealisasi,
+                capaian: result.capaian,
+                keteranganCapaian: result.keteranganCapaian ?? undefined,
+                rencanaKinerja: result.rekin,
+                kodeOpd: result.kodeOpd,
+            };
+            onSuccess?.([updatedTarget]);
             onClose();
         } else {
             setValidationError(error ?? "Terjadi kesalahan saat menyimpan.");

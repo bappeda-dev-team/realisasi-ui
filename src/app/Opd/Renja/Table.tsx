@@ -278,7 +278,7 @@ const Table = () => {
     };
 
     const apiUrl = kodeOpd && activatedTahun && bulanKey
-        ? `/api/v1/realisasi/renja/${kodeOpd}/tahun/${activatedTahun}/penetapan?bulan=${encodeURIComponent(bulanKey)}`
+        ? `/api/v1/realisasi/renja_opd/${kodeOpd}/tahun/${activatedTahun}/penetapan?bulan=${encodeURIComponent(bulanKey)}`
         : null;
 
     const { data, loading, error } = useFetchData<RenjaPenetapanResponse>({ url: apiUrl });
@@ -473,7 +473,7 @@ const Table = () => {
 
             tableBody.push([
                 ...(isFirstRowInProgram ? [{ content: row.programNumber, rowSpan: programRowSpans.get(row.programKey) ?? 1 }] : []),
-                `${"    ".repeat(row.hierarchyLevel)}${row.jenisRenja}\n${row.namaRenja !== "-" ? row.namaRenja : "-"}\n(${row.kodeRenja || "-"})`,
+                `${"    ".repeat(row.hierarchyLevel)}${row.jenisRenja}\n${row.namaRenja !== "-" ? `(${row.namaRenja})` : "-"}\n(${row.kodeRenja || "-"})`,
                 row.indikator || "-",
                 target?.target || "-",
                 target?.realisasi ?? "-",
@@ -616,11 +616,7 @@ const Table = () => {
 
     return (
         <>
-            <div className="flex justify-end mb-3">
-                <ButtonGreenBorder onClick={handleOpenPrintPreview}>
-                    Cetak
-                </ButtonGreenBorder>
-            </div>
+
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table id="print-area-renja" className="w-full">
                     <thead>
@@ -630,6 +626,7 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                         </tr>
                         <tr className={headerColor}>
                             <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
@@ -659,7 +656,8 @@ const Table = () => {
                                             <td className={`border-r border-b border-sky-600 px-6 py-4 align-top ${getHierarchyCellColorClass(row.jenisRenja)}`}>
                                                 <div className={`flex flex-col gap-1 ${getHierarchyIndentClass(row.hierarchyLevel)}`}>
                                                     <span className="font-semibold">{row.jenisRenja || "-"}</span>
-                                                    <span className={`text-sm ${row.jenisRenja === "Subkegiatan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
+                                                    <span className="text-sm font-medium leading-relaxed">{row.namaRenja !== "-" ? `(${row.namaRenja})` : "-"}</span>
+                                                    <span className={`text-xs ${row.jenisRenja === "Subkegiatan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line align-top">
@@ -686,9 +684,16 @@ const Table = () => {
                                             <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.capaianPagu || "-")}
                                             </td>
-                                            <td className="border-x border-b border-sky-600 px-6 py-4 align-top">
+                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                 {formatPercentageText(target?.keteranganCapaianPagu || "-")}
                                             </td>
+                                            {isFirstRowInProgram && (
+                                                <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-x border-b border-sky-600 px-6 py-4 text-center align-middle">
+                                                    <ButtonGreenBorder onClick={handleOpenPrintPreview}>
+                                                        Cetak
+                                                    </ButtonGreenBorder>
+                                                </td>
+                                            )}
                                         </>
                                     );
                                 })()}
