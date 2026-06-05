@@ -1,10 +1,9 @@
+import React, { useEffect, useState, useMemo } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
 import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
-import React, { useEffect, useState, useMemo } from 'react';
 
 const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
     requestValues,
@@ -14,8 +13,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     onClose,
     onSuccess
 }) => {
-    const { url } = useApiUrlContext();
-    const { submit, loading, error } = useSubmitData<RealisasiSasaran[]>({ url: `${url}/api/v1/realisasi/sasarans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiSasaran>({ url: '/api/v1/realisasi/sasarans' });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<SasaranRequest[]>([]);
     const normalizedBulan = getMonthKey(bulan);
@@ -74,18 +72,25 @@ target: typeof indikator.target === 'string'
             alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
             return;
         }
-        setProses(loading);
+        setProses(true);
 
-        const result = await submit(formData)
-
-        if (result) {
-            onClose();
-            onSuccess?.(result)
-        } else {
-            alert("Terjadi kesalahan")
-            console.error("Submission failed:", error);
+        const results: RealisasiSasaran[] = [];
+        for (const item of formData) {
+            const result = await submit(item);
+            if (result) {
+                results.push(result);
+            } else {
+                console.error("Gagal menyimpan:", item);
+            }
         }
-        setProses(loading);
+
+        if (results.length > 0) {
+            onClose();
+            onSuccess?.(results);
+        } else {
+            alert("Terjadi kesalahan saat menyimpan semua data.");
+        }
+        setProses(false);
     };
 
     // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa

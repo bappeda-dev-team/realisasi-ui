@@ -95,8 +95,6 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 rekin: item.rekin,
                 nip: item.nip,
                 namaPegawai,
-                idSasaran: item.idSasaran ?? "",
-                sasaran: item.sasaran ?? "",
                 indikatorId: item.indikatorId,
                 indikator: item.indikator,
                 targetId: item.targetId,
@@ -136,8 +134,6 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 jenisRealisasi: item.jenisRealisasi,
                 capaian: item.capaian ?? undefined,
                 keteranganCapaian: item.keteranganCapaian ?? undefined,
-                idSasaran: item.idSasaran,
-                sasaran: item.sasaran,
             }));
             onSuccess?.(updatedTargets);
             onClose();

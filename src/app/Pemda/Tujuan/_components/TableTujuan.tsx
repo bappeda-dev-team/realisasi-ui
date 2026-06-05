@@ -9,9 +9,11 @@ interface TableTujuanProps {
     canEdit: boolean;
     handleOpenPrintPreview: () => void;
     handleOpenModal: (data: TargetRealisasiCapaian[]) => void;
+    bulanKey?: string;
+    onFaktorSuccess?: () => void;
 }
 
-function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrintPreview, handleOpenModal }: TableTujuanProps) {
+function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrintPreview, handleOpenModal, bulanKey, onFaktorSuccess }: TableTujuanProps) {
 
     return (
         <table className="w-full">
@@ -23,7 +25,7 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Indikator</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
-                    <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
+                    <th colSpan={6} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun} - {bulanLabel}
                     </th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center">Aksi</th>
@@ -33,6 +35,8 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Realisasi (%)</th>
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Capaian</th>
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">Keterangan Capaian</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penunjang</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penghambat</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +49,8 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                         canEdit={canEdit}
                         handleOpenPrintPreview={handleOpenPrintPreview}
                         handleOpenModal={handleOpenModal}
+                        bulanKey={bulanKey}
+                        onFaktorSuccess={onFaktorSuccess}
                     />
                 )
                 )}

@@ -19,6 +19,8 @@ interface TableTujuanProps {
     rumusPerhitungan: string;
     sumberData: string;
   }) => void;
+  bulanKey?: string;
+  onFaktorSuccess?: () => void;
 }
 
 function TableTujuan({
@@ -27,6 +29,8 @@ function TableTujuan({
   tujuanOpd,
   handleOpenPrintPreview,
   onOpenRealisasi,
+  bulanKey,
+  onFaktorSuccess,
 }: TableTujuanProps) {
   return (
     <table className="w-full">
@@ -63,7 +67,7 @@ function TableTujuan({
             Sumber Data
           </th>
           <th
-            colSpan={4}
+            colSpan={6}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
@@ -88,6 +92,12 @@ function TableTujuan({
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
             Keterangan Capaian
           </th>
+          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
+            Faktor Penunjang
+          </th>
+          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
+            Faktor Penghambat
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -100,11 +110,13 @@ function TableTujuan({
               tahun={tahun}
               handleOpenPrintPreview={handleOpenPrintPreview}
               onOpenRealisasi={onOpenRealisasi}
+              bulanKey={bulanKey}
+              onFaktorSuccess={onFaktorSuccess}
             />
           ))
         ) : (
           <tr>
-              <td colSpan={10} className="p-4 text-center text-gray-500">
+              <td colSpan={12} className="p-4 text-center text-gray-500">
                 Tidak ada data tujuan OPD
               </td>
           </tr>

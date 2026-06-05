@@ -5,6 +5,8 @@ import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRenaksiIndividu from "./_components/FormRealisasiRenaksiIndividu";
+import FormFaktorPenunjangRenaksiIndividu from "./_components/FormFaktorPenunjangRenaksiIndividu";
+import FormFaktorPenghambatRenaksiIndividu from "./_components/FormFaktorPenghambatRenaksiIndividu";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useFilterContext } from "@/context/FilterContext";
@@ -24,6 +26,7 @@ interface RenaksiRow {
   nip: string;
   rekin: string;
   targets: RenaksiTarget[];
+  anggaran: string;
 }
 
 const Table = () => {
@@ -34,6 +37,9 @@ const Table = () => {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>("renaksi-individu.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+  const [selectedFaktorRow, setSelectedFaktorRow] = useState<RenaksiRow | null>(null);
+  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
+  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
 
   const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
   const { user } = useUserContext();
@@ -80,7 +86,7 @@ const getHeaderColor = (level: string | undefined) => {
       )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
       : null;
 
-  const { data, loading, error } = useFetchData<RenaksiIndividuResponse[]>({
+  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuResponse[]>({
     url: apiUrl,
   });
 
@@ -109,8 +115,11 @@ const getHeaderColor = (level: string | undefined) => {
           jenisRealisasi: item.jenisRealisasi,
           capaian: item.capaian ?? "-",
           keteranganCapaian: item.keteranganCapaian ?? "-",
+          faktorPenunjang: item.faktorPenunjang ?? "-",
+          faktorPenghambat: item.faktorPenghambat ?? "-",
           rencanaKinerja: item.rekin,
           kodeOpd: item.kodeOpd ?? user?.kode_opd ?? "",
+          anggaran: item.anggaran ?? "-",
         };
 
         return {
@@ -120,6 +129,7 @@ const getHeaderColor = (level: string | undefined) => {
           nip: item.nip ?? user?.nip ?? "-",
           rekin: item.rekin ?? "-",
           targets: [target],
+          anggaran: item.anggaran ?? "-",
         };
       }),
     );
@@ -136,6 +146,28 @@ const getHeaderColor = (level: string | undefined) => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedRow(null);
+  };
+
+  const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
+    if (!canEditRealisasi) return;
+    setSelectedFaktorRow(row);
+    setIsFaktorPenunjangModalOpen(true);
+  };
+
+  const handleCloseFaktorPenunjang = () => {
+    setIsFaktorPenunjangModalOpen(false);
+    setSelectedFaktorRow(null);
+  };
+
+  const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
+    if (!canEditRealisasi) return;
+    setSelectedFaktorRow(row);
+    setIsFaktorPenghambatModalOpen(true);
+  };
+
+  const handleCloseFaktorPenghambat = () => {
+    setIsFaktorPenghambatModalOpen(false);
+    setSelectedFaktorRow(null);
   };
 
   const handleRealisasiSuccess = (updatedTargets: RenaksiTarget[]) => {
@@ -169,11 +201,14 @@ const getHeaderColor = (level: string | undefined) => {
       "Rencana Kinerja",
       "Nama Pemilik",
       "Rencana Aksi",
+      "Anggaran",
       "Target",
       "Realisasi",
       "Satuan",
       "Capaian",
       "Keterangan Capaian",
+      "Faktor Penunjang",
+      "Faktor Penghambat",
     ]];
 
     const tableBody: any[] = [];
@@ -188,6 +223,8 @@ const getHeaderColor = (level: string | undefined) => {
           target?.satuan || "-",
           formatPercentageText(target?.capaian || "-"),
           formatPercentageText(target?.keteranganCapaian || "-"),
+          target?.faktorPenunjang || "-",
+          target?.faktorPenghambat || "-",
         ];
 
         if (targetIndex === 0) {
@@ -196,6 +233,7 @@ const getHeaderColor = (level: string | undefined) => {
             { content: item.rekin || "-", rowSpan: targets.length },
             { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
             { content: item.renaksi || "-", rowSpan: targets.length },
+            { content: item.anggaran || "-", rowSpan: targets.length },
             ...detailRow,
           ]);
           return;
@@ -337,8 +375,14 @@ const getHeaderColor = (level: string | undefined) => {
               >
                 Rencana Aksi
               </td>
+              <td
+                rowSpan={2}
+                className="border-r border-b px-6 py-3 min-w-[150px] text-center"
+              >
+                Anggaran
+              </td>
               <th
-                colSpan={5}
+                colSpan={7}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
                 {monthColumnLabel}
@@ -358,6 +402,8 @@ const getHeaderColor = (level: string | undefined) => {
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
               <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+              <th className="border-l border-b px-6 py-3 min-w-[150px]">Faktor Penunjang</th>
+              <th className="border-l border-b px-6 py-3 min-w-[150px]">Faktor Penghambat</th>
             </tr>
           </thead>
           <tbody>
@@ -376,6 +422,9 @@ const getHeaderColor = (level: string | undefined) => {
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {row.renaksi || "-"}
+                  </td>
+                  <td className="border-r border-b border-emerald-500 px-6 py-4">
+                    {row.anggaran || "-"}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {target?.target || "-"}
@@ -404,6 +453,26 @@ const getHeaderColor = (level: string | undefined) => {
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
+                      <span>{target?.faktorPenunjang || "-"}</span>
+                      {canEditRealisasi && (
+                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenunjang(row)}>
+                          Faktor
+                        </ButtonGreenBorder>
+                      )}
+                    </div>
+                  </td>
+                  <td className="border-r border-b border-emerald-500 px-6 py-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <span>{target?.faktorPenghambat || "-"}</span>
+                      {canEditRealisasi && (
+                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenghambat(row)}>
+                          Faktor
+                        </ButtonGreenBorder>
+                      )}
+                    </div>
+                  </td>
+                  <td className="border-r border-b border-emerald-500 px-6 py-4">
+                    <div className="flex flex-col items-center gap-2">
                       <ButtonGreenBorder
                         className="w-full"
                         onClick={handleOpenPrintPreview}
@@ -428,6 +497,45 @@ const getHeaderColor = (level: string | undefined) => {
             requestValues={selectedRow?.targets ?? []}
             onClose={closeModal}
             onSuccess={handleRealisasiSuccess}
+          />
+      </FormModal>
+      )}
+
+      {canEditRealisasi && (
+        <FormModal
+          isOpen={isFaktorPenunjangModalOpen}
+          onClose={handleCloseFaktorPenunjang}
+          title={`Faktor Penunjang - ${selectedFaktorRow?.renaksi ?? ""}`}
+        >
+          <FormFaktorPenunjangRenaksiIndividu
+            renaksiId={selectedFaktorRow?.targets[0]?.renaksiId ?? ""}
+            rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+            targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+            tahun={String(activatedTahun ?? "")}
+            bulan={String(activatedBulan ?? "")}
+            nip={selectedFaktorRow?.nip ?? ""}
+            currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
+            onClose={handleCloseFaktorPenunjang}
+            onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
+          />
+        </FormModal>
+      )}
+      {canEditRealisasi && (
+        <FormModal
+          isOpen={isFaktorPenghambatModalOpen}
+          onClose={handleCloseFaktorPenghambat}
+          title={`Faktor Penghambat - ${selectedFaktorRow?.renaksi ?? ""}`}
+        >
+          <FormFaktorPenghambatRenaksiIndividu
+            renaksiId={selectedFaktorRow?.targets[0]?.renaksiId ?? ""}
+            rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+            targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+            tahun={String(activatedTahun ?? "")}
+            bulan={String(activatedBulan ?? "")}
+            nip={selectedFaktorRow?.nip ?? ""}
+            currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
+            onClose={handleCloseFaktorPenghambat}
+            onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
           />
         </FormModal>
       )}

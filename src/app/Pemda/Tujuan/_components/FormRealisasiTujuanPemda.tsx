@@ -13,7 +13,7 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
     onClose,
     onSuccess
 }) => {
-    const { submit, loading, error } = useSubmitData<RealisasiTujuan[]>({ url: `/api/v1/realisasi/tujuans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiTujuan>({ url: `/api/v1/realisasi/tujuans` });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<TujuanRequest[]>([]);
     const normalizedBulan = getMonthKey(bulan);
@@ -74,18 +74,25 @@ useEffect(() => {
             alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
             return;
         }
-        setProses(loading);
+        setProses(true);
 
-        const result = await submit(formData)
-
-        if (result) {
-            onClose();
-            onSuccess?.(result)
-        } else {
-            alert("Terjadi kesalahan")
-            console.error("Submission failed:", error); // Handle error
+        const results: RealisasiTujuan[] = [];
+        for (const item of formData) {
+            const result = await submit(item);
+            if (result) {
+                results.push(result);
+            } else {
+                console.error("Gagal menyimpan:", item);
+            }
         }
-        setProses(loading);
+
+        if (results.length > 0) {
+            onClose();
+            onSuccess?.(results);
+        } else {
+            alert("Terjadi kesalahan saat menyimpan semua data.");
+        }
+        setProses(false);
     };
 
     // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa

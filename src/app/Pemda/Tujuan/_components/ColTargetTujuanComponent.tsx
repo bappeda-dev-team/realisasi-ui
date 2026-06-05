@@ -8,8 +8,12 @@ type TargetColProps = {
   satuan: string;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
   canEdit: boolean;
   handleClick?: () => void;
+  onEditFaktorPenunjang?: () => void;
+  onEditFaktorPenghambat?: () => void;
 };
 
 const convertToDisplayString = (value: string | null | undefined): string => {
@@ -17,7 +21,7 @@ const convertToDisplayString = (value: string | null | undefined): string => {
   return value.toString().replace(/\./g, ',');
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, canEdit, handleClick }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
 
   return (
     <React.Fragment>
@@ -37,6 +41,26 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
       <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
+      <td className="border border-red-400 px-6 py-4">
+        <div className="flex flex-col items-center gap-1">
+          <span>{faktorPenunjang || '-'}</span>
+          {canEdit && onEditFaktorPenunjang && (
+            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenunjang}>
+              Faktor
+            </ButtonGreenBorder>
+          )}
+        </div>
+      </td>
+      <td className="border border-red-400 px-6 py-4">
+        <div className="flex flex-col items-center gap-1">
+          <span>{faktorPenghambat || '-'}</span>
+          {canEdit && onEditFaktorPenghambat && (
+            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenghambat}>
+              Faktor
+            </ButtonGreenBorder>
+          )}
+        </div>
+      </td>
     </React.Fragment>
   );
 }

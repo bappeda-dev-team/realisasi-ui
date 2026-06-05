@@ -91,6 +91,8 @@ export interface RealisasiTujuan {
   version: number;
   capaian: string;
   keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export type RealisasiTujuanResponse = RealisasiTujuan[];
@@ -109,6 +111,8 @@ export interface TargetRealisasiCapaian {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
 }
@@ -223,6 +227,8 @@ export interface RealisasiSasaran {
   version: number;
   capaian: string;
   keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RenaksiIndividuResponse {
@@ -249,6 +255,9 @@ export interface RenaksiIndividuResponse {
   version: number;
   keteranganCapaian: string | null;
   capaian: string;
+  anggaran?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RenaksiTarget {
@@ -270,6 +279,9 @@ export interface RenaksiTarget {
   keteranganCapaian?: string | null;
   rencanaKinerja?: string;
   kodeOpd?: string;
+  anggaran?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RenaksiBatchRequest {
@@ -389,6 +401,8 @@ export interface RekinIndividuResponse {
   version?: number | null;
   capaian?: string | null;
   keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RekinTarget {
@@ -409,6 +423,8 @@ export interface RekinTarget {
   keteranganCapaian?: string | null;
   idSasaran?: string | null;
   sasaran?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RekinBatchRequest {
@@ -435,8 +451,6 @@ export interface RealisasiRekinRequest {
   rekin: string;
   nip: string;
   namaPegawai: string;
-  idSasaran: string;
-  sasaran: string;
   indikatorId: string;
   indikator: string;
   targetId: string;
@@ -457,8 +471,6 @@ export interface RealisasiRekinResponse {
   indikator: string;
   nip: string;
   nama_pegawai: string;
-  idSasaran: string;
-  sasaran: string;
   targetId: string;
   target: string;
   realisasi: number;
@@ -564,6 +576,8 @@ export interface TargetRealisasiCapaianSasaran {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
 }
@@ -635,6 +649,8 @@ export interface TujuanOpdTargetRealisasiCapaian {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
   kodeOpd: string;
@@ -664,6 +680,8 @@ export interface TujuanOpdRealisasi {
   version: number;
   capaian: string;
   keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 
@@ -706,6 +724,8 @@ export interface TujuanOpdPenetapanTarget {
   realisasi: number | null;
   capaian: number | null;
   keterangan_capaian: string | null;
+  faktor_penunjang?: string | null;
+  faktor_penghambat?: string | null;
 }
 
 export interface TujuanOpdPenetapanIndikator {
@@ -742,6 +762,8 @@ export interface TujuanOpdRealisasiTarget {
   realisasi: number;
   capaian: number;
   keterangan_capaian: string;
+  faktor_penunjang?: string | null;
+  faktor_penghambat?: string | null;
 }
 
 export interface TujuanOpdRealisasiIndikator {

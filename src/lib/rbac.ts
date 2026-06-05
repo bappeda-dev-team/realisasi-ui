@@ -71,7 +71,8 @@ export function canAccessIndividuRenaksi(user: User | null): boolean {
 }
 
 export function canEditPemdaRealisasi(user: User | null): boolean {
-  return false;
+  if (!user) return false;
+  return hasRole(user, ROLES.SUPER_ADMIN) || hasRole(user, ROLES.ADMIN_OPD);
 }
 
 export function canEditOpdRealisasi(user: User | null): boolean {
