@@ -7,7 +7,10 @@ import { useFetchData } from '@/hooks/useFetchData'
 import { getMonthKey, getMonthName } from '@/lib/months'
 import { formatPercentageText } from '@/lib/formatPercentageText'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { FormModal } from "@/components/Global/Modal";
 import { RenaksiOpdMonthlyResponse, RenaksiOpdTriwulanResponse, RenaksiTriwulanCell } from '@/types'
+import FormFaktorPenunjangRenaksiOpd from './_components/FormFaktorPenunjangRenaksiOpd'
+import FormFaktorPenghambatRenaksiOpd from './_components/FormFaktorPenghambatRenaksiOpd'
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -23,6 +26,8 @@ interface RenaksiRow {
   satuan: string
   capaian: string
   keteranganCapaian: string | null
+  faktorPenunjang: string
+  faktorPenghambat: string
 }
 
 const EMPTY_TRIWULAN_CELL: RenaksiTriwulanCell = {
@@ -50,6 +55,9 @@ const Table = () => {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>("renaksi-OPD.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+  const [selectedFaktorRow, setSelectedFaktorRow] = useState<RenaksiRow | null>(null);
+  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
+  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
 
   const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext()
 
@@ -66,7 +74,7 @@ const Table = () => {
       ? `/api/v1/realisasi/renaksi_opd/by-kode-opd/${encodeURIComponent(kodeOpd)}/by-tahun/${encodeURIComponent(activatedTahun)}/rekap-triwulan`
       : null
 
-  const { data, loading, error } = useFetchData<RenaksiOpdMonthlyResponse[]>({
+  const { data, loading, error, refetch } = useFetchData<RenaksiOpdMonthlyResponse[]>({
     url: apiUrl,
   })
 
@@ -93,6 +101,8 @@ const Table = () => {
         satuan: item.satuan ?? '-',
         capaian: item.capaian ?? '-',
         keteranganCapaian: item.keteranganCapaian ?? '-',
+        faktorPenunjang: item.faktorPenunjang ?? '-',
+        faktorPenghambat: item.faktorPenghambat ?? '-',
       }))
     )
   }, [data])
@@ -221,6 +231,26 @@ const Table = () => {
     previewDoc.save(pdfFileName);
   };
 
+  const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
+    setSelectedFaktorRow(row);
+    setIsFaktorPenunjangModalOpen(true);
+  };
+
+  const handleCloseFaktorPenunjang = () => {
+    setIsFaktorPenunjangModalOpen(false);
+    setSelectedFaktorRow(null);
+  };
+
+  const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
+    setSelectedFaktorRow(row);
+    setIsFaktorPenghambatModalOpen(true);
+  };
+
+  const handleCloseFaktorPenghambat = () => {
+    setIsFaktorPenghambatModalOpen(false);
+    setSelectedFaktorRow(null);
+  };
+
   const yearMonthColumnLabel = `${activatedTahun || 'Tahun'} - ${monthLabel || 'Bulan'}`
 
   if (loading) {
@@ -278,7 +308,7 @@ const Table = () => {
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">
               Rencana Kinerja
             </td>
-            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px] text-center uppercase">
+            <th colSpan={6} className="border-l border-b px-6 py-3 min-w-[100px] text-center uppercase">
               {yearMonthColumnLabel}
             </th>
             <td
@@ -293,6 +323,8 @@ const Table = () => {
             <th className="border-l border-b px-3 py-2 min-w-[90px]">Realisasi (%)</th>
             <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian</th>
             <th className="border-l border-b px-3 py-2 min-w-[180px]">Keterangan Capaian</th>
+            <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penunjang</th>
+            <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penghambat</th>
           </tr>
         </thead>
         <tbody>
@@ -322,6 +354,22 @@ const Table = () => {
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                   {formatPercentageText(row.keteranganCapaian ?? '-')}
                 </td>
+                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                  <div className="flex flex-col items-center gap-2">
+                    <span>{row.faktorPenunjang ?? '-'}</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenunjang(row)}>
+                      Faktor
+                    </ButtonGreenBorder>
+                  </div>
+                </td>
+                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                  <div className="flex flex-col items-center gap-2">
+                    <span>{row.faktorPenghambat ?? '-'}</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenghambat(row)}>
+                      Faktor
+                    </ButtonGreenBorder>
+                  </div>
+                </td>
                 <td className="border-r border-b border-emerald-500 px-6 py-4">
                   <div className="flex flex-col items-center gap-2">
                     <ButtonGreenBorder
@@ -337,6 +385,42 @@ const Table = () => {
           })}
         </tbody>
       </table>
+
+      <FormModal
+        isOpen={isFaktorPenunjangModalOpen}
+        onClose={handleCloseFaktorPenunjang}
+        title={`Faktor Penunjang - ${selectedFaktorRow?.renaksi ?? ''}`}
+      >
+        <FormFaktorPenunjangRenaksiOpd
+          kodeOpd={kodeOpd ?? ''}
+          tahun={String(activatedTahun ?? '')}
+          bulan={String(activatedBulan ?? '')}
+          rekinId={selectedFaktorRow?.rekinId ?? ''}
+          renaksiId={selectedFaktorRow?.renaksiId ?? ''}
+          targetId={selectedFaktorRow?.targetId ?? ''}
+          currentValue={selectedFaktorRow?.faktorPenunjang ?? ''}
+          onClose={handleCloseFaktorPenunjang}
+          onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
+        />
+      </FormModal>
+
+      <FormModal
+        isOpen={isFaktorPenghambatModalOpen}
+        onClose={handleCloseFaktorPenghambat}
+        title={`Faktor Penghambat - ${selectedFaktorRow?.renaksi ?? ''}`}
+      >
+        <FormFaktorPenghambatRenaksiOpd
+          kodeOpd={kodeOpd ?? ''}
+          tahun={String(activatedTahun ?? '')}
+          bulan={String(activatedBulan ?? '')}
+          rekinId={selectedFaktorRow?.rekinId ?? ''}
+          renaksiId={selectedFaktorRow?.renaksiId ?? ''}
+          targetId={selectedFaktorRow?.targetId ?? ''}
+          currentValue={selectedFaktorRow?.faktorPenghambat ?? ''}
+          onClose={handleCloseFaktorPenghambat}
+          onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
+        />
+      </FormModal>
 
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

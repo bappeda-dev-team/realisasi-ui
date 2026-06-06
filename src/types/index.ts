@@ -366,6 +366,7 @@ export interface RenaksiOpdMonthlyResponse {
   bulan: string;
   tahun: string;
   jenisRealisasi: "NAIK" | "TURUN";
+  kodeOpd: string;
   status?: string | null;
   createdBy?: string | null;
   lastModifiedBy?: string | null;
@@ -374,6 +375,8 @@ export interface RenaksiOpdMonthlyResponse {
   version?: number | null;
   capaian?: string | null;
   keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RekinIndividuResponse {
