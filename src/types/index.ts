@@ -1117,6 +1117,8 @@ export interface RenjaTargetIndividuResponse {
   lastModifiedDate: string;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export type RenjaTargetIndividuResponseList = RenjaTargetIndividuResponse[];
@@ -1144,6 +1146,8 @@ export interface RenjaTarget {
   satuanPagu?: string;
   capaianPagu?: string;
   keteranganCapaianPagu?: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export interface RenjaBatchRequest {
@@ -1342,6 +1346,8 @@ export interface RenjaPenetapanTarget {
   satuan: string;
   capaian: number | null;
   keterangan_capaian: string | null;
+  faktor_penunjang?: string | null;
+  faktor_penghambat?: string | null;
 }
 
 export interface RenjaPenetapanIndikator {

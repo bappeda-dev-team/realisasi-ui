@@ -2,15 +2,17 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import FormFaktorPenunjangRenjaOpd from "./_components/FormFaktorPenunjangRenjaOpd";
+import FormFaktorPenghambatRenjaOpd from "./_components/FormFaktorPenghambatRenjaOpd";
 
 interface RenjaNodeTargetValue {
     targetRealisasiId?: number | null;
@@ -24,6 +26,8 @@ interface RenjaNodeTargetValue {
     createdBy?: string | null;
     lastModifiedBy?: string | null;
     keteranganCapaian?: string | null;
+    faktorPenunjang?: string | null;
+    faktorPenghambat?: string | null;
 }
 
 interface RenjaNodePaguValue {
@@ -63,6 +67,8 @@ interface RenjaOpdHierarchyResponse {
     program?: RenjaHierarchyNode[];
 }
 
+type RenjaLevel = "Program" | "Kegiatan" | "Subkegiatan";
+
 interface FlattenedRenjaRow {
     id: string;
     kodeOpd: string;
@@ -80,7 +86,7 @@ interface FlattenedRenjaRow {
         renjaId: string;
         renja: string;
         kodeRenja: string;
-        jenisRenja: string;
+        jenisRenja: RenjaLevel;
         indikatorId: string;
         indikator: string;
         targetId: string;
@@ -91,6 +97,8 @@ interface FlattenedRenjaRow {
         jenisRealisasi: string;
         capaian: string;
         keteranganCapaian: string;
+        faktorPenunjang: string;
+        faktorPenghambat: string;
         pagu: number | null;
         realistasiPagu: number | null;
         satuanPagu: string;
@@ -98,6 +106,11 @@ interface FlattenedRenjaRow {
         keteranganCapaianPagu: string;
     }>;
 }
+
+type SelectedFaktorTarget = {
+    target: FlattenedRenjaRow["targets"][number];
+    jenis: "penunjang" | "penghambat";
+};
 
 const normalizeJenisRenja = (jenisRenja: string | undefined) => {
     switch ((jenisRenja || "").toUpperCase()) {
@@ -172,6 +185,8 @@ const convertIndikatorsToNode = (
                 createdBy: null,
                 lastModifiedBy: null,
                 keteranganCapaian: tgt.keterangan_capaian,
+                faktorPenunjang: tgt.faktor_penunjang ?? null,
+                faktorPenghambat: tgt.faktor_penghambat ?? null,
             });
         });
     });
@@ -245,12 +260,33 @@ const transformPenetapanToHierarchy = (response: RenjaPenetapanResponse): RenjaO
     }];
 };
 
+type FaktorCellProps = {
+    value?: string | null;
+    isRealisasiFilled: boolean;
+    onEdit: () => void;
+};
+
+const FaktorCell: React.FC<FaktorCellProps> = ({ value, isRealisasiFilled, onEdit }) => {
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <span>{value || "-"}</span>
+            <ButtonGreenBorder
+                className="w-full text-xs py-0.5"
+                onClick={onEdit}
+                disabled={!isRealisasiFilled}
+            >
+                Faktor
+            </ButtonGreenBorder>
+        </div>
+    );
+};
+
 const Table = () => {
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState<string>("renja-opd.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-    const { url } = useApiUrlContext();
+    const [selectedFaktorTarget, setSelectedFaktorTarget] = useState<SelectedFaktorTarget | null>(null);
 
     const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
 
@@ -281,7 +317,7 @@ const Table = () => {
         ? `/api/v1/realisasi/renja_opd/${kodeOpd}/tahun/${activatedTahun}/penetapan?bulan=${encodeURIComponent(bulanKey)}`
         : null;
 
-    const { data, loading, error } = useFetchData<RenjaPenetapanResponse>({ url: apiUrl });
+    const { data, loading, error, refetch } = useFetchData<RenjaPenetapanResponse>({ url: apiUrl });
 
     const hierarchyData = useMemo(() => {
         if (!data) return [] as RenjaOpdHierarchyResponse[];
@@ -326,7 +362,7 @@ const Table = () => {
                         renjaId: node.kode_renja ?? "",
                         renja: formatRenjaName(node),
                         kodeRenja: node.kode_renja ?? "",
-                        jenisRenja: formatRenjaName(node),
+                        jenisRenja: normalizeJenisRenja(node.jenis_renja) as RenjaLevel,
                         indikatorId,
                         indikator: indikatorText,
                         targetId: targetItem?.id_target ?? "",
@@ -337,6 +373,8 @@ const Table = () => {
                         jenisRealisasi: "NAIK",
                         capaian: targetItem?.capaian ?? "-",
                         keteranganCapaian: targetItem?.keteranganCapaian ?? "-",
+                        faktorPenunjang: targetItem?.faktorPenunjang ?? "-",
+                        faktorPenghambat: targetItem?.faktorPenghambat ?? "-",
                         pagu: paguItem?.pagu ?? null,
                         realistasiPagu: null,
                         satuanPagu: "Rupiah",
@@ -446,6 +484,8 @@ const Table = () => {
                 { content: "Indikator", rowSpan: 2 },
                 { content: `Renja Target ${activatedTahun} - ${bulanName}`, colSpan: 4 },
                 { content: `Renja Pagu ${activatedTahun} - ${bulanName}`, colSpan: 4 },
+                { content: "Faktor Penunjang", rowSpan: 2 },
+                { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
                 "Target",
@@ -483,6 +523,8 @@ const Table = () => {
                 target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-",
                 formatPercentageText(target?.capaianPagu || "-"),
                 formatPercentageText(target?.keteranganCapaianPagu || "-"),
+                target?.faktorPenunjang || "-",
+                target?.faktorPenghambat || "-",
             ]);
         });
 
@@ -520,6 +562,8 @@ const Table = () => {
                 8: { cellWidth: 68, halign: "center" },
                 9: { cellWidth: 54, halign: "center" },
                 10: { cellWidth: 150, halign: "center" },
+                11: { cellWidth: 110, halign: "center" },
+                12: { cellWidth: 110, halign: "center" },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -575,6 +619,10 @@ const Table = () => {
         previewDoc.save(pdfFileName);
     };
 
+    const handleCloseFaktorTarget = () => {
+        setSelectedFaktorTarget(null);
+    };
+
     const jenisRenjaHeader = rows.find((row) => row.jenisRenja && row.jenisRenja !== "-")?.jenisRenja;
     const headerColor = getHeaderColorByJenisRenja(jenisRenjaHeader);
     const headerFillColor = getHeaderFillColorByJenisRenja(jenisRenjaHeader);
@@ -624,8 +672,10 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">Program/Kegiatan/Subkegiatan</td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || "2025"} - ${bulanName || ""}`}</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || ""} - ${bulanName || ""}`}</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || ""} - ${bulanName || ""}`}</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[160px] text-center">Faktor Penunjang</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[160px] text-center">Faktor Penghambat</th>
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                         </tr>
                         <tr className={headerColor}>
@@ -642,12 +692,13 @@ const Table = () => {
                     <tbody>
                         {rows.map((row) => (
                             <tr key={row.id}>
-                                {(() => {
-                                    const target = row.targets[0];
-                                    const isFirstRowInProgram = firstRowIdByProgram.get(row.programKey) === row.id;
+                        {(() => {
+                            const target = row.targets[0];
+                            const isFirstRowInProgram = firstRowIdByProgram.get(row.programKey) === row.id;
+                            const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
 
-                                    return (
-                                        <>
+                            return (
+                                <>
                                             {isFirstRowInProgram && (
                                                 <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-x border-b border-sky-600 py-4 px-3 text-center align-middle font-semibold">
                                                     {row.programNumber}
@@ -663,30 +714,56 @@ const Table = () => {
                                             <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line align-top">
                                                 {row.indikator || "-"}
                                             </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {target?.target || "-"}
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                <span>{target?.realisasi ?? "-"}</span>
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {formatPercentageText(target?.capaian || "-")}
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {formatPercentageText(target?.keteranganCapaian || "-")}
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                <span>{target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-"}</span>
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {formatPercentageText(target?.capaianPagu || "-")}
-                                            </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                {formatPercentageText(target?.keteranganCapaianPagu || "-")}
-                                            </td>
+                                            {target ? (
+                                                <>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {target.target || "-"}
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <span>{target.realisasi ?? "-"}</span>
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {formatPercentageText(target.capaian || "-")}
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {formatPercentageText(target.keteranganCapaian || "-")}
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {target.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <span>{target.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-"}</span>
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {formatPercentageText(target.capaianPagu || "-")}
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        {formatPercentageText(target.keteranganCapaianPagu || "-")}
+                                                    </td>
+                                                </>
+                                            ) : (
+                                                <td className="border-r border-b border-sky-600 px-6 py-4 text-center italic text-gray-500" colSpan={10}>
+                                                    Tidak ada target di tahun {activatedTahun || "-"}
+                                                </td>
+                                            )}
+                                            {target && (
+                                                <>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <FaktorCell
+                                                            value={target.faktorPenunjang}
+                                                            isRealisasiFilled={isRealisasiFilled}
+                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penunjang" })}
+                                                        />
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <FaktorCell
+                                                            value={target.faktorPenghambat}
+                                                            isRealisasiFilled={isRealisasiFilled}
+                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penghambat" })}
+                                                        />
+                                                    </td>
+                                                </>
+                                            )}
                                             {isFirstRowInProgram && (
                                                 <td rowSpan={programRowSpans.get(row.programKey) ?? 1} className="border-x border-b border-sky-600 px-6 py-4 text-center align-middle">
                                                     <ButtonGreenBorder onClick={handleOpenPrintPreview}>
@@ -746,6 +823,52 @@ const Table = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            {selectedFaktorTarget?.jenis === "penunjang" && selectedFaktorTarget.target && (
+                <FormModal
+                    isOpen={true}
+                    onClose={handleCloseFaktorTarget}
+                    title={`Faktor Penunjang - ${selectedFaktorTarget.target.indikator}`}
+                >
+                    <FormFaktorPenunjangRenjaOpd
+                        kodeOpd={kodeOpd ?? ""}
+                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
+                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
+                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
+                        kodeTarget={selectedFaktorTarget.target.targetId}
+                        tahun={String(activatedTahun ?? "")}
+                        bulan={bulanName ?? ""}
+                        currentValue={selectedFaktorTarget.target.faktorPenunjang ?? ""}
+                        onClose={handleCloseFaktorTarget}
+                        onSuccess={() => {
+                            handleCloseFaktorTarget();
+                            refetch();
+                        }}
+                    />
+                </FormModal>
+            )}
+            {selectedFaktorTarget?.jenis === "penghambat" && selectedFaktorTarget.target && (
+                <FormModal
+                    isOpen={true}
+                    onClose={handleCloseFaktorTarget}
+                    title={`Faktor Penghambat - ${selectedFaktorTarget.target.indikator}`}
+                >
+                    <FormFaktorPenghambatRenjaOpd
+                        kodeOpd={kodeOpd ?? ""}
+                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
+                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
+                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
+                        kodeTarget={selectedFaktorTarget.target.targetId}
+                        tahun={String(activatedTahun ?? "")}
+                        bulan={bulanName ?? ""}
+                        currentValue={selectedFaktorTarget.target.faktorPenghambat ?? ""}
+                        onClose={handleCloseFaktorTarget}
+                        onSuccess={() => {
+                            handleCloseFaktorTarget();
+                            refetch();
+                        }}
+                    />
+                </FormModal>
             )}
         </>
     );
