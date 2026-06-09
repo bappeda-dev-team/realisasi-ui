@@ -40,7 +40,7 @@ type TargetInfo = {
   tujuanOpd: string;
   indikator: string;
   target: string;
-  realisasi: number;
+  realisasi: number | null;
   satuan: string;
   rumusPerhitungan: string;
   sumberData: string;
@@ -110,7 +110,7 @@ export default function TujuanPage() {
             indikator: ind.indikator,
             targetId: tgt.kode_target,
             target: String(tgt.target),
-            realisasi: tgt.realisasi ?? 0,
+            realisasi: tgt.realisasi,
             capaian: tgt.capaian != null ? String(tgt.capaian) : '-',
             keteranganCapaian: tgt.keterangan_capaian ?? '-',
             faktorPenunjang: tgt.faktor_penunjang ?? null,
@@ -185,7 +185,7 @@ export default function TujuanPage() {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     const periodLabel = `${selectedTahunValue} - ${bulanName}`;
@@ -355,7 +355,8 @@ export default function TujuanPage() {
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
       <TableTujuanOpd
-        tahun={selectedTahunValue}
+        tahun={String(selectedTahunValue)}
+        kodeOpd={kodeOpd}
         bulanLabel={bulanName}
         tujuanOpd={groupedTujuanOpd}
         handleOpenPrintPreview={handleOpenPrintPreview}

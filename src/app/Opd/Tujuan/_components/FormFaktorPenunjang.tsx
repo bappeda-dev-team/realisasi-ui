@@ -6,10 +6,11 @@ import { getMonthKey } from '@/lib/months';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormFaktorPenunjangProps {
+  kodeOpd: string;
   kodeTujuanOpd: string;
-  kodeIndikatorTujuanOpd: string;
-  kodeTargetTujuanOpd: string;
-  tahun: number;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
   bulan: string;
   currentValue: string;
   onClose: () => void;
@@ -17,9 +18,10 @@ interface FormFaktorPenunjangProps {
 }
 
 const FormFaktorPenunjang: React.FC<FormFaktorPenunjangProps> = ({
+  kodeOpd,
   kodeTujuanOpd,
-  kodeIndikatorTujuanOpd,
-  kodeTargetTujuanOpd,
+  kodeIndikator,
+  kodeTarget,
   tahun,
   bulan,
   currentValue,
@@ -53,11 +55,12 @@ const FormFaktorPenunjang: React.FC<FormFaktorPenunjangProps> = ({
         },
         credentials: 'include',
         body: JSON.stringify({
+          kodeOpd,
           kodeTujuanOpd,
-          kodeIndikatorTujuanOpd,
-          kodeTargetTujuanOpd,
+          kodeIndikator,
+          kodeTarget,
           tahun,
-          bulan: parseInt(normalizedBulan, 10),
+          bulan: normalizedBulan,
           faktorPenunjang: value,
         }),
       });

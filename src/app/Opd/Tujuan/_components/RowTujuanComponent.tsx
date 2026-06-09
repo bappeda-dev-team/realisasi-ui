@@ -9,7 +9,8 @@ import FormFaktorPenghambat from './FormFaktorPenghambat';
 interface RowTujuanComponentProps {
     no: number;
     tujuan: TujuanOpdRealisasiGrouped;
-    tahun: number;
+    tahun: string;
+    kodeOpd: string;
     handleOpenPrintPreview: () => void;
     onOpenRealisasi?: (targetInfo: {
         kodeTujuanOpd: string;
@@ -18,7 +19,7 @@ interface RowTujuanComponentProps {
         tujuanOpd: string;
         indikator: string;
         target: string;
-        realisasi: number;
+        realisasi: number | null;
         satuan: string;
         rumusPerhitungan: string;
         sumberData: string;
@@ -31,6 +32,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     no,
     tujuan,
     tahun,
+    kodeOpd,
     handleOpenPrintPreview,
     onOpenRealisasi,
     bulanKey,
@@ -39,7 +41,6 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
     const indikatorList = tujuan.indikator ?? [];
     const [faktorTarget, setFaktorTarget] = useState<{
         target: TujuanOpdTargetRealisasiCapaian;
-        indikatorId: string;
         jenis: 'penunjang' | 'penghambat';
     } | null>(null);
 
@@ -101,8 +102,8 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                     rumusPerhitungan: ind.rumusPerhitungan,
                                     sumberData: ind.sumberData,
                                 }) : undefined}
-                                onEditFaktorPenunjang={onOpenRealisasi ? () => setFaktorTarget({ target, indikatorId: ind.id, jenis: 'penunjang' }) : undefined}
-                                onEditFaktorPenghambat={onOpenRealisasi ? () => setFaktorTarget({ target, indikatorId: ind.id, jenis: 'penghambat' }) : undefined}
+                                onEditFaktorPenunjang={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penunjang' }) : undefined}
+                                onEditFaktorPenghambat={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penghambat' }) : undefined}
                             />
                         ) : (
                             <td className="border border-red-400 px-6 py-4 text-center" colSpan={6}>
@@ -126,9 +127,10 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                     title={`Faktor Penunjang`}
                 >
                     <FormFaktorPenunjang
+                        kodeOpd={kodeOpd}
                         kodeTujuanOpd={tujuan.tujuanId}
-                        kodeIndikatorTujuanOpd={faktorTarget.indikatorId}
-                        kodeTargetTujuanOpd={faktorTarget.target.targetId}
+                        kodeIndikator={faktorTarget.target.indikatorId}
+                        kodeTarget={faktorTarget.target.targetId}
                         tahun={tahun}
                         bulan={bulanKey ?? ''}
                         currentValue={faktorTarget.target.faktorPenunjang ?? ''}
@@ -148,9 +150,10 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                     title={`Faktor Penghambat`}
                 >
                     <FormFaktorPenghambat
+                        kodeOpd={kodeOpd}
                         kodeTujuanOpd={tujuan.tujuanId}
-                        kodeIndikatorTujuanOpd={faktorTarget.indikatorId}
-                        kodeTargetTujuanOpd={faktorTarget.target.targetId}
+                        kodeIndikator={faktorTarget.target.indikatorId}
+                        kodeTarget={faktorTarget.target.targetId}
                         tahun={tahun}
                         bulan={bulanKey ?? ''}
                         currentValue={faktorTarget.target.faktorPenghambat ?? ''}
@@ -171,7 +174,7 @@ export default RowTujuanComponent;
 const EmptyIndikatorRow: React.FC<{
     tujuan: TujuanOpdRealisasiGrouped;
     no: number;
-    tahun: number;
+    tahun: string;
     handleOpenPrintPreview: () => void;
 }> = ({
     tujuan,
@@ -198,7 +201,7 @@ const EmptyIndikatorRow: React.FC<{
 
 type TargetColProps = {
     target: string;
-    realisasi: number;
+    realisasi: number | null;
     capaian: string;
     keteranganCapaian: string;
     faktorPenunjang?: string | null;
@@ -210,13 +213,14 @@ type TargetColProps = {
 };
 
 const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEditRealisasi, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
+    const isRealisasiFilled = realisasi != null && realisasi !== 0;
 
     return (
         <>
             <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
             <td className="border border-red-400 px-6 py-4 text-center">
                 <div className="flex flex-col items-center gap-2">
-                    <span>{realisasi}</span>
+                    <span>{realisasi ?? 0}</span>
                     {canEditRealisasi && handleClick && (
                         <ButtonGreenBorder
                             className="w-full"
@@ -233,8 +237,12 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
                 <div className="flex flex-col items-center gap-1">
                     <span>{faktorPenunjang || '-'}</span>
                     {canEditRealisasi && onEditFaktorPenunjang && (
-                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenunjang}>
-                            Edit
+                        <ButtonGreenBorder
+                            className="w-full text-xs py-0.5"
+                            onClick={isRealisasiFilled ? onEditFaktorPenunjang : undefined}
+                            disabled={!isRealisasiFilled}
+                        >
+                            Faktor
                         </ButtonGreenBorder>
                     )}
                 </div>
@@ -243,8 +251,12 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
                 <div className="flex flex-col items-center gap-1">
                     <span>{faktorPenghambat || '-'}</span>
                     {canEditRealisasi && onEditFaktorPenghambat && (
-                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenghambat}>
-                            Edit
+                        <ButtonGreenBorder
+                            className="w-full text-xs py-0.5"
+                            onClick={isRealisasiFilled ? onEditFaktorPenghambat : undefined}
+                            disabled={!isRealisasiFilled}
+                        >
+                            Faktor
                         </ButtonGreenBorder>
                     )}
                 </div>

@@ -3,7 +3,8 @@ import RowTujuanComponent from "./RowTujuanComponent";
 import { TujuanOpdRealisasiGrouped } from "@/types";
 
 interface TableTujuanProps {
-  tahun: number;
+  tahun: string;
+  kodeOpd: string;
   bulanLabel?: string;
   tujuanOpd: TujuanOpdRealisasiGrouped[];
   handleOpenPrintPreview: () => void;
@@ -14,7 +15,7 @@ interface TableTujuanProps {
     tujuanOpd: string;
     indikator: string;
     target: string;
-    realisasi: number;
+    realisasi: number | null;
     satuan: string;
     rumusPerhitungan: string;
     sumberData: string;
@@ -25,6 +26,7 @@ interface TableTujuanProps {
 
 function TableTujuan({
   tahun,
+  kodeOpd,
   bulanLabel,
   tujuanOpd,
   handleOpenPrintPreview,
@@ -108,6 +110,7 @@ function TableTujuan({
               no={index + 1}
               tujuan={tuj}
               tahun={tahun}
+              kodeOpd={kodeOpd}
               handleOpenPrintPreview={handleOpenPrintPreview}
               onOpenRealisasi={onOpenRealisasi}
               bulanKey={bulanKey}
