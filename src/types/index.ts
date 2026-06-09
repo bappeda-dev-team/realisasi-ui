@@ -841,6 +841,8 @@ export interface SasaranOpdPenetapanTarget {
   realisasi: number;
   capaian: number;
   keterangan_capaian: string;
+  faktor_penunjang?: string | null;
+  faktor_penghambat?: string | null;
 }
 
 export interface SasaranOpdPenetapanIndikator {
@@ -957,6 +959,8 @@ export interface SasaranOpdTargetRealisasiCapaian {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
   kodeOpd: string;
@@ -981,8 +985,6 @@ export interface SasaranOpdRealisasiGrouped {
 export interface SasaranOpdPenetapanGrouped {
   sasaranId: string;
   sasaranOpd: string;
-  faktorPenunjang?: string | null;
-  faktorPenghambat?: string | null;
   indikator: SasaranOpdRealisasiGroupedIndikator[];
 }
 
