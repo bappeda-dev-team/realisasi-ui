@@ -59,10 +59,22 @@ function TableSasaran({
           </th>
           <th
             key={tahun}
-            colSpan={6}
+            colSpan={4}
             className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center"
           >
             {tahun} - {bulanLabel}
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penunjang
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penghambat
           </th>
           <th
             rowSpan={2}
@@ -83,12 +95,6 @@ function TableSasaran({
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
             Keterangan Capaian
-          </th>
-          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
-            Faktor Penunjang
-          </th>
-          <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
-            Faktor Penghambat
           </th>
         </tr>
       </thead>

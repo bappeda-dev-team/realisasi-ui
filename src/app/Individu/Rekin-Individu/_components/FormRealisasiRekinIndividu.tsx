@@ -28,6 +28,15 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
         [url],
     );
     const { submit, loading, error } = useSubmitData<RealisasiRekinResponse>({ url: submitUrl });
+    const invalidRealisasiTargets = useMemo(
+        () =>
+            formData.filter((item) => {
+                if (typeof item.realisasi !== "number") return true;
+                if (!Number.isFinite(item.realisasi)) return true;
+                return item.realisasi <= 0;
+            }),
+        [formData],
+    );
 
 
     useEffect(() => {
@@ -73,6 +82,11 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
 
         if (!monthKey) {
             setValidationError("Bulan belum dipilih atau belum aktif.");
+            return;
+        }
+
+        if (invalidRealisasiTargets.length > 0) {
+            setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
             return;
         }
 
@@ -174,7 +188,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasi || ''}
+                                value={target.realisasi ?? ""}
                                 onChange={(event) =>
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }

@@ -16,6 +16,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     const { submit, loading, error } = useSubmitData<RealisasiSasaran>({ url: '/api/v1/realisasi/sasarans' });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<SasaranRequest[]>([]);
+    const [validationError, setValidationError] = useState<string | null>(null);
     const normalizedBulan = getMonthKey(bulan);
 
     const filteredRequestValues = useMemo(() => 
@@ -46,8 +47,18 @@ target: typeof indikator.target === 'string'
         setFormData(generatedFormData);
     }, [filteredRequestValues, normalizedBulan]);
 
+    const invalidRealisasiTargets = useMemo(
+        () =>
+            formData.filter((item) => {
+                if (typeof item.realisasi !== "number") return true;
+                if (!Number.isFinite(item.realisasi)) return true;
+                return item.realisasi <= 0;
+            }),
+        [formData],
+    );
+
     const convertToDisplayString = (value: number | '' | null | undefined): string => {
-        if (value === '' || value === null || value === undefined || value === 0) return '';
+        if (value === '' || value === null || value === undefined) return '';
         return value.toString().replace('.', ',');
     };
 
@@ -68,10 +79,18 @@ target: typeof indikator.target === 'string'
     // saat submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setValidationError(null);
+
         if (!normalizedBulan) {
-            alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
+            setValidationError('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
             return;
         }
+
+        if (invalidRealisasiTargets.length > 0) {
+            setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
+            return;
+        }
+
         setProses(true);
 
         const results: RealisasiSasaran[] = [];
@@ -128,6 +147,11 @@ target: typeof indikator.target === 'string'
                     ))}
                 </div>
             </div>
+            {validationError ? (
+                <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {validationError}
+                </div>
+            ) : null}
             <ButtonSky className="w-full mt-3" type="submit">
                 {Proses ? (
                     <span className="flex items-center justify-center gap-2">

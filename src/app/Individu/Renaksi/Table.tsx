@@ -382,10 +382,22 @@ const getHeaderColor = (level: string | undefined) => {
                 Anggaran
               </td>
               <th
-                colSpan={7}
+                colSpan={5}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
                 {monthColumnLabel}
+              </th>
+              <th
+                rowSpan={2}
+                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+              >
+                Faktor Penunjang
+              </th>
+              <th
+                rowSpan={2}
+                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+              >
+                Faktor Penghambat
               </th>
               <td
                 rowSpan={2}
@@ -402,13 +414,12 @@ const getHeaderColor = (level: string | undefined) => {
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
               <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-              <th className="border-l border-b px-6 py-3 min-w-[150px]">Faktor Penunjang</th>
-              <th className="border-l border-b px-6 py-3 min-w-[150px]">Faktor Penghambat</th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row, index) => {
               const target = row.targets[0];
+              const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
               return (
                 <tr key={row.id}>
                   <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
@@ -455,7 +466,11 @@ const getHeaderColor = (level: string | undefined) => {
                     <div className="flex flex-col items-center gap-2">
                       <span>{target?.faktorPenunjang || "-"}</span>
                       {canEditRealisasi && (
-                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenunjang(row)}>
+                        <ButtonGreenBorder
+                          className="w-full text-xs py-0.5"
+                          onClick={isRealisasiFilled ? () => handleOpenFaktorPenunjang(row) : undefined}
+                          disabled={!isRealisasiFilled}
+                        >
                           Faktor
                         </ButtonGreenBorder>
                       )}
@@ -465,7 +480,11 @@ const getHeaderColor = (level: string | undefined) => {
                     <div className="flex flex-col items-center gap-2">
                       <span>{target?.faktorPenghambat || "-"}</span>
                       {canEditRealisasi && (
-                        <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenghambat(row)}>
+                        <ButtonGreenBorder
+                          className="w-full text-xs py-0.5"
+                          onClick={isRealisasiFilled ? () => handleOpenFaktorPenghambat(row) : undefined}
+                          disabled={!isRealisasiFilled}
+                        >
                           Faktor
                         </ButtonGreenBorder>
                       )}
