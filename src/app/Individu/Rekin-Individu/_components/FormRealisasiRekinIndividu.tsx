@@ -3,9 +3,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RekinTarget, RekinBatchRequest, RekinIndividuResponse } from "@/types";
+import { FormProps, RekinTarget, RealisasiRekinRequest, RealisasiRekinResponse } from "@/types";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
+import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 
@@ -15,17 +16,28 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     const [formData, setFormData] = useState<RekinTarget[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const { tahun: selectedTahun, activatedBulan } = useFilterContext();
+    const [submitErrors, setSubmitErrors] = useState<string[]>([]);
+    const { tahun: selectedTahun, activatedBulan, activatedDinas } = useFilterContext();
+    const { user } = useUserContext();
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
     const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
-        () => (url ? `${url}/api/v1/realisasi/rekin/batch` : "/api/v1/realisasi/rekin/batch"),
+        () => `${url}/api/v1/realisasi/rekin`,
         [url],
     );
-    const { submit, loading, error } = useSubmitData<RekinIndividuResponse[]>({ url: submitUrl });
-    
+    const { submit, loading, error } = useSubmitData<RealisasiRekinResponse>({ url: submitUrl });
+    const invalidRealisasiTargets = useMemo(
+        () =>
+            formData.filter((item) => {
+                if (typeof item.realisasi !== "number") return true;
+                if (!Number.isFinite(item.realisasi)) return true;
+                return item.realisasi <= 0;
+            }),
+        [formData],
+    );
+
 
     useEffect(() => {
         if (!requestValues?.length) {
@@ -56,33 +68,14 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
         setValidationError(null);
+        setSubmitErrors([]);
 
         if (!formData.length) {
             setValidationError("Data realisasi belum tersedia.");
             return;
         }
 
-        const [first] = formData;
-        const baseRekinId = first.rekinId;
-        const baseNip = first.nip;
-        const baseTahun = first.tahun;
-        const baseIndikatorId = first.indikatorId;
-
-        const isBatchValid = formData.every((item) =>
-            item.rekinId === baseRekinId &&
-            item.nip === baseNip &&
-            item.tahun === baseTahun &&
-            item.indikatorId === baseIndikatorId
-        );
-
-        if (!isBatchValid) {
-            setValidationError(
-                "Batch harus memiliki rekin, nip, tahun, dan indikator yang sama.",
-            );
-            return;
-        }
-
-        if (!baseTahun) {
+        if (!selectedTahun) {
             setValidationError("Tahun belum dipilih atau belum aktif.");
             return;
         }
@@ -92,30 +85,54 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             return;
         }
 
-const payload: RekinBatchRequest[] = formData.map((item) => ({
-            targetRealisasiId: item.targetRealisasiId,
-            rekinId: item.rekinId,
-            rekin: item.rekin,
-            nip: item.nip,
-            indikatorId: item.indikatorId,
-            indikator: item.indikator,
-            targetId: item.targetId,
-            target: item.target,
-            realisasi: item.realisasi,
-            satuan: item.satuan,
-            tahun: item.tahun ?? baseTahun,
-            bulan: getMonthKey(item.bulan) ?? monthKey,
-            jenisRealisasi: item.jenisRealisasi,
-            idSasaran: item.idSasaran,
-            sasaran: item.sasaran,
-        }));
+        if (invalidRealisasiTargets.length > 0) {
+            setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
+            return;
+        }
+
+        if (!user) {
+            setValidationError("Data user tidak tersedia.");
+            return;
+        }
+
+        const namaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
+        const kodeOpd = activatedDinas ?? user.kode_opd ?? "";
 
         setIsSubmitting(true);
-        const result = await submit(payload);
+        const successfulResults: RealisasiRekinResponse[] = [];
+        const errors: string[] = [];
+
+        for (const item of formData) {
+            const payload: RealisasiRekinRequest = {
+                targetRealisasiId: item.targetRealisasiId ?? 0,
+                rekinId: item.rekinId,
+                rekin: item.rekin,
+                nip: item.nip,
+                namaPegawai,
+                indikatorId: item.indikatorId,
+                indikator: item.indikator,
+                targetId: item.targetId,
+                target: item.target,
+                realisasi: item.realisasi,
+                satuan: item.satuan,
+                tahun: item.tahun ?? selectedTahun,
+                bulan: getMonthKey(item.bulan) ?? monthKey,
+                kodeOpd,
+                jenisRealisasi: item.jenisRealisasi,
+            };
+
+            const result = await submit(payload);
+            if (result) {
+                successfulResults.push(result);
+            } else {
+                errors.push(`Target "${item.target}" (${item.satuan}): ${error ?? "Gagal menyimpan"}`);
+            }
+        }
+
         setIsSubmitting(false);
 
-if (result) {
-            const updatedTargets: RekinTarget[] = result.map((item) => ({
+        if (successfulResults.length > 0) {
+            const updatedTargets: RekinTarget[] = successfulResults.map((item) => ({
                 targetRealisasiId: item.id,
                 rekinId: item.rekinId,
                 rekin: item.rekin,
@@ -131,14 +148,13 @@ if (result) {
                 jenisRealisasi: item.jenisRealisasi,
                 capaian: item.capaian ?? undefined,
                 keteranganCapaian: item.keteranganCapaian ?? undefined,
-                idSasaran: item.idSasaran,
-                sasaran: item.sasaran,
             }));
             onSuccess?.(updatedTargets);
             onClose();
-        } else {
-            setValidationError(error ?? "Terjadi kesalahan saat menyimpan.");
-            console.error("Submission failed:", error);
+        }
+
+        if (errors.length > 0) {
+            setSubmitErrors(errors);
         }
     };
 
@@ -172,7 +188,7 @@ if (result) {
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasi || ''}
+                                value={target.realisasi ?? ""}
                                 onChange={(event) =>
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }
@@ -188,6 +204,16 @@ if (result) {
             {validationError ? (
                 <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
                     {validationError}
+                </div>
+            ) : null}
+            {submitErrors.length > 0 ? (
+                <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    <p className="font-bold mb-1">Gagal menyimpan beberapa target:</p>
+                    <ul className="list-disc pl-4">
+                        {submitErrors.map((msg, i) => (
+                            <li key={i}>{msg}</li>
+                        ))}
+                    </ul>
                 </div>
             ) : null}
             <ButtonSky className="w-full mt-3" type="submit" disabled={isSubmitting || loading}>

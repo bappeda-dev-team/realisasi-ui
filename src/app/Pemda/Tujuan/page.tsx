@@ -64,6 +64,8 @@ export default function Tujuan() {
             realisasi: item.realisasi ?? 0,
             capaian: item.capaian ?? "-",
             keteranganCapaian: item.keteranganCapaian ?? "-",
+            faktorPenunjang: item.faktorPenunjang ?? null,
+            faktorPenghambat: item.faktorPenghambat ?? null,
             satuan: item.satuan ?? "-",
             tahun: String(item.tahun ?? ""),
         }));
@@ -162,7 +164,7 @@ export default function Tujuan() {
         const doc = new jsPDF({
             orientation: "landscape",
             unit: "pt",
-            format: "a4",
+            format: "a3",
         });
 
         const periodLabel = `${selectedTahunValue} - ${bulanName}`;
@@ -183,6 +185,8 @@ export default function Tujuan() {
             "Realisasi (%)",
             "Capaian",
             "Keterangan Capaian",
+            "Faktor Penunjang",
+            "Faktor Penghambat",
         ]];
 
         const tableBody: any[] = [];
@@ -193,6 +197,8 @@ export default function Tujuan() {
                     tujuanIndex + 1,
                     sanitizeForPdf(tujuan.tujuanPemda),
                     sanitizeForPdf(tujuan.visiMisi),
+                    "-",
+                    "-",
                     "-",
                     "-",
                     "-",
@@ -217,6 +223,8 @@ export default function Tujuan() {
                         "-",
                         "-",
                         "-",
+                        "-",
+                        "-",
                     ]);
                     return;
                 }
@@ -230,6 +238,8 @@ export default function Tujuan() {
                         sanitizeForPdf(target.realisasi ?? 0),
                         sanitizeForPdf(formatPercentageText(target.capaian)),
                         sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+                        sanitizeForPdf(target.faktorPenunjang ?? '-'),
+                        sanitizeForPdf(target.faktorPenghambat ?? '-'),
                     ]);
                 });
             });
@@ -280,6 +290,8 @@ export default function Tujuan() {
                 7: { cellWidth: 65, halign: "center" },
                 8: { cellWidth: 50, halign: "center" },
                 9: { cellWidth: 70 },
+                10: { cellWidth: 80 },
+                11: { cellWidth: 80 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -332,6 +344,8 @@ export default function Tujuan() {
                     canEdit={canEdit}
                     handleOpenPrintPreview={handleOpenPrintPreview}
                     handleOpenModal={handleOpenModal}
+                    bulanKey={bulanKey}
+                    onFaktorSuccess={() => refetchRealisasi()}
                 />
                 {canEdit && (
                     <ModalTujuanPemda

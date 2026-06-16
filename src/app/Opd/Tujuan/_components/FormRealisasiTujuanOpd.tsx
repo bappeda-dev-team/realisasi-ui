@@ -17,7 +17,7 @@ interface FormRealisasiTujuanOpdProps {
     tujuanOpd: string;
     indikator: string;
     target: string;
-    realisasi: number;
+    realisasi: number | null;
     satuan: string;
     rumusPerhitungan: string;
     sumberData: string;

@@ -21,7 +21,6 @@ import FormRealisasiRenjaTarget from "./_components/FormRealisasiRenjaTarget";
 import FormRealisasiRenjaPagu from "./_components/FormRealisasiRenjaPagu";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenjaRealisasi } from "@/lib/rbac";
-import SasaranIndividuTable from "./sasaran-individu/Table";
 
 interface RenjaRow {
     id: number;
@@ -154,17 +153,19 @@ const Table = () => {
                         target: item.target,
                         realisasi: item.realisasi,
                         satuan: item.satuan,
-                        tahun: item.tahun,
-                        bulan: item.bulan ?? bulanName ?? undefined,
-                        jenisRealisasi: item.jenisRealisasi,
-                        capaian: item.capaian ?? "-",
-                        keteranganCapaian: item.keteranganCapaian ?? "-",
-                        pagu: paguItem?.pagu ?? null,
-                        realisasiPagu: paguItem?.realisasi ?? null,
-                        satuanPagu: paguItem?.satuan ?? "-",
-                        capaianPagu: paguItem?.capaian ?? "-",
-                        keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
-                    }],
+                    tahun: item.tahun,
+                    bulan: item.bulan ?? bulanName ?? undefined,
+                    jenisRealisasi: item.jenisRealisasi,
+                    capaian: item.capaian ?? "-",
+                    keteranganCapaian: item.keteranganCapaian ?? "-",
+                    pagu: paguItem?.pagu ?? null,
+                    realisasiPagu: paguItem?.realisasi ?? null,
+                    satuanPagu: paguItem?.satuan ?? "-",
+                    capaianPagu: paguItem?.capaian ?? "-",
+                    keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
+                    faktorPenunjang: item.faktorPenunjang ?? null,
+                    faktorPenghambat: item.faktorPenghambat ?? null,
+                }],
                 };
             })
         );
@@ -217,6 +218,8 @@ const Table = () => {
                 { content: "Indikator", rowSpan: 2 },
                 { content: `Renja Target ${activatedTahun} - ${bulanName}`, colSpan: 5 },
                 { content: `Renja Pagu ${activatedTahun} - ${bulanName}`, colSpan: 5 },
+                { content: "Faktor Penunjang", rowSpan: 2 },
+                { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
                 "Target",
@@ -249,6 +252,8 @@ const Table = () => {
                     target?.satuanPagu || "-",
                     formatPercentageText(target?.capaianPagu || "-"),
                     formatPercentageText(target?.keteranganCapaianPagu || "-"),
+                    target?.faktorPenunjang || "-",
+                    target?.faktorPenghambat || "-",
                 ];
 
                 if (targetIndex === 0) {
@@ -346,8 +351,6 @@ const Table = () => {
 
     return (
         <>
-            <SasaranIndividuTable />
-
             <div className="overflow-auto m-2 rounded-t-xl">
                 <h3 className="px-4 py-3 font-semibold text-gray-800">Renja Individu</h3>
                 {loading || loadingPagu ? (
@@ -371,6 +374,8 @@ const Table = () => {
                                 <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                                 <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun} - ${bulanName}`}</th>
                                 <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun} - ${bulanName}`}</th>
+                                <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>
+                                <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penghambat</th>
                                 <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
                             </tr>
                             <tr className={headerColor}>

@@ -40,7 +40,7 @@ type TargetInfo = {
   tujuanOpd: string;
   indikator: string;
   target: string;
-  realisasi: number;
+  realisasi: number | null;
   satuan: string;
   rumusPerhitungan: string;
   sumberData: string;
@@ -110,9 +110,11 @@ export default function TujuanPage() {
             indikator: ind.indikator,
             targetId: tgt.kode_target,
             target: String(tgt.target),
-            realisasi: tgt.realisasi ?? 0,
+            realisasi: tgt.realisasi,
             capaian: tgt.capaian != null ? String(tgt.capaian) : '-',
             keteranganCapaian: tgt.keterangan_capaian ?? '-',
+            faktorPenunjang: tgt.faktor_penunjang ?? null,
+            faktorPenghambat: tgt.faktor_penghambat ?? null,
             satuan: tgt.satuan,
             tahun: String(selectedTahunValue),
             kodeOpd: topKodeOpd,
@@ -183,7 +185,7 @@ export default function TujuanPage() {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     const periodLabel = `${selectedTahunValue} - ${bulanName}`;
@@ -204,6 +206,8 @@ export default function TujuanPage() {
       "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
+      "Faktor Penunjang",
+      "Faktor Penghambat",
     ]];
 
     const tableBody: any[] = [];
@@ -212,7 +216,7 @@ export default function TujuanPage() {
       const detailRows: Array<Array<string | number>> = [];
 
       if (!tujuan.indikator.length) {
-        detailRows.push(["-", "-", "-", "-", "-", "-", "-", "-"]);
+        detailRows.push(["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]);
       } else {
         tujuan.indikator.forEach((indikator) => {
           if (!indikator.targets.length) {
@@ -220,6 +224,8 @@ export default function TujuanPage() {
               sanitizeForPdf(indikator.indikator),
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
+              "-",
+              "-",
               "-",
               "-",
               "-",
@@ -237,6 +243,8 @@ export default function TujuanPage() {
               sanitizeForPdf(target.realisasi ?? 0),
               sanitizeForPdf(formatPercentageText(target.capaian)),
               sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+              sanitizeForPdf(target.faktorPenunjang ?? '-'),
+              sanitizeForPdf(target.faktorPenghambat ?? '-'),
             ]);
           });
         });
@@ -280,12 +288,14 @@ export default function TujuanPage() {
         0: { cellWidth: 26, halign: "center" },
         1: { cellWidth: 150 },
         2: { cellWidth: 100 },
-        3: { cellWidth: 200 },
+        3: { cellWidth: 180 },
         4: { cellWidth: 50, halign: "center" },
         5: { cellWidth: 50, halign: "center" },
         6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 50, halign: "center" },
         8: { cellWidth: 70 },
+        9: { cellWidth: 80 },
+        10: { cellWidth: 80 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -345,11 +355,14 @@ export default function TujuanPage() {
     <div className="overflow-auto grid gap-2">
       <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
       <TableTujuanOpd
-        tahun={selectedTahunValue}
+        tahun={String(selectedTahunValue)}
+        kodeOpd={kodeOpd}
         bulanLabel={bulanName}
         tujuanOpd={groupedTujuanOpd}
         handleOpenPrintPreview={handleOpenPrintPreview}
         onOpenRealisasi={handleOpenRealisasi}
+        bulanKey={bulanKey}
+        onFaktorSuccess={() => setRefreshTrigger((prev) => prev + 1)}
       />
       <ModalTujuanOpd
         isOpen={!!selectedTarget}

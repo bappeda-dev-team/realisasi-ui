@@ -9,9 +9,11 @@ interface TableTujuanProps {
     canEdit: boolean;
     handleOpenPrintPreview: () => void;
     handleOpenModal: (data: TargetRealisasiCapaian[]) => void;
+    bulanKey?: string;
+    onFaktorSuccess?: () => void;
 }
 
-function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrintPreview, handleOpenModal }: TableTujuanProps) {
+function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrintPreview, handleOpenModal, bulanKey, onFaktorSuccess }: TableTujuanProps) {
 
     return (
         <table className="w-full">
@@ -26,6 +28,8 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun} - {bulanLabel}
                     </th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penunjang</th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penghambat</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="text-white bg-red-500">
@@ -45,6 +49,8 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                         canEdit={canEdit}
                         handleOpenPrintPreview={handleOpenPrintPreview}
                         handleOpenModal={handleOpenModal}
+                        bulanKey={bulanKey}
+                        onFaktorSuccess={onFaktorSuccess}
                     />
                 )
                 )}

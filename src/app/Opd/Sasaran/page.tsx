@@ -44,6 +44,7 @@ export default function SasaranPage() {
     data: penetapanData,
     loading: penetapanLoading,
     error: penetapanError,
+    refetch: refetchPenetapan,
   } = useFetchData<SasaranOpdPenetapanResponse>({
     url:
       kodeOpd && selectedTahunValue && bulanKey
@@ -93,6 +94,8 @@ export default function SasaranPage() {
             realisasi: tgt.realisasi ?? 0,
             capaian: tgt.capaian != null ? String(tgt.capaian) : '-',
             keteranganCapaian: tgt.keterangan_capaian ?? '-',
+            faktorPenunjang: tgt.faktor_penunjang ?? null,
+            faktorPenghambat: tgt.faktor_penghambat ?? null,
             satuan: tgt.satuan,
             tahun: String(selectedTahunValue),
             kodeOpd: topKodeOpd,
@@ -163,7 +166,7 @@ export default function SasaranPage() {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     const periodLabel = `${selectedTahunValue} - ${bulanName}`;
@@ -184,6 +187,8 @@ export default function SasaranPage() {
       "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
+      "Faktor Penunjang",
+      "Faktor Penghambat",
     ]];
 
     const tableBody: any[] = [];
@@ -192,7 +197,7 @@ export default function SasaranPage() {
       const detailRows: Array<Array<string | number>> = [];
 
       if (!sasaran.indikator.length) {
-        detailRows.push(["-", "-", "-", "-", "-", "-", "-", "-"]);
+        detailRows.push(["-", "-", "-", "-", "-", "-", "-", "-", "-", "-"]);
       } else {
         sasaran.indikator.forEach((indikator) => {
           if (!indikator.targets.length) {
@@ -200,6 +205,8 @@ export default function SasaranPage() {
               sanitizeForPdf(indikator.indikator),
               sanitizeForPdf(indikator.rumusPerhitungan),
               sanitizeForPdf(indikator.sumberData),
+              "-",
+              "-",
               "-",
               "-",
               "-",
@@ -217,6 +224,8 @@ export default function SasaranPage() {
               sanitizeForPdf(target.realisasi ?? 0),
               sanitizeForPdf(formatPercentageText(target.capaian)),
               sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+              sanitizeForPdf(target.faktorPenunjang ?? "-"),
+              sanitizeForPdf(target.faktorPenghambat ?? "-"),
             ]);
           });
         });
@@ -260,12 +269,14 @@ export default function SasaranPage() {
         0: { cellWidth: 26, halign: "center" },
         1: { cellWidth: 150 },
         2: { cellWidth: 100 },
-        3: { cellWidth: 200 },
-        4: { cellWidth: 50, halign: "center" },
-        5: { cellWidth: 50, halign: "center" },
-        6: { cellWidth: 55, halign: "center" },
-        7: { cellWidth: 50, halign: "center" },
+        3: { cellWidth: 150 },
+        4: { cellWidth: 100 },
+        5: { cellWidth: 45, halign: "center" },
+        6: { cellWidth: 50, halign: "center" },
+        7: { cellWidth: 45, halign: "center" },
         8: { cellWidth: 70 },
+        9: { cellWidth: 70 },
+        10: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -316,6 +327,9 @@ export default function SasaranPage() {
         bulanLabel={bulanName}
         sasaranOpd={groupedSasaranOpd}
         handleOpenPrintPreview={handleOpenPrintPreview}
+        kodeOpd={kodeOpd}
+        bulanKey={bulanKey}
+        onFaktorSuccess={refetchPenetapan}
       />
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">

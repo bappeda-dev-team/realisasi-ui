@@ -59,6 +59,8 @@ const SasaranPage = () => {
       realisasi: item.realisasi ?? 0,
       capaian: item.capaian ?? "-",
       keteranganCapaian: item.keteranganCapaian ?? "-",
+      faktorPenunjang: item.faktorPenunjang ?? null,
+      faktorPenghambat: item.faktorPenghambat ?? null,
       satuan: item.satuan ?? "-",
       tahun: String(item.tahun ?? ""),
     }));
@@ -180,6 +182,8 @@ const SasaranPage = () => {
       "Realisasi (%)",
       "Capaian",
       "Keterangan Capaian",
+      "Faktor Penunjang",
+      "Faktor Penghambat",
     ]];
 
     const tableBody: any[] = [];
@@ -189,6 +193,8 @@ const SasaranPage = () => {
         tableBody.push([
           sasaranIndex + 1,
           sanitizeForPdf(sasaran.sasaranPemda),
+          "-",
+          "-",
           "-",
           "-",
           "-",
@@ -212,6 +218,8 @@ const SasaranPage = () => {
             "-",
             "-",
             "-",
+            "-",
+            "-",
           ]);
           return;
         }
@@ -225,6 +233,8 @@ const SasaranPage = () => {
             sanitizeForPdf(target.realisasi ?? 0),
             sanitizeForPdf(formatPercentageText(target.capaian)),
             sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+            sanitizeForPdf(target.faktorPenunjang ?? "-"),
+            sanitizeForPdf(target.faktorPenghambat ?? "-"),
           ]);
         });
       });
@@ -273,6 +283,8 @@ const SasaranPage = () => {
         6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
         8: { cellWidth: 70 },
+        9: { cellWidth: 70 },
+        10: { cellWidth: 70 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -325,6 +337,8 @@ const SasaranPage = () => {
           canEdit={canEdit}
           handleOpenPrintPreview={handleOpenPrintPreview}
           handleOpenModal={handleOpenModal}
+          bulanKey={bulanKey}
+          onFaktorSuccess={() => refetchRealisasi()}
         />
         {canEdit && (
           <FormModal

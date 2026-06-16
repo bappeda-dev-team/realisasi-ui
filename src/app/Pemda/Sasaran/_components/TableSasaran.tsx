@@ -9,6 +9,8 @@ interface TableSasaranProps {
   canEdit: boolean;
   handleOpenPrintPreview: () => void;
   handleOpenModal: (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
+  bulanKey?: string;
+  onFaktorSuccess?: () => void;
 }
 
 function TableSasaran({
@@ -18,6 +20,8 @@ function TableSasaran({
   canEdit,
   handleOpenPrintPreview,
   handleOpenModal,
+  bulanKey,
+  onFaktorSuccess,
 }: TableSasaranProps) {
   return (
     <table className="w-full">
@@ -62,6 +66,18 @@ function TableSasaran({
           </th>
           <th
             rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penunjang
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penghambat
+          </th>
+          <th
+            rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center"
           >
             Aksi
@@ -92,6 +108,8 @@ function TableSasaran({
             canEdit={canEdit}
             handleOpenPrintPreview={handleOpenPrintPreview}
             handleOpenModal={handleOpenModal}
+            bulanKey={bulanKey}
+            onFaktorSuccess={onFaktorSuccess}
           />
         ))}
       </tbody>

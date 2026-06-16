@@ -3,7 +3,8 @@ import RowTujuanComponent from "./RowTujuanComponent";
 import { TujuanOpdRealisasiGrouped } from "@/types";
 
 interface TableTujuanProps {
-  tahun: number;
+  tahun: string;
+  kodeOpd: string;
   bulanLabel?: string;
   tujuanOpd: TujuanOpdRealisasiGrouped[];
   handleOpenPrintPreview: () => void;
@@ -14,19 +15,24 @@ interface TableTujuanProps {
     tujuanOpd: string;
     indikator: string;
     target: string;
-    realisasi: number;
+    realisasi: number | null;
     satuan: string;
     rumusPerhitungan: string;
     sumberData: string;
   }) => void;
+  bulanKey?: string;
+  onFaktorSuccess?: () => void;
 }
 
 function TableTujuan({
   tahun,
+  kodeOpd,
   bulanLabel,
   tujuanOpd,
   handleOpenPrintPreview,
   onOpenRealisasi,
+  bulanKey,
+  onFaktorSuccess,
 }: TableTujuanProps) {
   return (
     <table className="w-full">
@@ -70,6 +76,18 @@ function TableTujuan({
           </th>
           <th
             rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penunjang
+          </th>
+          <th
+            rowSpan={2}
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+          >
+            Faktor Penghambat
+          </th>
+          <th
+            rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center"
           >
             Aksi
@@ -98,13 +116,16 @@ function TableTujuan({
               no={index + 1}
               tujuan={tuj}
               tahun={tahun}
+              kodeOpd={kodeOpd}
               handleOpenPrintPreview={handleOpenPrintPreview}
               onOpenRealisasi={onOpenRealisasi}
+              bulanKey={bulanKey}
+              onFaktorSuccess={onFaktorSuccess}
             />
           ))
         ) : (
           <tr>
-              <td colSpan={10} className="p-4 text-center text-gray-500">
+              <td colSpan={12} className="p-4 text-center text-gray-500">
                 Tidak ada data tujuan OPD
               </td>
           </tr>

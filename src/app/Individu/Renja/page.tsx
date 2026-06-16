@@ -24,7 +24,7 @@ const SasaranPage = () => {
 
   return (
     <div className="transition-all ease-in-out duration-500">
-      <h2 className="text-lg font-semibold mb-2">Sasaran Individu</h2>
+      <h2 className="text-lg font-semibold mb-2">Renja Individu</h2>
       <Table />
     </div>
   )

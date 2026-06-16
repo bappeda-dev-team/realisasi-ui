@@ -113,7 +113,7 @@ export const ButtonGreenBorder: React.FC<button> = ({ children, type, className,
 
     return (
         <button
-            className={`px-3 flex justify-center items-center py-1 bg-gradient-to-r border-2 border-[#00A607] hover:bg-[#00A607] text-[#00A607] hover:text-white rounded-lg ${className}`}
+            className={`px-3 flex justify-center items-center py-1 bg-gradient-to-r border-2 border-[#00A607] hover:bg-[#00A607] text-[#00A607] hover:text-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-[#00A607] ${className}`}
             disabled={disabled || Loading}
             type={type}
             onClick={onClick || pindahHalaman}

@@ -5,6 +5,8 @@ import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRekinIndividu from "./_components/FormRealisasiRekinIndividu";
+import FormFaktorPenunjangRekinIndividu from "./_components/FormFaktorPenunjangRekinIndividu";
+import FormFaktorPenghambatRekinIndividu from "./_components/FormFaktorPenghambatRekinIndividu";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { useFilterContext } from "@/context/FilterContext";
@@ -23,7 +25,6 @@ interface TableRow {
     nama_pegawai: string;
     nip: string;
     indikator: string;
-    sasaran: string;
     targets: RekinTarget[];
 }
 
@@ -40,6 +41,9 @@ const Table = () => {
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState<string>("rekin-individu.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+    const [selectedFaktorRow, setSelectedFaktorRow] = useState<TableRow | null>(null);
+    const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
+    const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
@@ -82,7 +86,7 @@ const getHeaderColor = (level: string | undefined) => {
         )}/by-tahun/${encodeURIComponent(yearLabel)}/by-bulan/${encodeURIComponent(monthKey)}`;
     }, [activatedDinas, isOpdScopedView, user?.nip, yearLabel, monthKey]);
 
-    const { data, loading, error } = useFetchData<RekinIndividuResponse[]>({
+    const { data, loading, error, refetch } = useFetchData<RekinIndividuResponse[]>({
         url: apiUrl,
     });
 
@@ -117,6 +121,8 @@ const getHeaderColor = (level: string | undefined) => {
                     jenisRealisasi: item.jenisRealisasi ?? "NAIK",
                     capaian: item.capaian ?? "-",
                     keteranganCapaian: item.keteranganCapaian ?? "-",
+                    faktorPenunjang: item.faktorPenunjang ?? "-",
+                    faktorPenghambat: item.faktorPenghambat ?? "-",
                     idSasaran: item.idSasaran,
                     sasaran: item.sasaran,
                 };
@@ -127,7 +133,6 @@ const getHeaderColor = (level: string | undefined) => {
                     nama_pegawai: item.nama_pegawai ?? "-",
                     nip: item.nip ?? user.nip ?? "-",
                     indikator: item.indikator ?? "-",
-                    sasaran: item.sasaran ?? "-",
                     targets: [target],
                 };
             }),
@@ -143,6 +148,28 @@ const getHeaderColor = (level: string | undefined) => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedRow(null);
+    };
+
+    const handleOpenFaktorPenunjang = (row: TableRow) => {
+        if (!canEditRealisasi) return;
+        setSelectedFaktorRow(row);
+        setIsFaktorPenunjangModalOpen(true);
+    };
+
+    const handleCloseFaktorPenunjang = () => {
+        setIsFaktorPenunjangModalOpen(false);
+        setSelectedFaktorRow(null);
+    };
+
+    const handleOpenFaktorPenghambat = (row: TableRow) => {
+        if (!canEditRealisasi) return;
+        setSelectedFaktorRow(row);
+        setIsFaktorPenghambatModalOpen(true);
+    };
+
+    const handleCloseFaktorPenghambat = () => {
+        setIsFaktorPenghambatModalOpen(false);
+        setSelectedFaktorRow(null);
     };
 
     const handleRealisasiSuccess = (updatedTargets: RekinTarget[]) => {
@@ -185,12 +212,13 @@ const getHeaderColor = (level: string | undefined) => {
             "Rencana Kinerja",
             "Nama Pemilik",
             "Indikator",
-            "Sasaran",
             "Target",
             "Realisasi",
             "Satuan",
             "Capaian",
             "Keterangan Capaian",
+            "Faktor Penunjang",
+            "Faktor Penghambat",
         ]];
 
         const tableBody: any[] = [];
@@ -205,6 +233,8 @@ const getHeaderColor = (level: string | undefined) => {
                     target?.satuan || "-",
                     formatPercentageText(target?.capaian || "-"),
                     formatPercentageText(target?.keteranganCapaian || "-"),
+                    target?.faktorPenunjang || "-",
+                    target?.faktorPenghambat || "-",
                 ];
 
                 if (targetIndex === 0) {
@@ -213,7 +243,6 @@ const getHeaderColor = (level: string | undefined) => {
                         { content: item.rekin || "-", rowSpan: targets.length },
                         { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
                         { content: item.indikator || "-", rowSpan: targets.length },
-                        { content: item.sasaran || "-", rowSpan: targets.length },
                         ...detailRow,
                     ]);
                     return;
@@ -355,14 +384,20 @@ const getHeaderColor = (level: string | undefined) => {
                             >
                                 Indikator
                             </td>
-                            <td
-                                rowSpan={2}
-                                className="border-r border-b px-6 py-3 min-w-[250px]"
-                            >
-                                Sasaran
-                            </td>
 <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">
                                 {yearLabel} - {monthLabel}
+                            </th>
+                            <th
+                                rowSpan={2}
+                                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                            >
+                                Faktor Penunjang
+                            </th>
+                            <th
+                                rowSpan={2}
+                                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                            >
+                                Faktor Penghambat
                             </th>
                             <td
                                 rowSpan={2}
@@ -382,6 +417,7 @@ const getHeaderColor = (level: string | undefined) => {
                     <tbody>
                         {rows.map((item, index) => {
                             const target = item.targets[0];
+                            const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
                             return (
                                 <tr key={item.id}>
                                     <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
@@ -400,9 +436,6 @@ const getHeaderColor = (level: string | undefined) => {
                                         <div className="flex gap-2 items-center">
                                             <p>{item.indikator || "-"}</p>
                                         </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {item.sasaran || "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.target || "-"}
@@ -426,8 +459,36 @@ const getHeaderColor = (level: string | undefined) => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {formatPercentageText(target?.capaian || "-")}
                                     </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+<td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {formatPercentageText(target?.keteranganCapaian || "-")}
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span>{target?.faktorPenunjang || "-"}</span>
+                                            {canEditRealisasi && (
+                                                <ButtonGreenBorder
+                                                    className="w-full text-xs py-0.5"
+                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenunjang(item) : undefined}
+                                                    disabled={!isRealisasiFilled}
+                                                >
+                                                    Faktor
+                                                </ButtonGreenBorder>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <span>{target?.faktorPenghambat || "-"}</span>
+                                            {canEditRealisasi && (
+                                                <ButtonGreenBorder
+                                                    className="w-full text-xs py-0.5"
+                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenghambat(item) : undefined}
+                                                    disabled={!isRealisasiFilled}
+                                                >
+                                                    Faktor
+                                                </ButtonGreenBorder>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         <div className="flex flex-col items-center gap-2">
@@ -455,6 +516,43 @@ const getHeaderColor = (level: string | undefined) => {
                         requestValues={modalValues}
                         onClose={handleCloseModal}
                         onSuccess={handleRealisasiSuccess}
+                    />
+                </FormModal>
+            )}
+
+            {canEditRealisasi && (
+                <FormModal
+                    isOpen={isFaktorPenunjangModalOpen}
+                    onClose={handleCloseFaktorPenunjang}
+                    title={`Faktor Penunjang - ${selectedFaktorRow?.rekin ?? ""}`}
+                >
+                    <FormFaktorPenunjangRekinIndividu
+                        rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+                        targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        tahun={String(yearLabel ?? "")}
+                        bulan={String(activatedBulan ?? "")}
+                        nip={selectedFaktorRow?.nip ?? ""}
+                        currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
+                        onClose={handleCloseFaktorPenunjang}
+                        onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
+                    />
+                </FormModal>
+            )}
+            {canEditRealisasi && (
+                <FormModal
+                    isOpen={isFaktorPenghambatModalOpen}
+                    onClose={handleCloseFaktorPenghambat}
+                    title={`Faktor Penghambat - ${selectedFaktorRow?.rekin ?? ""}`}
+                >
+                    <FormFaktorPenghambatRekinIndividu
+                        rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+                        targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        tahun={String(yearLabel ?? "")}
+                        bulan={String(activatedBulan ?? "")}
+                        nip={selectedFaktorRow?.nip ?? ""}
+                        currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
+                        onClose={handleCloseFaktorPenghambat}
+                        onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
                     />
                 </FormModal>
             )}

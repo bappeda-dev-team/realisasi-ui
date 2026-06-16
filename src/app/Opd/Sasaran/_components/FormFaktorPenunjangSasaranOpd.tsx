@@ -1,0 +1,103 @@
+import React, { useState } from 'react';
+import { ButtonSky } from '@/components/Global/Button/button';
+import { LoadingButtonClip } from '@/components/Global/Loading';
+import { useApiUrlContext } from '@/context/ApiUrlContext';
+import { getSessionId, notifySessionExpired } from '@/lib/session';
+
+interface FormFaktorPenunjangSasaranOpdProps {
+  kodeOpd: string;
+  kodeSasaranOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
+  bulan: string;
+  currentValue: string;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const FormFaktorPenunjangSasaranOpd: React.FC<FormFaktorPenunjangSasaranOpdProps> = ({
+  kodeOpd,
+  kodeSasaranOpd,
+  kodeIndikator,
+  kodeTarget,
+  tahun,
+  bulan,
+  currentValue,
+  onClose,
+  onSuccess,
+}) => {
+  const { url } = useApiUrlContext();
+  const [value, setValue] = useState(currentValue);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bulan) {
+      alert('Bulan tidak valid.');
+      return;
+    }
+    const sessionId = getSessionId();
+    if (!sessionId) {
+      alert('Silakan login terlebih dahulu.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch(`${url}/api/v1/realisasi/sasaran_opd/faktor-penunjang`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Session-Id': sessionId,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          kodeOpd,
+          kodeSasaranOpd,
+          kodeIndikator,
+          kodeTarget,
+          tahun,
+          bulan,
+          faktorPenunjang: value,
+        }),
+      });
+      if (res.status === 401 || res.status === 403) {
+        notifySessionExpired();
+        throw new Error('Session habis, silakan login kembali.');
+      }
+      if (!res.ok) throw new Error('Gagal menyimpan');
+      onSuccess();
+    } catch (err) {
+      alert('Terjadi kesalahan saat menyimpan');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <label className="uppercase text-xs font-bold text-gray-700">
+        Faktor Penunjang
+      </label>
+      <textarea
+        className="w-full border rounded px-2 py-1 text-sm min-h-[100px]"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="Masukkan faktor penunjang..."
+      />
+      <ButtonSky className="w-full mt-3" type="submit" disabled={loading}>
+        {loading ? (
+          <span className="flex items-center justify-center gap-2">
+            <LoadingButtonClip />
+            Menyimpan...
+          </span>
+        ) : (
+          'Simpan'
+        )}
+      </ButtonSky>
+    </form>
+  );
+};
+
+export default FormFaktorPenunjangSasaranOpd;

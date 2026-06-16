@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { FormModal } from "@/components/Global/Modal";
 import { SasaranPemdaRealisasiGrouped, TargetRealisasiCapaianSasaran } from "@/types";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import FormFaktorPenunjangSasaran from "./FormFaktorPenunjangSasaran";
+import FormFaktorPenghambatSasaran from "./FormFaktorPenghambatSasaran";
 
 interface RowSasaranComponentProps {
   no: number;
@@ -10,6 +13,8 @@ interface RowSasaranComponentProps {
   canEdit: boolean;
   handleOpenPrintPreview: () => void;
   handleOpenModal: (dataTargetRealisasi: TargetRealisasiCapaianSasaran[]) => void;
+  bulanKey?: string;
+  onFaktorSuccess?: () => void;
 }
 
 export default function RowSasaranComponent({
@@ -19,8 +24,15 @@ export default function RowSasaranComponent({
   canEdit,
   handleOpenPrintPreview,
   handleOpenModal,
+  bulanKey,
+  onFaktorSuccess,
 }: RowSasaranComponentProps) {
   const indikatorList = sasaran.indikator ?? [];
+  const [faktorTarget, setFaktorTarget] = useState<{
+    target: TargetRealisasiCapaianSasaran;
+    indikatorId: string;
+    jenis: 'penunjang' | 'penghambat';
+  } | null>(null);
 
   if (indikatorList.length === 0) {
     return <EmptyIndikatorRow no={no} sasaran={sasaran} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />;
@@ -53,11 +65,16 @@ export default function RowSasaranComponent({
               realisasi={target.realisasi}
               capaian={target.capaian}
               keteranganCapaian={target.keteranganCapaian}
+              faktorPenunjang={target.faktorPenunjang}
+              faktorPenghambat={target.faktorPenghambat}
+              canEdit={canEdit}
               handleClick={canEdit && index === 0 ? () => handleOpenModal(indikatorList.flatMap((row) => row.targets)) : undefined}
+              onEditFaktorPenunjang={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penunjang' }) : undefined}
+              onEditFaktorPenghambat={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penghambat' }) : undefined}
             />
           ) : (
             <td
-              colSpan={4}
+              colSpan={6}
               className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
             >
               Tidak ada target
@@ -72,6 +89,50 @@ export default function RowSasaranComponent({
           )}
         </tr>
       ))}
+
+      {faktorTarget?.jenis === 'penunjang' && (
+        <FormModal
+          isOpen={true}
+          onClose={() => setFaktorTarget(null)}
+          title={`Faktor Penunjang - ${faktorTarget.target.indikator}`}
+        >
+          <FormFaktorPenunjangSasaran
+            sasaranId={sasaran.sasaranId}
+            indikatorId={faktorTarget.indikatorId}
+            targetId={faktorTarget.target.targetId}
+            tahun={String(tahun)}
+            bulan={bulanKey ?? ''}
+            currentValue={faktorTarget.target.faktorPenunjang ?? ''}
+            onClose={() => setFaktorTarget(null)}
+            onSuccess={() => {
+              setFaktorTarget(null);
+              onFaktorSuccess?.();
+            }}
+          />
+        </FormModal>
+      )}
+
+      {faktorTarget?.jenis === 'penghambat' && (
+        <FormModal
+          isOpen={true}
+          onClose={() => setFaktorTarget(null)}
+          title={`Faktor Penghambat - ${faktorTarget.target.indikator}`}
+        >
+          <FormFaktorPenghambatSasaran
+            sasaranId={sasaran.sasaranId}
+            indikatorId={faktorTarget.indikatorId}
+            targetId={faktorTarget.target.targetId}
+            tahun={String(tahun)}
+            bulan={bulanKey ?? ''}
+            currentValue={faktorTarget.target.faktorPenghambat ?? ''}
+            onClose={() => setFaktorTarget(null)}
+            onSuccess={() => {
+              setFaktorTarget(null);
+              onFaktorSuccess?.();
+            }}
+          />
+        </FormModal>
+      )}
     </>
   );
 }
@@ -89,7 +150,7 @@ const EmptyIndikatorRow: React.FC<{
         {sasaran.sasaranPemda}
       </td>
       <td
-        colSpan={7}
+        colSpan={9}
         className="border border-red-400 px-6 py-4 text-center text-gray-500 italic"
       >
         Tidak ada indikator dan target tahun {tahun}
@@ -108,8 +169,13 @@ const ColTargetSasaran: React.FC<{
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
+  canEdit?: boolean;
   handleClick?: () => void;
-}> = ({ target, realisasi, capaian, keteranganCapaian, handleClick }) => {
+  onEditFaktorPenunjang?: () => void;
+  onEditFaktorPenghambat?: () => void;
+}> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
   return (
     <>
       <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
@@ -128,6 +194,26 @@ const ColTargetSasaran: React.FC<{
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
       <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || "-")}</td>
+      <td className="border border-red-400 px-6 py-4">
+        <div className="flex flex-col items-center gap-1">
+          <span>{faktorPenunjang || '-'}</span>
+          {canEdit && onEditFaktorPenunjang && (
+            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenunjang}>
+              Faktor
+            </ButtonGreenBorder>
+          )}
+        </div>
+      </td>
+      <td className="border border-red-400 px-6 py-4">
+        <div className="flex flex-col items-center gap-1">
+          <span>{faktorPenghambat || '-'}</span>
+          {canEdit && onEditFaktorPenghambat && (
+            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenghambat}>
+              Faktor
+            </ButtonGreenBorder>
+          )}
+        </div>
+      </td>
     </>
   );
 };

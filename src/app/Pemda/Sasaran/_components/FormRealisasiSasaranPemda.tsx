@@ -1,10 +1,9 @@
+import React, { useEffect, useState, useMemo } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
 import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
-import React, { useEffect, useState, useMemo } from 'react';
 
 const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
     requestValues,
@@ -14,10 +13,10 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
     onClose,
     onSuccess
 }) => {
-    const { url } = useApiUrlContext();
-    const { submit, loading, error } = useSubmitData<RealisasiSasaran[]>({ url: `${url}/api/v1/realisasi/sasarans/batch` });
+    const { submit, loading, error } = useSubmitData<RealisasiSasaran>({ url: '/api/v1/realisasi/sasarans' });
     const [Proses, setProses] = useState(false);
     const [formData, setFormData] = useState<SasaranRequest[]>([]);
+    const [validationError, setValidationError] = useState<string | null>(null);
     const normalizedBulan = getMonthKey(bulan);
 
     const filteredRequestValues = useMemo(() => 
@@ -48,8 +47,18 @@ target: typeof indikator.target === 'string'
         setFormData(generatedFormData);
     }, [filteredRequestValues, normalizedBulan]);
 
+    const invalidRealisasiTargets = useMemo(
+        () =>
+            formData.filter((item) => {
+                if (typeof item.realisasi !== "number") return true;
+                if (!Number.isFinite(item.realisasi)) return true;
+                return item.realisasi <= 0;
+            }),
+        [formData],
+    );
+
     const convertToDisplayString = (value: number | '' | null | undefined): string => {
-        if (value === '' || value === null || value === undefined || value === 0) return '';
+        if (value === '' || value === null || value === undefined) return '';
         return value.toString().replace('.', ',');
     };
 
@@ -70,22 +79,37 @@ target: typeof indikator.target === 'string'
     // saat submit
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setValidationError(null);
+
         if (!normalizedBulan) {
-            alert('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
+            setValidationError('Bulan tidak valid. Silakan pilih bulan aktif terlebih dahulu.');
             return;
         }
-        setProses(loading);
 
-        const result = await submit(formData)
-
-        if (result) {
-            onClose();
-            onSuccess?.(result)
-        } else {
-            alert("Terjadi kesalahan")
-            console.error("Submission failed:", error);
+        if (invalidRealisasiTargets.length > 0) {
+            setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
+            return;
         }
-        setProses(loading);
+
+        setProses(true);
+
+        const results: RealisasiSasaran[] = [];
+        for (const item of formData) {
+            const result = await submit(item);
+            if (result) {
+                results.push(result);
+            } else {
+                console.error("Gagal menyimpan:", item);
+            }
+        }
+
+        if (results.length > 0) {
+            onClose();
+            onSuccess?.(results);
+        } else {
+            alert("Terjadi kesalahan saat menyimpan semua data.");
+        }
+        setProses(false);
     };
 
     // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa
@@ -123,6 +147,11 @@ target: typeof indikator.target === 'string'
                     ))}
                 </div>
             </div>
+            {validationError ? (
+                <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+                    {validationError}
+                </div>
+            ) : null}
             <ButtonSky className="w-full mt-3" type="submit">
                 {Proses ? (
                     <span className="flex items-center justify-center gap-2">
