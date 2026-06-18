@@ -10,8 +10,8 @@ interface TableTujuanProps {
   handleOpenPrintPreview: () => void;
   onOpenRealisasi?: (targetInfo: {
     kodeTujuanOpd: string;
-    kodeIndikatorTujuanOpd: string;
-    kodeTargetTujuanOpd: string;
+    kodeIndikator: string;
+    kodeTarget: string;
     tujuanOpd: string;
     indikator: string;
     target: string;

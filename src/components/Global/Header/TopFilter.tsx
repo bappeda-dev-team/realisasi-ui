@@ -33,6 +33,7 @@ interface SelectedCookie {
 
 interface FilterProps {
   user: User | null;
+  disableOpdLock?: boolean;
 }
 
 interface DinasResponse {
@@ -57,7 +58,7 @@ interface ListPeriode {
   tahun_akhir: number;
 }
 
-export default function TopFilter({ user }: FilterProps) {
+export default function TopFilter({ user, disableOpdLock }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
     dinas,
@@ -131,7 +132,7 @@ export default function TopFilter({ user }: FilterProps) {
         label: d.nama_opd,
       }));
 
-      if (!canEditOpd && userKodeOpd) {
+      if (!canEditOpd && !disableOpdLock && userKodeOpd) {
         options = options.filter((opt) => opt.value === userKodeOpd);
       }
 
@@ -225,7 +226,7 @@ export default function TopFilter({ user }: FilterProps) {
   // AUTO SELECT OPD FOR NON-EDIT USERS (LEVEL 1-4)
   // ----------------------------
   useEffect(() => {
-    if (!canEditOpd && userKodeOpd && dinasOptions.length > 0) {
+    if (!canEditOpd && !disableOpdLock && userKodeOpd && dinasOptions.length > 0) {
       const userOpd = dinasOptions.find((opt) => opt.value === userKodeOpd);
       if (userOpd) {
         setDinas(userOpd.value);
@@ -284,8 +285,8 @@ export default function TopFilter({ user }: FilterProps) {
             onChange={(opt) => setDinas(opt?.value ?? null)}
             placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
             isSearchable
-            isClearable={canEditOpd}
-            isDisabled={!canEditOpd}
+            isClearable={canEditOpd || disableOpdLock}
+            isDisabled={!canEditOpd && !disableOpdLock}
           />
 
           {/* PILIH PERIODE */}

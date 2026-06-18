@@ -43,7 +43,7 @@ export const Header = () => {
 
   return (
     <>
-      <TopFilter user={user} />
+      <TopFilter user={user} disableOpdLock={pathname === '/Individu/Rekin-Individu' || pathname.startsWith('/Individu/Rekin-Individu/')} />
       <nav
         className={`inset-x-1 m-1 ml-2 bg-[#1C1D1D] shadow-lg shadow-slate-300 rounded-xl transition duration-300`}
       >

@@ -14,8 +14,8 @@ interface RowTujuanComponentProps {
     handleOpenPrintPreview: () => void;
     onOpenRealisasi?: (targetInfo: {
         kodeTujuanOpd: string;
-        kodeIndikatorTujuanOpd: string;
-        kodeTargetTujuanOpd: string;
+        kodeIndikator: string;
+        kodeTarget: string;
         tujuanOpd: string;
         indikator: string;
         target: string;
@@ -92,8 +92,8 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 canEditRealisasi={!!onOpenRealisasi}
                                 handleClick={onOpenRealisasi ? () => onOpenRealisasi({
                                     kodeTujuanOpd: tujuan.tujuanId,
-                                    kodeIndikatorTujuanOpd: ind.id,
-                                    kodeTargetTujuanOpd: target.targetId,
+                                    kodeIndikator: ind.id,
+                                    kodeTarget: target.targetId,
                                     tujuanOpd: tujuan.tujuanOpd,
                                     indikator: ind.indikator,
                                     target: target.target,
