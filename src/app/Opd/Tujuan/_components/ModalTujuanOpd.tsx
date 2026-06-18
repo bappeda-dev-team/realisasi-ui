@@ -7,15 +7,12 @@ interface ModalTujuanOpdProps {
   onClose: () => void;
   target: {
     kodeTujuanOpd: string;
-    kodeIndikatorTujuanOpd: string;
-    kodeTargetTujuanOpd: string;
+    kodeIndikator: string;
+    kodeTarget: string;
     tujuanOpd: string;
-    indikator: string;
     target: string;
     realisasi: number | null;
     satuan: string;
-    rumusPerhitungan: string;
-    sumberData: string;
   } | null;
   tahun: number;
   bulan: string;

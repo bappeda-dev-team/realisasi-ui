@@ -35,15 +35,12 @@ const sanitizeForPdf = (value: unknown) => {
 
 type TargetInfo = {
   kodeTujuanOpd: string;
-  kodeIndikatorTujuanOpd: string;
-  kodeTargetTujuanOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
   tujuanOpd: string;
-  indikator: string;
   target: string;
   realisasi: number | null;
   satuan: string;
-  rumusPerhitungan: string;
-  sumberData: string;
 };
 
 export default function TujuanPage() {

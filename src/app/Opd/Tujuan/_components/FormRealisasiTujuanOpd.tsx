@@ -12,15 +12,12 @@ import React, { useState } from 'react';
 interface FormRealisasiTujuanOpdProps {
   requestValues: {
     kodeTujuanOpd: string;
-    kodeIndikatorTujuanOpd: string;
-    kodeTargetTujuanOpd: string;
+    kodeIndikator: string;
+    kodeTarget: string;
     tujuanOpd: string;
-    indikator: string;
     target: string;
     realisasi: number | null;
     satuan: string;
-    rumusPerhitungan: string;
-    sumberData: string;
   } | null;
   onClose: () => void;
   onSuccess: () => void;
@@ -86,11 +83,11 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
 
     const payload: TujuanOpdRealisasiPayload = {
       kodeTujuanOpd: requestValues.kodeTujuanOpd,
-      kodeIndikatorTujuanOpd: requestValues.kodeIndikatorTujuanOpd,
-      kodeTargetTujuanOpd: requestValues.kodeTargetTujuanOpd,
+      kodeIndikator: requestValues.kodeIndikator,
+      kodeTarget: requestValues.kodeTarget,
       realisasi: numericReal,
-      tahun,
-      bulan: parseInt(normalizedBulan, 10),
+      tahun: String(tahun),
+      bulan: normalizedBulan,
       kodeOpd: kodeOpd ?? '',
     };
 
@@ -112,32 +109,6 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
             <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
               {tahun} - {bulanLabel}
             </div>
-            <p className="uppercase text-xs font-bold text-gray-700 mb-1">
-              Indikator:
-            </p>
-            <p className="w-full bg-gray-100 border rounded px-2 py-1 text-sm mb-2">
-              {requestValues.indikator}
-            </p>
-            {requestValues.rumusPerhitungan && requestValues.rumusPerhitungan !== '-' && (
-              <>
-                <p className="uppercase text-xs font-bold text-gray-700 mb-1">
-                  Rumus Perhitungan:
-                </p>
-                <p className="w-full bg-gray-100 border rounded px-2 py-1 text-sm mb-2">
-                  {requestValues.rumusPerhitungan}
-                </p>
-              </>
-            )}
-            {requestValues.sumberData && requestValues.sumberData !== '-' && (
-              <>
-                <p className="uppercase text-xs font-bold text-gray-700 mb-1">
-                  Sumber Data:
-                </p>
-                <p className="w-full bg-gray-100 border rounded px-2 py-1 text-sm mb-2">
-                  {requestValues.sumberData}
-                </p>
-              </>
-            )}
             <p className="uppercase text-xs font-bold text-gray-700 mb-1">
               Target:
             </p>
