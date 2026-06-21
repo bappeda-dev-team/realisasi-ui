@@ -14,7 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RekinIndividuResponse, RekinTarget } from "@/types";
+import { RekinIndividuPenetapanResponse, RekinTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRekinRealisasi } from "@/lib/rbac";
@@ -33,7 +33,6 @@ const Table = () => {
     const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const canEditRealisasi = canEditIndividuRekinRealisasi(user);
-    const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
     const [rows, setRows] = useState<TableRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -73,20 +72,14 @@ const getHeaderColor = (level: string | undefined) => {
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
 
-    const apiUrl = useMemo(() => {
-        if (!yearLabel || !monthKey) return null;
-        if (isOpdScopedView && activatedDinas) {
-            return `/api/v1/realisasi/rekin/by-kode-opd/${encodeURIComponent(
-                activatedDinas,
-            )}/by-tahun/${encodeURIComponent(yearLabel)}/by-bulan/${encodeURIComponent(monthKey)}`;
-        }
-        if (!user?.nip) return null;
-        return `/api/v1/realisasi/rekin/by-nip/${encodeURIComponent(
-            user.nip,
-        )}/by-tahun/${encodeURIComponent(yearLabel)}/by-bulan/${encodeURIComponent(monthKey)}`;
-    }, [activatedDinas, isOpdScopedView, user?.nip, yearLabel, monthKey]);
+    const nip = user?.nip;
+    const kodeOpd = activatedDinas || user?.kode_opd;
+    const apiUrl =
+        yearLabel && monthKey && nip && kodeOpd
+            ? `/api/v1/realisasi/rekin/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`
+            : null;
 
-    const { data, loading, error, refetch } = useFetchData<RekinIndividuResponse[]>({
+    const { data, loading, error, refetch } = useFetchData<RekinIndividuPenetapanResponse>({
         url: apiUrl,
     });
 
@@ -104,40 +97,48 @@ const getHeaderColor = (level: string | undefined) => {
         }
 
         setRows(
-            data.map((item) => {
-                const target: RekinTarget = {
-                    targetRealisasiId: item.id ?? null,
-                    rekinId: item.rekinId,
-                    rekin: item.rekin ?? "-",
-                    nip: item.nip ?? user.nip ?? "-",
-                    indikatorId: item.indikatorId ?? "",
-                    indikator: item.indikator ?? "-",
-                    targetId: item.targetId,
-                    target: item.target ?? "-",
-                    realisasi: item.realisasi ?? 0,
-                    satuan: item.satuan ?? "-",
-                    tahun: item.tahun ?? yearLabel,
-                    bulan: item.bulan ?? monthLabel ?? undefined,
-                    jenisRealisasi: item.jenisRealisasi ?? "NAIK",
-                    capaian: item.capaian ?? "-",
-                    keteranganCapaian: item.keteranganCapaian ?? "-",
-                    faktorPenunjang: item.faktorPenunjang ?? "-",
-                    faktorPenghambat: item.faktorPenghambat ?? "-",
-                    idSasaran: item.idSasaran,
-                    sasaran: item.sasaran,
-                };
+            (data.rekins ?? []).flatMap((rekinItem) =>
+                rekinItem.indikator_pk.map((indikator) => {
+                    const backendNamaPegawai = data.nama?.trim();
+                    const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
+                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
+                    const nipPegawai = user.nip || "-";
 
-                return {
-                    id: item.id,
-                    rekin: item.rekin ?? "-",
-                    nama_pegawai: item.nama_pegawai ?? "-",
-                    nip: item.nip ?? user.nip ?? "-",
-                    indikator: item.indikator ?? "-",
-                    targets: [target],
-                };
-            }),
+                    const targets: RekinTarget[] = indikator.target_pk.map((t) => ({
+                        targetRealisasiId: t.id ?? null,
+                        rekinId: rekinItem.kode_pk,
+                        rekin: rekinItem.rekin ?? "-",
+                        nip: nipPegawai,
+                        indikatorId: indikator.kode_indikator_pk ?? "",
+                        indikator: indikator.nama_indikator_pk ?? "-",
+                        targetId: t.kode_target_pk,
+                        target: String(t.target ?? "-"),
+                        realisasi: t.realisasi ?? 0,
+                        satuan: t.satuan ?? "-",
+                        tahun: String(t.tahun ?? data.tahun_aktif ?? yearLabel),
+                        bulan: monthLabel ?? undefined,
+                        jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        capaian: t.capaian != null ? String(t.capaian) : "-",
+                        keteranganCapaian: t.keterangan_capaian ?? "-",
+                        faktorPenunjang: t.faktor_penunjang ?? "-",
+                        faktorPenghambat: t.faktor_penghambat ?? "-",
+                        idSasaran: null,
+                        sasaran: null,
+                        kodeOpd: data.kode_opd ?? user.kode_opd,
+                    }));
+
+                    return {
+                        id: indikator.id,
+                        rekin: rekinItem.rekin ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        indikator: indikator.nama_indikator_pk ?? "-",
+                        targets,
+                    };
+                }),
+            ),
         );
-    }, [data, user, yearLabel]);
+    }, [data, user, yearLabel, monthLabel]);
 
     const handleOpenModal = (row: TableRow) => {
         if (!canEditRealisasi) return;
@@ -313,7 +314,7 @@ const getHeaderColor = (level: string | undefined) => {
 
     const infoMessage = !user || (!user?.nip && !canBypassNip)
         ? "Silakan login terlebih dahulu untuk melihat data rekin individu."
-        : canBypassNip && !activatedDinas
+        : !activatedDinas
             ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data rekin individu muncul."
         : !yearLabel || !monthLabel
             ? "Pilih dan aktifkan tahun dan bulan agar data rekin individu muncul."
@@ -510,7 +511,7 @@ const getHeaderColor = (level: string | undefined) => {
                 <FormModal
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
-                    title={`Realisasi ${selectedRow?.rekin ?? ""}`}
+                    title={`Realisasi : ${selectedRow?.rekin ?? ""}`}
                 >
                     <FormRealisasiRekinIndividu
                         requestValues={modalValues}
@@ -527,10 +528,12 @@ const getHeaderColor = (level: string | undefined) => {
                     title={`Faktor Penunjang - ${selectedFaktorRow?.rekin ?? ""}`}
                 >
                     <FormFaktorPenunjangRekinIndividu
-                        rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
-                        targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
+                        kodeRekin={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+                        kodeIndikator={selectedFaktorRow?.targets[0]?.indikatorId ?? ""}
+                        kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}
                         tahun={String(yearLabel ?? "")}
-                        bulan={String(activatedBulan ?? "")}
+                        bulan={monthLabel ?? ""}
                         nip={selectedFaktorRow?.nip ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
                         onClose={handleCloseFaktorPenunjang}
@@ -545,10 +548,12 @@ const getHeaderColor = (level: string | undefined) => {
                     title={`Faktor Penghambat - ${selectedFaktorRow?.rekin ?? ""}`}
                 >
                     <FormFaktorPenghambatRekinIndividu
-                        rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
-                        targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
+                        kodeRekin={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
+                        kodeIndikator={selectedFaktorRow?.targets[0]?.indikatorId ?? ""}
+                        kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}
                         tahun={String(yearLabel ?? "")}
-                        bulan={String(activatedBulan ?? "")}
+                        bulan={monthLabel ?? ""}
                         nip={selectedFaktorRow?.nip ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
                         onClose={handleCloseFaktorPenghambat}

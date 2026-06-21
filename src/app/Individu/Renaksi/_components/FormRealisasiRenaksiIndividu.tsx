@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenaksiTarget, RenaksiRealisasiRequest, RenaksiIndividuResponse } from "@/types";
+import { FormProps, RenaksiTarget, RenaksiRealisasiRequest, RenaksiIndividuHierarchyResponse } from "@/types";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -18,10 +18,10 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const { tahun: selectedTahun, bulan: selectedBulan, activatedTahun, activatedBulan } = useFilterContext();
     const { url } = useApiUrlContext();
     const submitUrl = useMemo(
-        () => (url ? `${url}/api/v1/realisasi/renaksi` : "/api/v1/realisasi/renaksi"),
+        () => (url ? `${url}/api/v1/realisasi/renaksi` : "/renaksi"),
         [url],
     );
-    const { submit, loading, error } = useSubmitData<RenaksiIndividuResponse>({ url: submitUrl });
+    const { submit, loading, error } = useSubmitData<RenaksiIndividuHierarchyResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -53,11 +53,10 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     }, [requestValues, selectedTahun, selectedBulan, activatedBulan, selectedMonthKey]);
 
     const handleChange = (targetId: string, tahun: string, value: string) => {
-        const parsedValue = parseFloat(value);
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(parsedValue) ? 0 : parsedValue }
+                    ? { ...item, realisasi: value === "" ? undefined : (parseFloat(value) || 0) }
                     : item
             )
         );
@@ -86,21 +85,19 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
         }
 
         const payload: RenaksiRealisasiRequest = {
-            targetRealisasiId: first.targetRealisasiId,
-            renaksiId: first.renaksiId,
-            renaksi: first.renaksi,
-            nip: first.nip,
-            namaPegawai: first.namaPegawai ?? "",
-            rekinId: first.rekinId,
-            rekin: first.rekin,
-            targetId: first.targetId,
-            target: first.target,
-            realisasi: first.realisasi,
-            satuan: first.satuan,
-            bulan: bulanKey,
-            tahun: first.tahun,
-            jenisRealisasi: first.jenisRealisasi,
+            id: first.targetRealisasiId ?? 0,
             kodeOpd: first.kodeOpd ?? "",
+            nip: first.nip,
+            kodeSasaran: first.kodeSasaran ?? "",
+            kodeRenaksi: first.renaksiId,
+            kodeIndikator: first.kodeIndikator ?? "",
+            kodeTarget: first.targetId,
+            target: parseFloat(first.target) || 0,
+            realisasi: first.realisasi ?? 0,
+            jenisRealisasi: first.jenisRealisasi,
+            paguAnggaran: first.paguAnggaran ?? 0,
+            tahun: first.tahun,
+            bulan: bulanKey,
         };
 
         setIsSubmitting(true);
@@ -109,24 +106,30 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
 
         if (result) {
             const updatedTarget: RenaksiTarget = {
-                targetRealisasiId: result.id,
-                renaksiId: result.renaksiId,
-                renaksi: result.renaksi,
-                nip: result.nip,
-                namaPegawai: result.nama_pegawai ?? undefined,
-                rekinId: result.rekinId,
-                rekin: result.rekin,
-                targetId: result.targetId,
-                target: result.target,
-                realisasi: result.realisasi,
-                satuan: result.satuan,
-                bulan: result.bulan,
-                tahun: result.tahun,
-                jenisRealisasi: result.jenisRealisasi,
-                capaian: result.capaian,
-                keteranganCapaian: result.keteranganCapaian ?? undefined,
-                rencanaKinerja: result.rekin,
-                kodeOpd: result.kodeOpd,
+                targetRealisasiId: result.targets[0]?.id ?? null,
+                renaksiId: result.renaksis[0]?.kodeRenaksi ?? "",
+                renaksi: result.renaksis[0]?.renaksi ?? "-",
+                nip: result.sasaran.nip,
+                namaPegawai: result.sasaran.nip,
+                rekinId: "",
+                rekin: result.sasaran.sasaran ?? "-",
+                targetId: result.targets[0]?.kodeTarget ?? "",
+                target: String(result.targets[0]?.target ?? "-"),
+                realisasi: result.targets[0]?.realisasi ?? 0,
+                satuan: result.targets[0]?.satuan ?? "-",
+                bulan: result.sasaran.bulan,
+                tahun: result.sasaran.tahun,
+                jenisRealisasi: result.targets[0]?.jenisRealisasi ?? "NAIK",
+                capaian: result.targets[0]?.capaian ?? "-",
+                keteranganCapaian: result.targets[0]?.keteranganCapaian ?? null,
+                rencanaKinerja: result.sasaran.sasaran ?? "-",
+                kodeOpd: result.sasaran.kodeOpd,
+                anggaran: String(result.targets[0]?.paguAnggaran ?? "-"),
+                faktorPenunjang: result.targets[0]?.faktorPenunjang ?? "-",
+                faktorPenghambat: result.targets[0]?.faktorPenghambat ?? "-",
+                kodeSasaran: result.sasaran.kodeSasaran,
+                kodeIndikator: result.indikators[0]?.kodeIndikator ?? "",
+                paguAnggaran: result.targets[0]?.paguAnggaran,
             };
             onSuccess?.([updatedTarget]);
             onClose();
@@ -144,7 +147,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto"
         >
             <div className="mb-4">
-                <h3 className="font-bold">Rencana Kinerja: {currentPlan}</h3>
+                <h3 className="font-bold">Sasaran Kinerja: {currentPlan}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
                     {formData.map((target) => (
                         <div

@@ -9,24 +9,28 @@ import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormFaktorPenghambatRenaksiIndividuProps {
     renaksiId: string;
-    rekinId: string;
     targetId: string;
     tahun: string;
     bulan: string;
     nip: string;
     currentValue: string;
+    kodeOpd: string;
+    kodeSasaran: string;
+    kodeIndikator: string;
     onClose: () => void;
     onSuccess: () => void;
 }
 
 const FormFaktorPenghambatRenaksiIndividu: React.FC<FormFaktorPenghambatRenaksiIndividuProps> = ({
     renaksiId,
-    rekinId,
     targetId,
     tahun,
     bulan,
     nip,
     currentValue,
+    kodeOpd,
+    kodeSasaran,
+    kodeIndikator,
     onClose,
     onSuccess,
 }) => {
@@ -57,12 +61,14 @@ const FormFaktorPenghambatRenaksiIndividu: React.FC<FormFaktorPenghambatRenaksiI
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    kodeOpd,
                     nip,
                     tahun,
                     bulan: normalizedBulan,
-                    rekinId,
-                    renaksiId,
-                    targetId,
+                    kodeSasaran,
+                    kodeRenaksi: renaksiId,
+                    kodeIndikator,
+                    kodeTarget: targetId,
                     faktorPenghambat: value,
                 }),
             });

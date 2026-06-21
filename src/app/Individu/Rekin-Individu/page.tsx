@@ -10,7 +10,7 @@ const TujuanPage = () => {
     const { user } = useUserContext()
     const { activatedDinas, activatedTahun, activatedBulan } = useFilterContext()
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD)
-    const needsOpdSelection = canBypassNip && !activatedDinas
+    const needsOpdSelection = !activatedDinas
 
     if ((!user?.nip && !canBypassNip) || needsOpdSelection || !activatedTahun || !activatedBulan) {
         return (

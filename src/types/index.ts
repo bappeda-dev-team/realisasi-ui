@@ -460,16 +460,13 @@ export interface RekinTarget {
 }
 
 export interface RekinRealisasiRequest {
-  id: number;
   kodeOpd: string;
   nip: string;
   kodePkRekin: string;
   kodeSasaranOpd: string;
   kodeIndikatorPKrekin: string;
   kodeTargetPKrekin: string;
-  target: number;
   realisasi: number;
-  jenisRealisasi: string;
   tahun: string;
   bulan: string;
 }
@@ -523,9 +520,20 @@ export interface TargetData {
 }
 
 export interface RekinIndividuResponse {
-  rekin: RekinData;
-  indikators: IndikatorData[];
-  targets: TargetData[];
+  id: number;
+  kodeOpd: string;
+  nip: string;
+  tahun: string;
+  bulan: string;
+  kodePkRekin: string;
+  kodeIndikatorPkRekin: string;
+  kodeTargetPkRekin: string;
+  realisasi: number;
+  jenisRealisasi: string;
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
 }
 
 // ===== Rekin Individu - Penetapan (from penetapan endpoint) =====
@@ -540,6 +548,7 @@ export interface RekinPenetapanTarget {
   keterangan_capaian: string;
   faktor_penunjang: string;
   faktor_penghambat: string;
+  jenis_realisasi: string;
 }
 
 export interface RekinPenetapanIndikator {
@@ -867,20 +876,92 @@ export interface TujuanOpdRealisasiItem {
 }
 
 export interface TujuanOpdRealisasiResponse {
+  id: number;
   kode_opd: string;
   tahun: number;
-  tujuan_opds: TujuanOpdRealisasiItem[];
+  bulan: number;
+  kode_tujuan_opd: string;
+  kode_indikator: string;
+  kode_target: string;
+  realisasi: number;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  tujuan_opd: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  target: number;
+  satuan: string;
+  capaian: number;
+  keterangan_capaian: string;
+  jenis_realisasi: string;
+  created_by: string;
+  last_modified_by: string;
 }
 
-// ===== Tujuan OPD - POST Realisasi (individual) =====
 export interface TujuanOpdRealisasiPayload {
   kodeTujuanOpd: string;
   kodeIndikator: string;
   kodeTarget: string;
   realisasi: number;
+  jenisRealisasi: string;
   tahun: string;
   bulan: string;
   kodeOpd: string;
+}
+
+export interface TujuanOpdFaktorPenunjangPayload {
+  kodeOpd: string;
+  kodeTujuanOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
+  bulan: string;
+  faktorPenunjang: string;
+}
+
+export interface TujuanOpdFaktorPenunjangResponse {
+  id: number;
+  kodeOpd: string;
+  tahun: string;
+  bulan: string;
+  kodeTujuanOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  realisasi: number;
+  jenisRealisasi: string;
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
+}
+
+// ===== Tujuan OPD - POST Faktor Penghambat =====
+export interface TujuanOpdFaktorPenghambatPayload {
+  kodeOpd: string;
+  kodeTujuanOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
+  bulan: string;
+  faktorPenghambat: string;
+}
+
+export interface TujuanOpdFaktorPenghambatResponse {
+  id: number;
+  kodeOpd: string;
+  tahun: string;
+  bulan: string;
+  kodeTujuanOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  realisasi: number;
+  jenisRealisasi: string;
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
 }
 
 export interface SasaranOpdPerencanaanResponse {
@@ -1077,6 +1158,60 @@ export interface SasaranOpdRealisasiRequest {
   kodeOpd: string;
   rumusPerhitungan: string;
   sumberData: string;
+}
+
+// ===== Sasaran OPD - POST Faktor Penunjang =====
+export interface SasaranOpdFaktorPenunjangPayload {
+  kodeOpd: string;
+  kodeSasaranOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
+  bulan: string;
+  faktorPenunjang: string;
+}
+
+export interface SasaranOpdFaktorPenunjangResponse {
+  id: number;
+  kodeOpd: string;
+  tahun: string;
+  bulan: string;
+  kodeSasaranOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  realisasi: number;
+  jenisRealisasi: string;
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
+}
+
+// ===== Sasaran OPD - POST Faktor Penghambat =====
+export interface SasaranOpdFaktorPenghambatPayload {
+  kodeOpd: string;
+  kodeSasaranOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  tahun: string;
+  bulan: string;
+  faktorPenghambat: string;
+}
+
+export interface SasaranOpdFaktorPenghambatResponse {
+  id: number;
+  kodeOpd: string;
+  tahun: string;
+  bulan: string;
+  kodeSasaranOpd: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  realisasi: number;
+  jenisRealisasi: string;
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
 }
 
 export interface SasaranIndividuTargetRealisasiCapaian {

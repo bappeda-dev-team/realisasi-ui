@@ -8,8 +8,10 @@ import { getMonthKey } from '@/lib/months';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormFaktorPenunjangRekinIndividuProps {
-    rekinId: string;
-    targetId: string;
+    kodeOpd: string;
+    kodeRekin: string;
+    kodeIndikator: string;
+    kodeTarget: string;
     tahun: string;
     bulan: string;
     nip: string;
@@ -19,8 +21,10 @@ interface FormFaktorPenunjangRekinIndividuProps {
 }
 
 const FormFaktorPenunjangRekinIndividu: React.FC<FormFaktorPenunjangRekinIndividuProps> = ({
-    rekinId,
-    targetId,
+    kodeOpd,
+    kodeRekin,
+    kodeIndikator,
+    kodeTarget,
     tahun,
     bulan,
     nip,
@@ -36,7 +40,7 @@ const FormFaktorPenunjangRekinIndividu: React.FC<FormFaktorPenunjangRekinIndivid
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!normalizedBulan) {
+        if (!bulan) {
             alert('Bulan tidak valid.');
             return;
         }
@@ -55,11 +59,13 @@ const FormFaktorPenunjangRekinIndividu: React.FC<FormFaktorPenunjangRekinIndivid
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    kodeOpd,
                     nip,
                     tahun,
                     bulan: normalizedBulan,
-                    rekinId,
-                    targetId,
+                    kodePkRekin: kodeRekin,
+                    kodeIndikator,
+                    kodeTarget,
                     faktorPenunjang: value,
                 }),
             });
