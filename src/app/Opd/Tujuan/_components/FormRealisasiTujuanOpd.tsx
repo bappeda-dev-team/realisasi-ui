@@ -86,6 +86,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
       kodeIndikator: requestValues.kodeIndikator,
       kodeTarget: requestValues.kodeTarget,
       realisasi: numericReal,
+      jenisRealisasi: 'NAIK',
       tahun: String(tahun),
       bulan: normalizedBulan,
       kodeOpd: kodeOpd ?? '',

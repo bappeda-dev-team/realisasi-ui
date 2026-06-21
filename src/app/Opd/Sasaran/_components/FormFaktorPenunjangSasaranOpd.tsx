@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
-import { getSessionId, notifySessionExpired } from '@/lib/session';
+import { getMonthKey } from '@/lib/months';
+import { useSubmitData } from '@/hooks/useSubmitData';
+import { SasaranOpdFaktorPenunjangResponse, SasaranOpdFaktorPenunjangPayload } from '@/types';
 
 interface FormFaktorPenunjangSasaranOpdProps {
   kodeOpd: string;
@@ -28,50 +30,34 @@ const FormFaktorPenunjangSasaranOpd: React.FC<FormFaktorPenunjangSasaranOpdProps
   onSuccess,
 }) => {
   const { url } = useApiUrlContext();
+  const { submit, loading } = useSubmitData<SasaranOpdFaktorPenunjangResponse>({ url: `${url}/api/v1/realisasi/sasaran_opd/faktor-penunjang` });
   const [value, setValue] = useState(currentValue);
-  const [loading, setLoading] = useState(false);
+
+  const normalizedBulan = getMonthKey(bulan);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!bulan) {
+    if (!normalizedBulan) {
       alert('Bulan tidak valid.');
       return;
     }
-    const sessionId = getSessionId();
-    if (!sessionId) {
-      alert('Silakan login terlebih dahulu.');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(`${url}/api/v1/realisasi/sasaran_opd/faktor-penunjang`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Session-Id': sessionId,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          kodeOpd,
-          kodeSasaranOpd,
-          kodeIndikator,
-          kodeTarget,
-          tahun,
-          bulan,
-          faktorPenunjang: value,
-        }),
-      });
-      if (res.status === 401 || res.status === 403) {
-        notifySessionExpired();
-        throw new Error('Session habis, silakan login kembali.');
-      }
-      if (!res.ok) throw new Error('Gagal menyimpan');
+
+    const payload: SasaranOpdFaktorPenunjangPayload = {
+      kodeOpd,
+      kodeSasaranOpd,
+      kodeIndikator,
+      kodeTarget,
+      tahun,
+      bulan: normalizedBulan,
+      faktorPenunjang: value,
+    };
+
+    const result = await submit(payload);
+
+    if (result) {
       onSuccess();
-    } catch (err) {
+    } else {
       alert('Terjadi kesalahan saat menyimpan');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

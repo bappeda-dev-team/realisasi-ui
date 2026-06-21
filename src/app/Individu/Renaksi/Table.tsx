@@ -14,7 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenaksiIndividuResponse, RenaksiTarget } from "@/types";
+import { RenaksiIndividuHierarchyResponse, RenaksiTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
@@ -86,7 +86,7 @@ const getHeaderColor = (level: string | undefined) => {
       )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
       : null;
 
-  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuResponse[]>({
+  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuHierarchyResponse[]>({
     url: apiUrl,
   });
 
@@ -96,43 +96,144 @@ const getHeaderColor = (level: string | undefined) => {
       return;
     }
 
-    setRows(
-      data.map((item) => {
-        const target: RenaksiTarget = {
-          targetRealisasiId: item.id ?? null,
-          renaksiId: item.renaksiId,
-          renaksi: item.renaksi ?? "-",
-          nip: item.nip ?? user?.nip ?? "-",
-          namaPegawai: item.nama_pegawai ?? user?.firstName ?? "-",
-          rekinId: item.rekinId,
-          rekin: item.rekin ?? "-",
-          targetId: item.targetId,
-          target: item.target,
-          realisasi: item.realisasi,
-          satuan: item.satuan,
-          tahun: item.tahun,
-          bulan: item.bulan,
-          jenisRealisasi: item.jenisRealisasi,
-          capaian: item.capaian ?? "-",
-          keteranganCapaian: item.keteranganCapaian ?? "-",
-          faktorPenunjang: item.faktorPenunjang ?? "-",
-          faktorPenghambat: item.faktorPenghambat ?? "-",
-          rencanaKinerja: item.rekin,
-          kodeOpd: item.kodeOpd ?? user?.kode_opd ?? "",
-          anggaran: item.anggaran ?? "-",
-        };
+    const flattened: RenaksiRow[] = [];
 
-        return {
-          id: item.id,
-          renaksi: item.renaksi ?? "-",
-          nama_pegawai: item.nama_pegawai ?? "-",
-          nip: item.nip ?? user?.nip ?? "-",
-          rekin: item.rekin ?? "-",
-          targets: [target],
-          anggaran: item.anggaran ?? "-",
-        };
-      }),
-    );
+    data.forEach((item) => {
+      const sasaran = item.sasaran;
+
+      item.renaksis.forEach((renaksi) => {
+        const matchingIndikators = item.indikators.filter(
+          (ind) => ind.renaksiId === renaksi.id,
+        );
+
+        if (matchingIndikators.length === 0) {
+          flattened.push({
+            id: renaksi.id,
+            renaksi: renaksi.renaksi ?? "-",
+            nama_pegawai: user?.firstName ?? "-",
+            nip: sasaran.nip ?? user?.nip ?? "-",
+            rekin: sasaran.sasaran ?? "-",
+            targets: [
+              {
+                targetRealisasiId: null,
+                renaksiId: renaksi.kodeRenaksi,
+                renaksi: renaksi.renaksi ?? "-",
+                nip: sasaran.nip ?? user?.nip ?? "-",
+                namaPegawai: user?.firstName ?? "-",
+                rekinId: "",
+                rekin: sasaran.sasaran ?? "-",
+                targetId: "",
+                target: "-",
+                realisasi: 0,
+                satuan: "-",
+                tahun: sasaran.tahun,
+                bulan: sasaran.bulan,
+                jenisRealisasi: "NAIK",
+                capaian: "-",
+                keteranganCapaian: "-",
+                faktorPenunjang: "-",
+                faktorPenghambat: "-",
+                rencanaKinerja: sasaran.sasaran ?? "-",
+                kodeOpd: sasaran.kodeOpd ?? "",
+                anggaran: "-",
+                kodeSasaran: sasaran.kodeSasaran,
+                kodeIndikator: "",
+                paguAnggaran: 0,
+              },
+            ],
+            anggaran: "-",
+          });
+          return;
+        }
+
+        matchingIndikators.forEach((indikator) => {
+          const matchingTargets = item.targets.filter(
+            (t) => t.indikatorRenaksiId === indikator.id,
+          );
+
+          if (matchingTargets.length === 0) {
+            flattened.push({
+              id: indikator.id,
+              renaksi: renaksi.renaksi ?? "-",
+              nama_pegawai: user?.firstName ?? "-",
+              nip: sasaran.nip ?? user?.nip ?? "-",
+              rekin: sasaran.sasaran ?? "-",
+              targets: [
+                {
+                  targetRealisasiId: null,
+                  renaksiId: renaksi.kodeRenaksi,
+                  renaksi: renaksi.renaksi ?? "-",
+                  nip: sasaran.nip ?? user?.nip ?? "-",
+                  namaPegawai: user?.firstName ?? "-",
+                  rekinId: "",
+                  rekin: sasaran.sasaran ?? "-",
+                  targetId: "",
+                  target: "-",
+                  realisasi: 0,
+                  satuan: "-",
+                  tahun: sasaran.tahun,
+                  bulan: sasaran.bulan,
+                  jenisRealisasi: "NAIK",
+                  capaian: "-",
+                  keteranganCapaian: "-",
+                  faktorPenunjang: "-",
+                  faktorPenghambat: "-",
+                  rencanaKinerja: sasaran.sasaran ?? "-",
+                  kodeOpd: sasaran.kodeOpd ?? "",
+                  anggaran: "-",
+                  kodeSasaran: sasaran.kodeSasaran,
+                  kodeIndikator: indikator.kodeIndikator,
+                  paguAnggaran: 0,
+                },
+              ],
+              anggaran: "-",
+            });
+            return;
+          }
+
+          matchingTargets.forEach((target) => {
+            flattened.push({
+              id: target.id,
+              renaksi: renaksi.renaksi ?? "-",
+              nama_pegawai: user?.firstName ?? "-",
+              nip: sasaran.nip ?? user?.nip ?? "-",
+              rekin: sasaran.sasaran ?? "-",
+              targets: [
+                {
+                  targetRealisasiId: target.id,
+                  renaksiId: renaksi.kodeRenaksi,
+                  renaksi: renaksi.renaksi ?? "-",
+                  nip: sasaran.nip ?? user?.nip ?? "-",
+                  namaPegawai: user?.firstName ?? "-",
+                  rekinId: "",
+                  rekin: sasaran.sasaran ?? "-",
+                  targetId: target.kodeTarget,
+                  target: String(target.target),
+                  realisasi: target.realisasi,
+                  satuan: target.satuan,
+                  tahun: sasaran.tahun,
+                  bulan: sasaran.bulan,
+                  jenisRealisasi: target.jenisRealisasi,
+                  capaian: target.capaian ?? "-",
+                  keteranganCapaian: target.keteranganCapaian ?? "-",
+                  faktorPenunjang: target.faktorPenunjang ?? "-",
+                  faktorPenghambat: target.faktorPenghambat ?? "-",
+                  rencanaKinerja: sasaran.sasaran ?? "-",
+                  kodeOpd: sasaran.kodeOpd ?? "",
+                  anggaran: String(target.paguAnggaran ?? "-"),
+                  kodeSasaran: sasaran.kodeSasaran,
+                  kodeIndikator: indikator.kodeIndikator,
+                  paguAnggaran: target.paguAnggaran,
+                },
+              ],
+              anggaran: String(target.paguAnggaran ?? "-"),
+            });
+          });
+        });
+      });
+    });
+
+    setRows(flattened);
   }, [data, user]);
 
   const monthColumnLabel = `${activatedTahun} - ${monthLabel}`;
@@ -198,7 +299,7 @@ const getHeaderColor = (level: string | undefined) => {
 
     const tableHead = [[
       "No",
-      "Rencana Kinerja",
+      "Sasaran Kinerja",
       "Nama Pemilik",
       "Rencana Aksi",
       "Anggaran",
@@ -361,7 +462,7 @@ const getHeaderColor = (level: string | undefined) => {
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[180px]"
               >
-                Rencana Kinerja
+                Sasaran Kinerja
               </td>
               <td
                 rowSpan={2}
@@ -528,12 +629,14 @@ const getHeaderColor = (level: string | undefined) => {
         >
           <FormFaktorPenunjangRenaksiIndividu
             renaksiId={selectedFaktorRow?.targets[0]?.renaksiId ?? ""}
-            rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
             targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
             tahun={String(activatedTahun ?? "")}
             bulan={String(activatedBulan ?? "")}
             nip={selectedFaktorRow?.nip ?? ""}
             currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
+            kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
+            kodeSasaran={selectedFaktorRow?.targets[0]?.kodeSasaran ?? ""}
+            kodeIndikator={selectedFaktorRow?.targets[0]?.kodeIndikator ?? ""}
             onClose={handleCloseFaktorPenunjang}
             onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
           />
@@ -547,12 +650,14 @@ const getHeaderColor = (level: string | undefined) => {
         >
           <FormFaktorPenghambatRenaksiIndividu
             renaksiId={selectedFaktorRow?.targets[0]?.renaksiId ?? ""}
-            rekinId={selectedFaktorRow?.targets[0]?.rekinId ?? ""}
             targetId={selectedFaktorRow?.targets[0]?.targetId ?? ""}
             tahun={String(activatedTahun ?? "")}
             bulan={String(activatedBulan ?? "")}
             nip={selectedFaktorRow?.nip ?? ""}
             currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
+            kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
+            kodeSasaran={selectedFaktorRow?.targets[0]?.kodeSasaran ?? ""}
+            kodeIndikator={selectedFaktorRow?.targets[0]?.kodeIndikator ?? ""}
             onClose={handleCloseFaktorPenghambat}
             onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
           />

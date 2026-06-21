@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RekinTarget, RealisasiRekinRequest, RealisasiRekinResponse } from "@/types";
+import { FormProps, RekinTarget, RekinRealisasiRequest, RekinIndividuResponse } from "@/types";
 import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
@@ -27,7 +27,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
         () => `${url}/api/v1/realisasi/rekin`,
         [url],
     );
-    const { submit, loading, error } = useSubmitData<RealisasiRekinResponse>({ url: submitUrl });
+    const { submit, loading, error } = useSubmitData<RekinIndividuResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -55,11 +55,10 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     }, [requestValues, selectedTahun, monthKey]);
 
     const handleChange = (targetId: string, tahun: string, value: string) => {
-        const parsedValue = parseFloat(value);
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasi: isNaN(parsedValue) ? 0 : parsedValue }
+                    ? { ...item, realisasi: value === "" ? undefined : (parseFloat(value) || 0) }
                     : item
             )
         );
@@ -95,30 +94,23 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             return;
         }
 
-        const namaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
         const kodeOpd = activatedDinas ?? user.kode_opd ?? "";
 
         setIsSubmitting(true);
-        const successfulResults: RealisasiRekinResponse[] = [];
+        const successfulResults: RekinIndividuResponse[] = [];
         const errors: string[] = [];
 
         for (const item of formData) {
-            const payload: RealisasiRekinRequest = {
-                targetRealisasiId: item.targetRealisasiId ?? 0,
-                rekinId: item.rekinId,
-                rekin: item.rekin,
+            const payload: RekinRealisasiRequest = {
+                kodeOpd,
                 nip: item.nip,
-                namaPegawai,
-                indikatorId: item.indikatorId,
-                indikator: item.indikator,
-                targetId: item.targetId,
-                target: item.target,
-                realisasi: item.realisasi,
-                satuan: item.satuan,
+                kodePkRekin: item.rekinId,
+                kodeSasaranOpd: "OPD-Dummy",
+                kodeIndikatorPKrekin: item.indikatorId,
+                kodeTargetPKrekin: item.targetId,
+                realisasi: item.realisasi ?? 0,
                 tahun: item.tahun ?? selectedTahun,
                 bulan: getMonthKey(item.bulan) ?? monthKey,
-                kodeOpd,
-                jenisRealisasi: item.jenisRealisasi,
             };
 
             const result = await submit(payload);
@@ -132,23 +124,31 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
         setIsSubmitting(false);
 
         if (successfulResults.length > 0) {
-            const updatedTargets: RekinTarget[] = successfulResults.map((item) => ({
-                targetRealisasiId: item.id,
-                rekinId: item.rekinId,
-                rekin: item.rekin,
-                nip: item.nip,
-                indikatorId: item.indikatorId,
-                indikator: item.indikator,
-                targetId: item.targetId,
-                target: item.target,
-                realisasi: item.realisasi,
-                satuan: item.satuan,
-                tahun: item.tahun,
-                bulan: item.bulan,
-                jenisRealisasi: item.jenisRealisasi,
-                capaian: item.capaian ?? undefined,
-                keteranganCapaian: item.keteranganCapaian ?? undefined,
-            }));
+            const updatedTargets: RekinTarget[] = successfulResults.map((result, index) => {
+                const item = formData[index];
+                return {
+                    targetRealisasiId: result.id,
+                    rekinId: result.kodePkRekin,
+                    rekin: item?.rekin ?? "",
+                    nip: result.nip,
+                    indikatorId: result.kodeIndikatorPkRekin,
+                    indikator: item?.indikator ?? "",
+                    targetId: result.kodeTargetPkRekin,
+                    target: item?.target ?? "",
+                    realisasi: result.realisasi,
+                    satuan: item?.satuan ?? "",
+                    tahun: result.tahun,
+                    bulan: result.bulan,
+                    jenisRealisasi: result.jenisRealisasi as "NAIK" | "TURUN",
+                    capaian: null,
+                    keteranganCapaian: null,
+                    idSasaran: item?.idSasaran ?? null,
+                    sasaran: null,
+                    faktorPenunjang: result.faktorPenunjang ?? null,
+                    faktorPenghambat: result.faktorPenghambat ?? null,
+                    kodeOpd: result.kodeOpd ?? null,
+                };
+            });
             onSuccess?.(updatedTargets);
             onClose();
         }

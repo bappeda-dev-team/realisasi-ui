@@ -3,7 +3,8 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { getMonthKey } from '@/lib/months';
-import { getSessionId, notifySessionExpired } from '@/lib/session';
+import { useSubmitData } from '@/hooks/useSubmitData';
+import { TujuanOpdFaktorPenunjangResponse, TujuanOpdFaktorPenunjangPayload } from '@/types';
 
 interface FormFaktorPenunjangProps {
   kodeOpd: string;
@@ -29,8 +30,8 @@ const FormFaktorPenunjang: React.FC<FormFaktorPenunjangProps> = ({
   onSuccess,
 }) => {
   const { url } = useApiUrlContext();
+  const { submit, loading } = useSubmitData<TujuanOpdFaktorPenunjangResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd/faktor-penunjang` });
   const [value, setValue] = useState(currentValue);
-  const [loading, setLoading] = useState(false);
 
   const normalizedBulan = getMonthKey(bulan);
 
@@ -40,41 +41,23 @@ const FormFaktorPenunjang: React.FC<FormFaktorPenunjangProps> = ({
       alert('Bulan tidak valid.');
       return;
     }
-    const sessionId = getSessionId();
-    if (!sessionId) {
-      alert('Silakan login terlebih dahulu.');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch(`${url}/api/v1/realisasi/tujuan_opd/faktor-penunjang`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Session-Id': sessionId,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          kodeOpd,
-          kodeTujuanOpd,
-          kodeIndikator,
-          kodeTarget,
-          tahun,
-          bulan: normalizedBulan,
-          faktorPenunjang: value,
-        }),
-      });
-      if (res.status === 401 || res.status === 403) {
-        notifySessionExpired();
-        throw new Error('Session habis, silakan login kembali.');
-      }
-      if (!res.ok) throw new Error('Gagal menyimpan');
+
+    const payload: TujuanOpdFaktorPenunjangPayload = {
+      kodeOpd,
+      kodeTujuanOpd,
+      kodeIndikator,
+      kodeTarget,
+      tahun,
+      bulan: normalizedBulan,
+      faktorPenunjang: value,
+    };
+
+    const result = await submit(payload);
+
+    if (result) {
       onSuccess();
-    } catch (err) {
+    } else {
       alert('Terjadi kesalahan saat menyimpan');
-      console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -8,8 +8,10 @@ import { getMonthKey } from '@/lib/months';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormFaktorPenghambatRekinIndividuProps {
-    rekinId: string;
-    targetId: string;
+    kodeOpd: string;
+    kodeRekin: string;
+    kodeIndikator: string;
+    kodeTarget: string;
     tahun: string;
     bulan: string;
     nip: string;
@@ -19,8 +21,10 @@ interface FormFaktorPenghambatRekinIndividuProps {
 }
 
 const FormFaktorPenghambatRekinIndividu: React.FC<FormFaktorPenghambatRekinIndividuProps> = ({
-    rekinId,
-    targetId,
+    kodeOpd,
+    kodeRekin,
+    kodeIndikator,
+    kodeTarget,
     tahun,
     bulan,
     nip,
@@ -55,11 +59,13 @@ const FormFaktorPenghambatRekinIndividu: React.FC<FormFaktorPenghambatRekinIndiv
                 },
                 credentials: 'include',
                 body: JSON.stringify({
+                    kodeOpd,
                     nip,
                     tahun,
                     bulan: normalizedBulan,
-                    rekinId,
-                    targetId,
+                    kodePkRekin: kodeRekin,
+                    kodeIndikator,
+                    kodeTarget,
                     faktorPenghambat: value,
                 }),
             });
