@@ -375,6 +375,39 @@ export interface RenaksiRealisasiRequest {
   bulan: string;
 }
 
+export interface RenaksiIndividuRealisasiRequest {
+  kodeOpd: string;
+  nip: string;
+  kodeSasaran: string;
+  kodeRenaksi: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  realisasi: number;
+  paguAnggaran: number;
+  tahun: string;
+  bulan: string;
+}
+
+export interface RenaksiIndividuRealisasiResponse {
+  id: number;
+  kodeOpd: string;
+  nip: string;
+  kodeSasaran: string;
+  kodeRenaksi: string;
+  kodeIndikator: string;
+  kodeTarget: string;
+  paguAnggaran: number;
+  realisasi: number;
+  jenisRealisasi: "NAIK" | "TURUN";
+  faktorPenunjang: string;
+  faktorPenghambat: string;
+  createdBy: string;
+  lastModifiedBy: string;
+  keteranganCapaian: string;
+  satuan: string;
+  capaian: string;
+}
+
 export interface RenaksiTriwulanCell {
   target: number | string;
   realisasi: number;
@@ -534,6 +567,8 @@ export interface RekinIndividuResponse {
   faktorPenghambat: string;
   createdBy: string;
   lastModifiedBy: string;
+  capaian?: string | null;
+  keteranganCapaian?: string | null;
 }
 
 // ===== Rekin Individu - Penetapan (from penetapan endpoint) =====
@@ -1214,95 +1249,6 @@ export interface SasaranOpdFaktorPenghambatResponse {
   lastModifiedBy: string;
 }
 
-export interface SasaranIndividuTargetRealisasiCapaian {
-  targetRealisasiId: number | null;
-  renjaId: string;
-  renja: string;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  realisasi: number;
-  capaian: string;
-  keteranganCapaian: string;
-  satuan: string;
-  tahun: string;
-  nip: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-  jenisRealisasi: "NAIK" | "TURUN";
-  bulan: string;
-  kodeTarget: string;
-}
-
-export interface SasaranIndividuRealisasiGroupedIndikator {
-  id: string;
-  indikator: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-  targets: SasaranIndividuTargetRealisasiCapaian[];
-  kodeIndikator: string;
-}
-
-export interface SasaranIndividuRealisasiGrouped {
-  renjaId: string;
-  renja: string;
-  nama_pegawai: string;
-  nip: string;
-  indikator: SasaranIndividuRealisasiGroupedIndikator[];
-  kodeSasaranOpd: string;
-  kodeOpd: string;
-}
-
-export interface SasaranIndividuRealisasiRequest {
-  targetRealisasiId: number | null;
-  renjaId: string;
-  indikatorId: string;
-  targetId: string;
-  target: string;
-  realisasi: number | null;
-  satuan: string;
-  tahun: string;
-  bulan: string;
-  jenisRealisasi: string;
-  nip: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-}
-
-export interface SasaranIndividuPenetapanResponse {
-  kode_opd: string;
-  tahun: number;
-  bulan: number;
-  sasaranIndividus: SasaranOpdPenetapanSasaran[];
-}
-
-export interface SasaranIndividuPenetapanPayload {
-  kodeSasaranOpd: string;
-  kodeIndikator: string;
-  kodeTarget: string;
-  realisasi: number | null;
-  tahun: string;
-  bulan: string;
-  kodeOpd: string;
-  nip: string;
-  namaPegawai: string;
-}
-
-export interface SasaranTargetRealisasiInfo {
-  kodeSasaranOpd: string;
-  sasaranOpd: string;
-  kodeIndikator: string;
-  indikator: string;
-  kodeTarget: string;
-  target: string;
-  realisasi: number | null;
-  satuan: string;
-  kodeOpd: string;
-  nip: string;
-  namaPegawai: string;
-}
-
 export interface RenjaTargetIndividuResponse {
   id: number;
   renjaId: string;
@@ -1437,35 +1383,6 @@ export interface RenjaPaguBatchRequest {
   bulan?: string;
   jenisRealisasi: string;
 }
-
-export interface SasaranIndividuResponse {
-  id: number;
-  renjaId: string;
-  renja: string;
-  nama_pegawai?: string | null;
-  indikatorId: string;
-  indikator: string;
-  targetId: string;
-  target: string;
-  realisasi: number;
-  satuan: string;
-  tahun: string;
-  bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
-  nip: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-  status: "CHECKED" | "UNCHECKED";
-  createdBy: string;
-  createdDate: string;
-  lastModifiedDate: string;
-  lastModifiedBy: string;
-  version: number;
-  keteranganCapaian: string;
-  capaian: string;
-}
-
-export type SasaranIndividuResponseList = SasaranIndividuResponse[];
 
 export interface RenjaTargetOpdResponse {
   id: number | null;

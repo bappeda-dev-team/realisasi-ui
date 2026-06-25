@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { getMonthKey } from '@/lib/months';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { SasaranOpdFaktorPenunjangResponse, SasaranOpdFaktorPenunjangPayload } from '@/types';
@@ -26,11 +25,9 @@ const FormFaktorPenunjangSasaranOpd: React.FC<FormFaktorPenunjangSasaranOpdProps
   tahun,
   bulan,
   currentValue,
-  onClose,
   onSuccess,
 }) => {
-  const { url } = useApiUrlContext();
-  const { submit, loading } = useSubmitData<SasaranOpdFaktorPenunjangResponse>({ url: `${url}/api/v1/realisasi/sasaran_opd/faktor-penunjang` });
+  const { submit, loading } = useSubmitData<SasaranOpdFaktorPenunjangResponse>({ url: '/api/v1/realisasi/sasaran_opd/faktor-penunjang' });
   const [value, setValue] = useState(currentValue);
 
   const normalizedBulan = getMonthKey(bulan);

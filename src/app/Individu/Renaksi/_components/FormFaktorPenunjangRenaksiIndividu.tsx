@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { getMonthKey } from '@/lib/months';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
@@ -34,7 +33,6 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
     onClose,
     onSuccess,
 }) => {
-    const { url } = useApiUrlContext();
     const [value, setValue] = useState(currentValue);
     const [loading, setLoading] = useState(false);
 
@@ -53,7 +51,7 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
         }
         setLoading(true);
         try {
-            const res = await fetch(`${url}/api/v1/realisasi/renaksi/faktor-penunjang`, {
+            const res = await fetch('/api/v1/realisasi/renaksi/faktor-penunjang', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

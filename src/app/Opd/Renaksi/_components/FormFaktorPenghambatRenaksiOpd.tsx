@@ -26,7 +26,6 @@ const FormFaktorPenghambatRenaksiOpd: React.FC<FormFaktorPenghambatRenaksiOpdPro
   renaksiId,
   targetId,
   currentValue,
-  onClose,
   onSuccess,
 }) => {
   const [value, setValue] = useState(currentValue);

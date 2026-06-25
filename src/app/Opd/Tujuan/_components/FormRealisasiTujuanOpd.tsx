@@ -1,6 +1,5 @@
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { useUserContext } from '@/context/UserContext';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
@@ -34,11 +33,10 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
   bulan,
   bulanLabel,
 }) => {
-  const { url } = useApiUrlContext();
   const { user } = useUserContext();
   const { activatedDinas: kodeOpd } = useFilterContext();
   const canEdit = canEditOpdRealisasi(user);
-  const { submit, loading } = useSubmitData<TujuanOpdRealisasiResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd` });
+  const { submit, loading } = useSubmitData<TujuanOpdRealisasiResponse>({ url: '/api/v1/realisasi/tujuan_opd' });
   const normalizedBulan = getMonthKey(bulan);
 
   const [validationError, setValidationError] = useState<string | null>(null);

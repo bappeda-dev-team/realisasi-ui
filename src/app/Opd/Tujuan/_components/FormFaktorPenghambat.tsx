@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
-import { useApiUrlContext } from '@/context/ApiUrlContext';
 import { getMonthKey } from '@/lib/months';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { TujuanOpdFaktorPenghambatResponse, TujuanOpdFaktorPenghambatPayload } from '@/types';
@@ -26,11 +25,10 @@ const FormFaktorPenghambat: React.FC<FormFaktorPenghambatProps> = ({
   tahun,
   bulan,
   currentValue,
-  onClose,
   onSuccess,
 }) => {
-  const { url } = useApiUrlContext();
-  const { submit, loading } = useSubmitData<TujuanOpdFaktorPenghambatResponse>({ url: `${url}/api/v1/realisasi/tujuan_opd/faktor-penghambat` });
+  const { submit, loading } = useSubmitData<TujuanOpdFaktorPenghambatResponse>({ url: '/api/v1/realisasi/tujuan_opd/faktor-penghambat' });
+  
   const [value, setValue] = useState(currentValue);
 
   const normalizedBulan = getMonthKey(bulan);

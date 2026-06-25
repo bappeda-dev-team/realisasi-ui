@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { FormProps, RekinTarget, RekinRealisasiRequest, RekinIndividuResponse } from "@/types";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -22,12 +21,10 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
     const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
-    const { url } = useApiUrlContext();
-    const submitUrl = useMemo(
-        () => `${url}/api/v1/realisasi/rekin`,
-        [url],
-    );
-    const { submit, loading, error } = useSubmitData<RekinIndividuResponse>({ url: submitUrl });
+	
+    const submitUrl = '/api/v1/realisasi/rekin';
+    
+	const { submit, loading, error } = useSubmitData<RekinIndividuResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -140,8 +137,8 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                     tahun: result.tahun,
                     bulan: result.bulan,
                     jenisRealisasi: result.jenisRealisasi as "NAIK" | "TURUN",
-                    capaian: null,
-                    keteranganCapaian: null,
+                    capaian: result.capaian,
+                    keteranganCapaian: result.keteranganCapaian,
                     idSasaran: item?.idSasaran ?? null,
                     sasaran: null,
                     faktorPenunjang: result.faktorPenunjang ?? null,
