@@ -554,21 +554,22 @@ export interface TargetData {
 
 export interface RekinIndividuResponse {
   id: number;
-  kodeOpd: string;
+  kode_opd: string;
   nip: string;
   tahun: string;
   bulan: string;
-  kodePkRekin: string;
-  kodeIndikatorPkRekin: string;
-  kodeTargetPkRekin: string;
+  kode_pk_rekin: string;
+  kode_indikator_pk_rekin: string;
+  kode_target_pk_rekin: string;
+  kode_sasaran_opd: string;
   realisasi: number;
-  jenisRealisasi: string;
-  faktorPenunjang: string;
-  faktorPenghambat: string;
-  createdBy: string;
-  lastModifiedBy: string;
-  capaian?: string | null;
-  keteranganCapaian?: string | null;
+  jenis_realisasi: string;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  created_by: string;
+  last_modified_by: string;
+  capaian?: number | null;
+  keterangan_capaian?: string | null;
 }
 
 // ===== Rekin Individu - Penetapan (from penetapan endpoint) =====

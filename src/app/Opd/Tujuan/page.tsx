@@ -15,6 +15,8 @@ import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
 import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { ModalTujuanOpd } from "./_components/ModalTujuanOpd";
+import Select from "react-select";
+import { getSessionId } from "@/lib/session";
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null) return "-";
@@ -74,6 +76,7 @@ export default function TujuanPage() {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("tujuan-opd.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+  const [selectedLaporanOption, setSelectedLaporanOption] = useState<{ label: string; value: string } | null>(null);
 
   const groupedTujuanOpd = useMemo<TujuanOpdRealisasiGrouped[]>(() => {
     const tujuanOpds = penetapanData?.tujuanOpds ?? [];
@@ -348,9 +351,94 @@ export default function TujuanPage() {
     setRefreshTrigger((prev) => prev + 1);
   };
 
+  const laporanOptions = [
+    { label: 'Bulanan', value: 'BULANAN' },
+    { label: 'Triwulan', value: 'TRIWULAN' },
+    { label: 'Tahunan', value: 'TAHUNAN' },
+  ];
+
+  const handleGenerateLaporan = async (jenisLaporan: string) => {
+    const baseUrl = `/api/v1/realisasi/tujuan_opd/laporan/kodeOpd/${kodeOpd}/tahun/${selectedTahunValue}/jenisLaporan/${jenisLaporan}`;
+    const url = jenisLaporan === 'BULANAN'
+      ? `${baseUrl}?bulan=${bulanKey}`
+      : baseUrl;
+
+    const sessionId = getSessionId();
+    if (!sessionId) return;
+
+    const res = await fetch(url, {
+      headers: { 'X-Session-Id': sessionId },
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    doc.setFontSize(14);
+    doc.text(`Laporan Realisasi Tujuan OPD - ${jenisLaporan} - ${namaDinas}`, 40, 40);
+    doc.text(`Tahun: ${selectedTahunValue}`, 40, 58);
+
+    const entries = Object.entries(data.list_data as Record<string, number>);
+    const periodLabel = jenisLaporan === 'TRIWULAN' ? 'Triwulan' : 'Bulan';
+    const tableBody = entries.map(([key, value]) => [
+      `${periodLabel} ${key}`,
+      String(value),
+    ]);
+
+    autoTable(doc, {
+      head: [['Periode', 'Realisasi (%)']],
+      body: tableBody,
+      startY: 72,
+      styles: { fontSize: 10, cellPadding: 4 },
+      headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+      columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 80, halign: 'center' } },
+      theme: 'grid',
+    });
+
+    const previewUrl = String(doc.output('bloburl'));
+    if (pdfPreviewUrl) {
+      URL.revokeObjectURL(pdfPreviewUrl);
+    }
+    setPreviewDoc(doc);
+    setPdfFileName(`laporan-realisasi-${jenisLaporan.toLowerCase()}-${selectedTahunValue}.pdf`);
+    setPdfPreviewUrl(previewUrl);
+    setIsPrintPreviewOpen(true);
+  };
+
   return (
     <div className="overflow-auto grid gap-2">
-      <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-lg font-semibold">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
+        <Select
+          value={selectedLaporanOption}
+          options={laporanOptions}
+          placeholder="Laporan Realisasi"
+          isSearchable={false}
+          onChange={(opt) => {
+            setSelectedLaporanOption(opt);
+            if (opt) handleGenerateLaporan(opt.value);
+          }}
+          formatOptionLabel={(option, { context }) =>
+            context === 'value' ? `Laporan Realisasi : ${option.label}` : option.label
+          }
+          styles={{
+            control: (base) => ({
+              ...base,
+              background: "linear-gradient(to right, #08C2FF, #006BFF)",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              minHeight: 38,
+              cursor: "pointer",
+              boxShadow: "none",
+            }),
+            singleValue: (base) => ({ ...base, color: "#fff" }),
+            placeholder: (base) => ({ ...base, color: "rgba(255,255,255,0.8)" }),
+            dropdownIndicator: (base) => ({ ...base, color: "#fff" }),
+            indicatorSeparator: () => ({ display: "none" }),
+            menu: (base) => ({ ...base, zIndex: 20, minWidth: 180 }),
+          }}
+        />
+      </div>
       <TableTujuanOpd
         tahun={String(selectedTahunValue)}
         kodeOpd={kodeOpd}
