@@ -219,7 +219,7 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
       setActivatedTahun(cookie.tahun?.value ?? null);
       setBulan(cookie.bulan?.value ?? null);
       setActivatedBulan(cookie.bulan?.value ?? null);
-    } catch {}
+    } catch { }
   }, [periodeOptions]);
 
   // ----------------------------

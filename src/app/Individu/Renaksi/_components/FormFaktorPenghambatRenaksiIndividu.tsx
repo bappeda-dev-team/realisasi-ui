@@ -51,7 +51,7 @@ const FormFaktorPenghambatRenaksiIndividu: React.FC<FormFaktorPenghambatRenaksiI
         }
         setLoading(true);
         try {
-            const res = await fetch('/api/v1/realisasi/renaksi/faktor-penghambat', {
+            const res = await fetch('/api/v1/realisasi/renaksi_individu/faktor-penghambat', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

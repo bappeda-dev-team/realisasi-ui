@@ -51,7 +51,7 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
         }
         setLoading(true);
         try {
-            const res = await fetch('/api/v1/realisasi/renaksi/faktor-penunjang', {
+            const res = await fetch('/api/v1/realisasi/renaksi_individu/faktor-penunjang', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -7,7 +7,14 @@ function hasRole(user: User | null, role: string): boolean {
 
 export function canSelectAllOpdFilters(user: User | null): boolean {
   if (!user) return false;
-  return hasRole(user, ROLES.SUPER_ADMIN) || hasRole(user, ROLES.ADMIN_OPD);
+  return (
+    hasRole(user, ROLES.SUPER_ADMIN) ||
+    hasRole(user, ROLES.ADMIN_OPD) ||
+    hasRole(user, ROLES.LEVEL_1) ||
+    hasRole(user, ROLES.LEVEL_2) ||
+    hasRole(user, ROLES.LEVEL_3) ||
+    hasRole(user, ROLES.LEVEL_4)
+  );
 }
 
 export function canAccessPemda(user: User | null): boolean {

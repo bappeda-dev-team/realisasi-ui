@@ -15,10 +15,10 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { tahun: selectedTahun, bulan: selectedBulan, activatedTahun, activatedBulan } = useFilterContext();
-	
+
     const submitUrl = '/api/v1/realisasi/renaksi_individu';
-    
-	const { submit, loading, error } = useSubmitData<RenaksiIndividuRealisasiResponse>({ url: submitUrl });
+
+    const { submit, loading, error } = useSubmitData<RenaksiIndividuRealisasiResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -82,16 +82,20 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
         }
 
         const payload: RenaksiIndividuRealisasiRequest = {
+            targetRealisasiId: first.targetRealisasiId ?? 0,
             kodeOpd: first.kodeOpd ?? "",
             nip: first.nip,
             kodeSasaran: first.kodeSasaran ?? "",
             kodeRenaksi: first.renaksiId,
             kodeIndikator: first.kodeIndikator ?? "",
             kodeTarget: first.targetId,
-            realisasi: first.realisasi ?? 0,
+            target: first.target,
             paguAnggaran: first.paguAnggaran ?? 0,
+            realisasi: first.realisasi ?? 0,
             tahun: first.tahun,
             bulan: bulanKey,
+            satuan: first.satuan,
+            jenisRealisasi: first.jenisRealisasi,
         };
 
         setIsSubmitting(true);

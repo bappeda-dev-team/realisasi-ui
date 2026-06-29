@@ -361,7 +361,7 @@ const getHeaderColor = (level: string | undefined) => {
                         <tr className={`text-xm ${headerColor}`}>
                             <td
                                 rowSpan={2}
-                                className="border-r border-b px-6 py-3 max-w-[100px] text-center"
+                                className="border-x border-b px-6 py-3 max-w-[100px] text-center"
                             >
                                 No
                             </td>
@@ -406,10 +406,10 @@ const getHeaderColor = (level: string | undefined) => {
                             </td>
                         </tr>
                         <tr className={headerColor}>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Target</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>
                     <tbody>
