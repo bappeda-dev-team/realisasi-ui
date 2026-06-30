@@ -33,9 +33,9 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="text-white bg-red-500">
-                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Target (%)</th>
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Realisasi (%)</th>
-                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Capaian</th>
+                    <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">Capaian (%)</th>
                     <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">Keterangan Capaian</th>
                 </tr>
             </thead>

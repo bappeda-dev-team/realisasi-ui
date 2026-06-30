@@ -488,13 +488,13 @@ const Table = () => {
                 { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
-                "Target",
+                "Target (%)",
                 "Realisasi\n(%)",
-                "Capaian",
+                "Capaian (%)",
                 "Keterangan Capaian",
-                "Pagu",
+                "Pagu (Rp.)",
                 "Realisasi\n(Rp.)",
-                "Capaian",
+                "Capaian (%)",
                 "Keterangan Capaian",
             ],
         ];
@@ -679,13 +679,13 @@ const Table = () => {
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                         </tr>
                         <tr className={headerColor}>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target (%)</th>
                             <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian (%)</th>
                             <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu (Rp.)</th>
                             <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (Rp.)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian (Rp.)</th>
                             <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>

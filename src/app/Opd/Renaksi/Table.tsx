@@ -319,9 +319,9 @@ const Table = () => {
             </td>
           </tr>
           <tr className="bg-emerald-500 text-white">
-            <th className="border-l border-b px-3 py-2 min-w-[70px]">Target</th>
+            <th className="border-l border-b px-3 py-2 min-w-[70px]">Target (%)</th>
             <th className="border-l border-b px-3 py-2 min-w-[90px]">Realisasi (%)</th>
-            <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian</th>
+            <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian (%)</th>
             <th className="border-l border-b px-3 py-2 min-w-[180px]">Keterangan Capaian</th>
             <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penunjang</th>
             <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penghambat</th>
@@ -349,7 +349,7 @@ const Table = () => {
                   </div>
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {formatPercentageText(row.capaian ?? '-')}
+                  {formatPercentageText(row.capaian ?? '-').replace(/%$/, "")}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                   {formatPercentageText(row.keteranganCapaian ?? '-')}

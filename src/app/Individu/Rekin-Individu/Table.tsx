@@ -213,9 +213,9 @@ const getHeaderColor = (level: string | undefined) => {
             "Rencana Kinerja",
             "Nama Pemilik",
             "Indikator",
-            "Target",
-            "Realisasi",
-            "Capaian",
+            "Target (%)",
+            "Realisasi (%)",
+            "Capaian (%)",
             "Keterangan Capaian",
             "Faktor Penunjang",
             "Faktor Penghambat",
@@ -406,9 +406,9 @@ const getHeaderColor = (level: string | undefined) => {
                             </td>
                         </tr>
                         <tr className={headerColor}>
-                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Target</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Target (%)</th>
                             <th className="border-l border-r border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
-                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Capaian (%)</th>
                             <th className="border-l border-r border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>

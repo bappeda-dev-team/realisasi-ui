@@ -203,10 +203,9 @@ const getHeaderColor = (level: string | undefined) => {
       "Nama Pemilik",
       "Rencana Aksi",
       "Anggaran",
-      "Target",
-      "Realisasi",
-      "Satuan",
-      "Capaian",
+      "Target (%)",
+      "Realisasi (%)",
+      "Capaian (%)",
       "Keterangan Capaian",
       "Faktor Penunjang",
       "Faktor Penghambat",
@@ -221,8 +220,7 @@ const getHeaderColor = (level: string | undefined) => {
         const detailRow = [
           target?.target || "-",
           target?.realisasi ?? "-",
-          target?.satuan || "-",
-          formatPercentageText(target?.capaian || "-"),
+          formatPercentageText(target?.capaian || "-").replace(/%$/, ""),
           formatPercentageText(target?.keteranganCapaian || "-"),
           target?.faktorPenunjang || "-",
           target?.faktorPenghambat || "-",
@@ -383,7 +381,7 @@ const getHeaderColor = (level: string | undefined) => {
                 Anggaran
               </td>
               <th
-                colSpan={5}
+                colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
                 {monthColumnLabel}
@@ -408,12 +406,11 @@ const getHeaderColor = (level: string | undefined) => {
               </td>
             </tr>
             <tr className={headerColor}>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]">Target (%)</th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">
-                Realisasi
+                Realisasi (%)
               </th>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian (%)</th>
               <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
             </tr>
           </thead>
@@ -454,11 +451,8 @@ const getHeaderColor = (level: string | undefined) => {
                       )}
                     </div>
                   </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {target?.satuan || "-"}
-                  </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {formatPercentageText(target?.capaian || "-")}
+                  <td className="border-r border-b border-emerald-500 px-10 py-4">
+                    {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {formatPercentageText(target?.keteranganCapaian || "-")}

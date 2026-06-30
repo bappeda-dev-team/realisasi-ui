@@ -186,6 +186,11 @@ const ProgramTable = () => {
         refetch();
     };
 
+    const formatRupiah = (value: number | null | undefined): string => {
+        if (value == null) return "-";
+        return value.toLocaleString('id-ID');
+    };
+
     const createPdfDocument = () => {
         const doc = new jsPDF({
             orientation: "landscape",
@@ -212,11 +217,11 @@ const ProgramTable = () => {
                 { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
-                "Target",
-                "Realisasi",
-                "Capaian",
+                "Target (%)",
+                "Realisasi (%)",
+                "Capaian (%)",
                 "Keterangan Capaian",
-                "Pagu",
+                "Pagu (Rp.)",
             ],
         ];
 
@@ -229,9 +234,9 @@ const ProgramTable = () => {
                 const detailRow = [
                     target?.target || "-",
                     target?.realisasi ?? "-",
-                    formatPercentageText(target?.capaian || "-"),
+                    formatPercentageText(target?.capaian || "-") .replace(/%$/, ""),
                     formatPercentageText(target?.keteranganCapaian || "-"),
-                    target?.pagu != null ? target.pagu.toLocaleString() : "-",
+                    formatRupiah(target?.pagu),
                     target?.faktorPenunjang || "-",
                     target?.faktorPenghambat || "-",
                 ];
@@ -239,7 +244,7 @@ const ProgramTable = () => {
                 if (targetIndex === 0) {
                     tableBody.push([
                         { content: index + 1, rowSpan: targets.length },
-                        { content: `${user?.firstName || "-"} \n ${row.nip || "-"}`, rowSpan: targets.length },
+                        { content: `${user?.firstName || "-"} \n (${row.nip || "-"})`, rowSpan: targets.length },
                         { content: `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`, rowSpan: targets.length },
                         { content: row.indikator || "-", rowSpan: targets.length },
                         ...detailRow,
@@ -320,6 +325,7 @@ const ProgramTable = () => {
         setPdfPreviewUrl(null);
         setPreviewDoc(null);
     };
+    
 
     const handleDownloadPdf = () => {
         if (!previewDoc) return;
@@ -458,11 +464,11 @@ const ProgramTable = () => {
                                     <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
                                 </tr>
                                 <tr className={headerColor}>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Target (%)</th>
                                     <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian (%)</th>
                                     <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu (Rp.)</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -476,7 +482,7 @@ const ProgramTable = () => {
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-800">{user?.firstName || "-"}</span>
-                                                    <span className="text-sm text-gray-500">{row.nip || "-"}</span>
+                                                    <span className="text-sm text-gray-500">({row.nip || "-"})</span>
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -504,14 +510,14 @@ const ProgramTable = () => {
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {formatPercentageText(target?.capaian || "-")}
+                                            <td className="border-r border-b border-emerald-500 px-11 py-4">
+                                                {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {formatPercentageText(target?.keteranganCapaian || "-")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                                {formatRupiah(target?.pagu)}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col items-center gap-2">

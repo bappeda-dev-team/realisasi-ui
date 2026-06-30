@@ -95,13 +95,13 @@ function TableTujuan({
         </tr>
         <tr className="text-white bg-red-500">
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Target
+            Target (%)
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
             Realisasi (%)
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Capaian
+            Capaian (%)
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
             Keterangan Capaian

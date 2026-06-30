@@ -218,13 +218,13 @@ const SubKegiatanIndividuTable = () => {
                 { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
-                "Target",
-                "Realisasi Target",
-                "Capaian",
+                "Target (%)",
+                "Realisasi Target (%)",
+                "Capaian (%)",
                 "Keterangan Capaian",
-                "Pagu",
-                "Realisasi Pagu",
-                "Capaian Pagu",
+                "Pagu (Rp.)",
+                "Realisasi Pagu (Rp.)",
+                "Capaian Pagu (%)",
                 "Keterangan Capaian",
             ],
         ];
@@ -238,7 +238,7 @@ const SubKegiatanIndividuTable = () => {
                 const detailRow = [
                     target?.target || "-",
                     target?.realisasi ?? "-",
-                    formatPercentageText(target?.capaian || "-"),
+                    formatPercentageText(target?.capaian || "-").replace(/%$/, ""),
                     formatPercentageText(target?.keteranganCapaian || "-"),
                     target?.pagu != null ? formatRupiah(target.pagu) : "-",
                     target?.realisasiPagu != null ? formatRupiah(target.realisasiPagu) : "-",
@@ -251,7 +251,7 @@ const SubKegiatanIndividuTable = () => {
                 if (targetIndex === 0) {
                     tableBody.push([
                         { content: index + 1, rowSpan: targets.length },
-                        { content: `${user?.firstName || "-"} \n ${row.nip || "-"}`, rowSpan: targets.length },
+                        { content: `${user?.firstName || "-"} \n (${row.nip || "-"})`, rowSpan: targets.length },
                         { content: `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`, rowSpan: targets.length },
                         { content: row.indikator || "-", rowSpan: targets.length },
                         ...detailRow,
@@ -473,13 +473,13 @@ const SubKegiatanIndividuTable = () => {
                                     <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
                                 </tr>
                                 <tr className={headerColor}>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Target</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Target (%)</th>
                                     <th className="border-l border-b px-6 py-3 min-w-[80px]">Realisasi Target (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian (%)</th>
                                     <th className="border-l border-b px-6 py-3 min-w-[120px]">Keterangan Capaian</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Realisasi Pagu (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian Pagu</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu (Rp.)</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Realisasi Pagu (Rp.)</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian Pagu (%)</th>
                                     <th className="border-l border-b px-6 py-3 min-w-[120px]">Keterangan Capaian</th>
                                 </tr>
                             </thead>
@@ -494,7 +494,7 @@ const SubKegiatanIndividuTable = () => {
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-semibold text-gray-800">{user?.firstName || "-"}</span>
-                                                    <span className="text-sm text-gray-500">{row.nip || "-"}</span>
+                                                    <span className="text-sm text-gray-500">({row.nip || "-"})</span>
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -529,11 +529,11 @@ const SubKegiatanIndividuTable = () => {
                                                 {formatPercentageText(target?.keteranganCapaian || "-")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {target?.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                                {formatRupiah(target?.pagu)}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col items-center gap-2">
-                                                    <span>{target?.realisasiPagu != null ? target.realisasiPagu.toLocaleString() : "-"}</span>
+                                                    <span>{formatRupiah(target?.realisasiPagu)}</span>
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full"

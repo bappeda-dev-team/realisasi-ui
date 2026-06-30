@@ -139,10 +139,9 @@ const IkuPage = () => {
       "Asal IKU",
       "Rumus Perhitungan",
       "Sumber Data",
-      "Target",
-      "Realisasi",
-      "Satuan",
-      "Capaian",
+      "Target (%)",
+      "Realisasi (%)",
+      "Capaian (%)",
     ]];
 
     const tableBody: any[] = [];
@@ -162,7 +161,6 @@ const IkuPage = () => {
           "-",
           "-",
           "-",
-          "-",
         ]);
         return;
       }
@@ -176,7 +174,6 @@ const IkuPage = () => {
           targetIndex === 0 ? sanitizeForPdf(iku.sumber_data) : "",
           sanitizeForPdf(target.target),
           sanitizeForPdf(target.realisasi ?? 0),
-          sanitizeForPdf(target.satuan),
           sanitizeForPdf(formatPercentageText(target.capaian)),
         ]);
       });
@@ -211,7 +208,6 @@ const IkuPage = () => {
         5: { cellWidth: 45, halign: "center" },
         6: { cellWidth: 45, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
-        8: { cellWidth: 45, halign: "center" },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },

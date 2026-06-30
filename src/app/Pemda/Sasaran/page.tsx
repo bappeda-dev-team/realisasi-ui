@@ -181,9 +181,9 @@ const SasaranPage = () => {
       "Indikator",
       "Rumus Perhitungan",
       "Sumber Data",
-      "Target",
+      "Target (%)",
       "Realisasi (%)",
-      "Capaian",
+      "Capaian (%)",
       "Keterangan Capaian",
       "Faktor Penunjang",
       "Faktor Penghambat",
@@ -234,7 +234,7 @@ const SasaranPage = () => {
             sanitizeForPdf(indikator.sumberData),
             sanitizeForPdf(target.target),
             sanitizeForPdf(target.realisasi ?? 0),
-            sanitizeForPdf(formatPercentageText(target.capaian)),
+            sanitizeForPdf(formatPercentageText(target.capaian).replace(/%$/, "")),
             sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
             sanitizeForPdf(target.faktorPenunjang ?? "-"),
             sanitizeForPdf(target.faktorPenghambat ?? "-"),
@@ -351,7 +351,7 @@ const SasaranPage = () => {
     if (!res.ok) return;
     const data = await res.json();
 
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a3' });
     doc.setFontSize(14);
     doc.text(`Laporan Realisasi Sasaran Pemda - ${jenisLaporan} - ${namaDinas}`, 40, 40);
 

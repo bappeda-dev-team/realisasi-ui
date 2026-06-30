@@ -140,6 +140,11 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
 
     const currentIndikator = formData[0]?.indikator ?? "-";
 
+    const formatRupiah = (value: number | null | undefined): string => {
+        if (value == null) return "-";
+        return value.toLocaleString('id-ID');
+    };
+
     return (
         <form
             onSubmit={handleSubmit}
@@ -158,7 +163,7 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
                             </div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">Pagu</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
-                                {target.pagu != null ? target.pagu.toLocaleString() : "-"}
+                                {formatRupiah(target.pagu)}
                             </p>
                             <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi">
                                 Realisasi

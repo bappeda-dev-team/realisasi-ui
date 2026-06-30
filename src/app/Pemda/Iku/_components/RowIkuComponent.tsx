@@ -34,12 +34,11 @@ export default function RowIkuComponent({
                             key={target.targetRealisasiId || idx}
                             target={target.target}
                             realisasi={target.realisasi}
-                            satuan={target.satuan}
                             capaian={target.capaian}
                         />
                     ))
                 ) : (
-                    <td colSpan={4} className="border border-sky-500 px-6 py-4 text-center text-gray-400 italic">
+                    <td colSpan={3} className="border border-sky-500 px-6 py-4 text-center text-gray-400 italic">
                         Tidak ada target
                     </td>
                 )}
@@ -56,20 +55,17 @@ export default function RowIkuComponent({
 const ColTargetIku: React.FC<{
     target: string;
     realisasi: number;
-    satuan: string;
     capaian: string;
 }> = ({
     target,
     realisasi,
-    satuan,
     capaian
 }) => {
         return (
             <>
                 <td className="border border-sky-500 px-6 py-4 text-center">{target}</td>
                 <td className="border border-sky-500 px-6 py-4 text-center">{realisasi}</td>
-                <td className="border border-sky-500 px-6 py-4 text-center">{satuan}</td>
-                <td className="border border-sky-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
+                <td className="border border-sky-500 px-6 py-4 text-center">{formatPercentageText(capaian).replace(/%$/, "")}</td>
             </>
         );
     }

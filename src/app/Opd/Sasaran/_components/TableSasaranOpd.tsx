@@ -29,9 +29,9 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleO
                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="bg-emerald-500 text-white">
-                    <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
+                    <th className="border-l border-b px-6 py-3 min-w-[50px]">Target (%)</th>
                     <th className="border-l border-b px-6 py-3 min-w-[50px]">Realisasi (%)</th>
-                    <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+                    <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian (%)</th>
                     <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                 </tr>
             </thead>
