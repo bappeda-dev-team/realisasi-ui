@@ -150,5 +150,9 @@ export function getAccessibleMenus(user: User | null): { name: string; href: str
     menus.push({ name: 'Individu', href: '/Individu' });
   }
 
+  if (user) {
+    menus.push({ name: 'Laporan', href: '/Laporan' });
+  }
+
   return menus;
 }
