@@ -1,10 +1,9 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { FormProps, RenjaTarget, RenjaPaguBatchRequest, RenjaPaguIndividuResponse } from "@/types";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
@@ -19,12 +18,10 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
     const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
-    const { url } = useApiUrlContext();
-    const submitUrl = useMemo(
-        () => (url ? `${url}/api/v1/realisasi/renja_pagu_individu/batch` : "/api/v1/renja_pagu_individu/batch"),
-        [url],
-    );
-    const { submit, loading, error } = useSubmitData<RenjaPaguIndividuResponse[]>({ url: submitUrl });
+	
+    const submitUrl = '/api/v1/realisasi/renja_pagu_individu/batch';
+    
+	const { submit, loading, error } = useSubmitData<RenjaPaguIndividuResponse[]>({ url: submitUrl });
 
     useEffect(() => {
         if (!requestValues?.length) {

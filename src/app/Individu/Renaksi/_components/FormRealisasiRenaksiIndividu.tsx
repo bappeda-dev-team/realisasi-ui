@@ -3,8 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenaksiTarget, RenaksiRealisasiRequest, RenaksiIndividuHierarchyResponse } from "@/types";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
+import { FormProps, RenaksiTarget, RenaksiIndividuRealisasiRequest, RenaksiIndividuRealisasiResponse } from "@/types";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
@@ -16,12 +15,10 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { tahun: selectedTahun, bulan: selectedBulan, activatedTahun, activatedBulan } = useFilterContext();
-    const { url } = useApiUrlContext();
-    const submitUrl = useMemo(
-        () => (url ? `${url}/api/v1/realisasi/renaksi` : "/renaksi"),
-        [url],
-    );
-    const { submit, loading, error } = useSubmitData<RenaksiIndividuHierarchyResponse>({ url: submitUrl });
+
+    const submitUrl = '/api/v1/realisasi/renaksi_individu';
+
+    const { submit, loading, error } = useSubmitData<RenaksiIndividuRealisasiResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -84,20 +81,21 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             return;
         }
 
-        const payload: RenaksiRealisasiRequest = {
-            id: first.targetRealisasiId ?? 0,
+        const payload: RenaksiIndividuRealisasiRequest = {
+            targetRealisasiId: first.targetRealisasiId ?? 0,
             kodeOpd: first.kodeOpd ?? "",
             nip: first.nip,
             kodeSasaran: first.kodeSasaran ?? "",
             kodeRenaksi: first.renaksiId,
             kodeIndikator: first.kodeIndikator ?? "",
             kodeTarget: first.targetId,
-            target: parseFloat(first.target) || 0,
-            realisasi: first.realisasi ?? 0,
-            jenisRealisasi: first.jenisRealisasi,
+            target: first.target,
             paguAnggaran: first.paguAnggaran ?? 0,
+            realisasi: first.realisasi ?? 0,
             tahun: first.tahun,
             bulan: bulanKey,
+            satuan: first.satuan,
+            jenisRealisasi: first.jenisRealisasi,
         };
 
         setIsSubmitting(true);
@@ -106,30 +104,19 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
 
         if (result) {
             const updatedTarget: RenaksiTarget = {
-                targetRealisasiId: result.targets[0]?.id ?? null,
-                renaksiId: result.renaksis[0]?.kodeRenaksi ?? "",
-                renaksi: result.renaksis[0]?.renaksi ?? "-",
-                nip: result.sasaran.nip,
-                namaPegawai: result.sasaran.nip,
-                rekinId: "",
-                rekin: result.sasaran.sasaran ?? "-",
-                targetId: result.targets[0]?.kodeTarget ?? "",
-                target: String(result.targets[0]?.target ?? "-"),
-                realisasi: result.targets[0]?.realisasi ?? 0,
-                satuan: result.targets[0]?.satuan ?? "-",
-                bulan: result.sasaran.bulan,
-                tahun: result.sasaran.tahun,
-                jenisRealisasi: result.targets[0]?.jenisRealisasi ?? "NAIK",
-                capaian: result.targets[0]?.capaian ?? "-",
-                keteranganCapaian: result.targets[0]?.keteranganCapaian ?? null,
-                rencanaKinerja: result.sasaran.sasaran ?? "-",
-                kodeOpd: result.sasaran.kodeOpd,
-                anggaran: String(result.targets[0]?.paguAnggaran ?? "-"),
-                faktorPenunjang: result.targets[0]?.faktorPenunjang ?? "-",
-                faktorPenghambat: result.targets[0]?.faktorPenghambat ?? "-",
-                kodeSasaran: result.sasaran.kodeSasaran,
-                kodeIndikator: result.indikators[0]?.kodeIndikator ?? "",
-                paguAnggaran: result.targets[0]?.paguAnggaran,
+                ...first,
+                targetRealisasiId: result.id ?? null,
+                realisasi: result.realisasi ?? 0,
+                satuan: result.satuan ?? first.satuan,
+                jenisRealisasi: result.jenisRealisasi ?? first.jenisRealisasi,
+                capaian: result.capaian ?? "-",
+                keteranganCapaian: result.keteranganCapaian ?? null,
+                faktorPenunjang: result.faktorPenunjang ?? "-",
+                faktorPenghambat: result.faktorPenghambat ?? "-",
+                kodeOpd: result.kodeOpd ?? first.kodeOpd,
+                kodeSasaran: result.kodeSasaran ?? first.kodeSasaran,
+                kodeIndikator: result.kodeIndikator ?? first.kodeIndikator,
+                paguAnggaran: result.paguAnggaran ?? first.paguAnggaran,
             };
             onSuccess?.([updatedTarget]);
             onClose();

@@ -213,10 +213,9 @@ const getHeaderColor = (level: string | undefined) => {
             "Rencana Kinerja",
             "Nama Pemilik",
             "Indikator",
-            "Target",
-            "Realisasi",
-            "Satuan",
-            "Capaian",
+            "Target (%)",
+            "Realisasi (%)",
+            "Capaian (%)",
             "Keterangan Capaian",
             "Faktor Penunjang",
             "Faktor Penghambat",
@@ -231,7 +230,6 @@ const getHeaderColor = (level: string | undefined) => {
                 const detailRow = [
                     target?.target || "-",
                     target?.realisasi ?? "-",
-                    target?.satuan || "-",
                     formatPercentageText(target?.capaian || "-"),
                     formatPercentageText(target?.keteranganCapaian || "-"),
                     target?.faktorPenunjang || "-",
@@ -363,7 +361,7 @@ const getHeaderColor = (level: string | undefined) => {
                         <tr className={`text-xm ${headerColor}`}>
                             <td
                                 rowSpan={2}
-                                className="border-r border-b px-6 py-3 max-w-[100px] text-center"
+                                className="border-x border-b px-6 py-3 max-w-[100px] text-center"
                             >
                                 No
                             </td>
@@ -385,7 +383,7 @@ const getHeaderColor = (level: string | undefined) => {
                             >
                                 Indikator
                             </td>
-<th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">
+<th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
                                 {yearLabel} - {monthLabel}
                             </th>
                             <th
@@ -408,11 +406,10 @@ const getHeaderColor = (level: string | undefined) => {
                             </td>
                         </tr>
                         <tr className={headerColor}>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Satuan</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Target (%)</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]">Capaian (%)</th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -441,7 +438,7 @@ const getHeaderColor = (level: string | undefined) => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {target?.target || "-"}
                                     </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4 align-top">
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">
                                         <div className="flex flex-col items-center gap-2">
                                             <span>{target?.realisasi ?? "-"}</span>
                                             {canEditRealisasi && (
@@ -453,9 +450,6 @@ const getHeaderColor = (level: string | undefined) => {
                                                 </ButtonGreenBorder>
                                             )}
                                         </div>
-                                    </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {target?.satuan || "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {formatPercentageText(target?.capaian || "-")}

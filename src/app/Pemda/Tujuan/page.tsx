@@ -17,12 +17,15 @@ import TableTujuan from "./_components/TableTujuan";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import Select from "react-select";
+import { getSessionId } from "@/lib/session";
 
 export default function Tujuan() {
     const { user } = useUserContext();
     const {
         activatedTahun: selectedTahun,
         activatedBulan,
+        namaDinas,
     } = useFilterContext();
     const canEdit = canEditPemdaRealisasi(user);
     const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
@@ -48,6 +51,7 @@ export default function Tujuan() {
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState("tujuan-pemda.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+    const [selectedLaporanOption, setSelectedLaporanOption] = useState<{ label: string; value: string } | null>(null);
 
     const dataTargetRealisasi = useMemo<TargetRealisasiCapaian[]>(() => {
         return (realisasiData ?? []).map((item) => ({
@@ -181,9 +185,9 @@ export default function Tujuan() {
             "Indikator",
             "Rumus Perhitungan",
             "Sumber Data",
-            "Target",
+            "Target (%)",
             "Realisasi (%)",
-            "Capaian",
+            "Capaian (%)",
             "Keterangan Capaian",
             "Faktor Penunjang",
             "Faktor Penghambat",
@@ -236,7 +240,7 @@ export default function Tujuan() {
                         sanitizeForPdf(indikator.sumberData),
                         sanitizeForPdf(target.target),
                         sanitizeForPdf(target.realisasi ?? 0),
-                        sanitizeForPdf(formatPercentageText(target.capaian)),
+                        sanitizeForPdf(formatPercentageText(target.capaian)).replace(/%$/, ""),
                         sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
                         sanitizeForPdf(target.faktorPenunjang ?? '-'),
                         sanitizeForPdf(target.faktorPenghambat ?? '-'),
@@ -333,10 +337,97 @@ export default function Tujuan() {
         previewDoc.save(pdfFileName);
     };
 
+    // LAPORAN REALISASI
+    const laporanOptions = [
+        { label: 'Bulanan', value: 'BULANAN' },
+        { label: 'Triwulan', value: 'TRIWULAN' },
+        { label: 'Tahunan', value: 'TAHUNAN' },
+    ];
+
+    const handleGenerateLaporan = async (jenisLaporan: string) => {
+        const baseUrl = `/api/v1/realisasi/tujuans/laporan/tahun/${selectedTahunValue}/jenisLaporan/${jenisLaporan}`;
+        const url = jenisLaporan === 'BULANAN'
+            ? `${baseUrl}?bulan=${bulanKey}`
+            : baseUrl;
+
+        const sessionId = getSessionId();
+        if (!sessionId) return;
+
+        const res = await fetch(url, {
+            headers: { 'X-Session-Id': sessionId },
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
+        doc.setFontSize(14);
+        doc.text(`Laporan Realisasi Tujuan Pemda - ${jenisLaporan} - ${namaDinas}`, 40, 40);
+        
+        doc.text(`Tahun: ${selectedTahunValue}`, 40, 58);
+
+        const entries = Object.entries(data.listData as Record<string, number>);
+        const periodLabel = jenisLaporan === 'TRIWULAN' ? 'Triwulan' : 'Bulan';
+        const tableBody = entries.map(([key, value]) => [
+            `${periodLabel} ${key}`,
+            String(value),
+        ]);
+
+        autoTable(doc, {
+            head: [['Periode', 'Realisasi (%)']],
+            body: tableBody,
+            startY: 72,
+            styles: { fontSize: 10, cellPadding: 4 },
+            headStyles: { fillColor: [239, 68, 68], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+            columnStyles: { 0: { cellWidth: 120 }, 1: { cellWidth: 80, halign: 'center' } },
+            theme: 'grid',
+        });
+
+        const previewUrl = String(doc.output('bloburl'));
+        if (pdfPreviewUrl) {
+            URL.revokeObjectURL(pdfPreviewUrl);
+        }
+        setPreviewDoc(doc);
+        setPdfFileName(`laporan-realisasi-${jenisLaporan.toLowerCase()}-${selectedTahunValue}.pdf`);
+        setPdfPreviewUrl(previewUrl);
+        setIsPrintPreviewOpen(true);
+    };
+
     return (
         <div className="overflow-auto grid gap-2">
-            <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan Pemda</h2>
-            <div className="mt-2 rounded-t-lg border border-red-400">
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg font-semibold">Realisasi Tujuan Pemda</h2>
+                <Select
+                    value={selectedLaporanOption}
+                    options={laporanOptions}
+                    placeholder="Laporan Realisasi"
+                    isSearchable={false}
+                    onChange={(opt) => {
+                        setSelectedLaporanOption(opt);
+                        if (opt) handleGenerateLaporan(opt.value);
+                    }}
+                    formatOptionLabel={(option, { context }) =>
+                        context === 'value' ? `Laporan Realisasi : ${option.label}` : option.label
+                    }
+                    styles={{
+                        control: (base) => ({
+                            ...base,
+                            background: "linear-gradient(to right, #08C2FF, #006BFF)",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "8px",
+                            minHeight: 38,
+                            cursor: "pointer",
+                            boxShadow: "none",
+                        }),
+                        singleValue: (base) => ({ ...base, color: "#fff" }),
+                        placeholder: (base) => ({ ...base, color: "rgba(255,255,255,0.8)" }),
+                        dropdownIndicator: (base) => ({ ...base, color: "#fff" }),
+                        indicatorSeparator: () => ({ display: "none" }),
+                        menu: (base) => ({ ...base, zIndex: 20, minWidth: 180 }),
+                    }}
+                />
+            </div>
+            <div className="rounded-t-lg border border-red-400">
                 <TableTujuan
                     tahun={parseInt(selectedTahun)}
                     bulanLabel={bulanName}

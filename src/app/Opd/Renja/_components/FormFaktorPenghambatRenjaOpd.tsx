@@ -28,7 +28,6 @@ const FormFaktorPenghambatRenjaOpd: React.FC<FormFaktorPenghambatRenjaOpdProps> 
   tahun,
   bulan,
   currentValue,
-  onClose,
   onSuccess,
 }) => {
   const [value, setValue] = useState(currentValue);

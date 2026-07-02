@@ -23,8 +23,10 @@ const TujuanPage = () => {
     }
 
     return (
-        <div className="transition-all ease-in-out duration-500">
-            <h2 className="text-lg font-semibold mb-2">Rencana Kinerja Individu</h2>
+        <div className="overflow-auto grid gap-2">
+            <div className="flex justify-between items-center mb-2">
+                <h2 className="text-lg font-semibold">Rencana Kinerja Individu</h2>
+            </div>
             <Table />
         </div>
     )

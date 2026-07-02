@@ -13,6 +13,7 @@ import {
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
+import { getSessionId } from "@/lib/session";
 import TableSasaranOpd from "./_components/TableSasaranOpd";
 
 const sanitizeForPdf = (value: unknown) => {
@@ -183,9 +184,9 @@ export default function SasaranPage() {
       "Indikator",
       "Rumus Perhitungan",
       "Sumber Data",
-      "Target",
+      "Target (%)",
       "Realisasi (%)",
-      "Capaian",
+      "Capaian (%)",
       "Keterangan Capaian",
       "Faktor Penunjang",
       "Faktor Penghambat",
@@ -321,7 +322,9 @@ export default function SasaranPage() {
 
   return (
     <div className="overflow-auto grid gap-2">
-      <h2 className="text-lg font-semibold mb-2">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
+      </div>
       <TableSasaranOpd
         tahun={selectedTahunValue}
         bulanLabel={bulanName}

@@ -14,7 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenaksiIndividuHierarchyResponse, RenaksiTarget } from "@/types";
+import { RenaksiIndividuItem, RenaksiTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
@@ -45,7 +45,6 @@ const Table = () => {
   const { user } = useUserContext();
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
   const canEditRealisasi = canEditIndividuRenaksiRealisasi(user);
-  const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
 
   const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
@@ -75,163 +74,64 @@ const getHeaderColor = (level: string | undefined) => {
   const yearLabel = activatedTahun;
   const monthKey = getMonthKey(activatedBulan);
   const monthLabel = getMonthName(activatedBulan);
+  const nip = user?.nip;
+  const kodeOpd = activatedDinas || user?.kode_opd;
   const apiUrl =
-    activatedTahun && monthKey && isOpdScopedView && activatedDinas
-      ? `/api/v1/realisasi/renaksi/by-kode-opd/${encodeURIComponent(
-        activatedDinas,
-      )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
-      : activatedTahun && monthKey && user?.nip
-      ? `/api/v1/realisasi/renaksi/by-nip/${encodeURIComponent(
-        user.nip,
-      )}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
+    yearLabel && monthKey && nip && kodeOpd
+      ? `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`
       : null;
 
-  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuHierarchyResponse[]>({
+  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuItem[]>({
     url: apiUrl,
   });
 
   useEffect(() => {
-    if (!data) {
+    if (!data || !user) {
       setRows([]);
       return;
     }
 
-    const flattened: RenaksiRow[] = [];
+    const namaPegawai = [user.firstName, user.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || user.username || "-";
 
-    data.forEach((item) => {
-      const sasaran = item.sasaran;
-
-      item.renaksis.forEach((renaksi) => {
-        const matchingIndikators = item.indikators.filter(
-          (ind) => ind.renaksiId === renaksi.id,
-        );
-
-        if (matchingIndikators.length === 0) {
-          flattened.push({
-            id: renaksi.id,
-            renaksi: renaksi.renaksi ?? "-",
-            nama_pegawai: user?.firstName ?? "-",
-            nip: sasaran.nip ?? user?.nip ?? "-",
-            rekin: sasaran.sasaran ?? "-",
-            targets: [
-              {
-                targetRealisasiId: null,
-                renaksiId: renaksi.kodeRenaksi,
-                renaksi: renaksi.renaksi ?? "-",
-                nip: sasaran.nip ?? user?.nip ?? "-",
-                namaPegawai: user?.firstName ?? "-",
-                rekinId: "",
-                rekin: sasaran.sasaran ?? "-",
-                targetId: "",
-                target: "-",
-                realisasi: 0,
-                satuan: "-",
-                tahun: sasaran.tahun,
-                bulan: sasaran.bulan,
-                jenisRealisasi: "NAIK",
-                capaian: "-",
-                keteranganCapaian: "-",
-                faktorPenunjang: "-",
-                faktorPenghambat: "-",
-                rencanaKinerja: sasaran.sasaran ?? "-",
-                kodeOpd: sasaran.kodeOpd ?? "",
-                anggaran: "-",
-                kodeSasaran: sasaran.kodeSasaran,
-                kodeIndikator: "",
-                paguAnggaran: 0,
-              },
-            ],
-            anggaran: "-",
-          });
-          return;
-        }
-
-        matchingIndikators.forEach((indikator) => {
-          const matchingTargets = item.targets.filter(
-            (t) => t.indikatorRenaksiId === indikator.id,
-          );
-
-          if (matchingTargets.length === 0) {
-            flattened.push({
-              id: indikator.id,
-              renaksi: renaksi.renaksi ?? "-",
-              nama_pegawai: user?.firstName ?? "-",
-              nip: sasaran.nip ?? user?.nip ?? "-",
-              rekin: sasaran.sasaran ?? "-",
-              targets: [
-                {
-                  targetRealisasiId: null,
-                  renaksiId: renaksi.kodeRenaksi,
-                  renaksi: renaksi.renaksi ?? "-",
-                  nip: sasaran.nip ?? user?.nip ?? "-",
-                  namaPegawai: user?.firstName ?? "-",
-                  rekinId: "",
-                  rekin: sasaran.sasaran ?? "-",
-                  targetId: "",
-                  target: "-",
-                  realisasi: 0,
-                  satuan: "-",
-                  tahun: sasaran.tahun,
-                  bulan: sasaran.bulan,
-                  jenisRealisasi: "NAIK",
-                  capaian: "-",
-                  keteranganCapaian: "-",
-                  faktorPenunjang: "-",
-                  faktorPenghambat: "-",
-                  rencanaKinerja: sasaran.sasaran ?? "-",
-                  kodeOpd: sasaran.kodeOpd ?? "",
-                  anggaran: "-",
-                  kodeSasaran: sasaran.kodeSasaran,
-                  kodeIndikator: indikator.kodeIndikator,
-                  paguAnggaran: 0,
-                },
-              ],
-              anggaran: "-",
-            });
-            return;
-          }
-
-          matchingTargets.forEach((target) => {
-            flattened.push({
-              id: target.id,
-              renaksi: renaksi.renaksi ?? "-",
-              nama_pegawai: user?.firstName ?? "-",
-              nip: sasaran.nip ?? user?.nip ?? "-",
-              rekin: sasaran.sasaran ?? "-",
-              targets: [
-                {
-                  targetRealisasiId: target.id,
-                  renaksiId: renaksi.kodeRenaksi,
-                  renaksi: renaksi.renaksi ?? "-",
-                  nip: sasaran.nip ?? user?.nip ?? "-",
-                  namaPegawai: user?.firstName ?? "-",
-                  rekinId: "",
-                  rekin: sasaran.sasaran ?? "-",
-                  targetId: target.kodeTarget,
-                  target: String(target.target),
-                  realisasi: target.realisasi,
-                  satuan: target.satuan,
-                  tahun: sasaran.tahun,
-                  bulan: sasaran.bulan,
-                  jenisRealisasi: target.jenisRealisasi,
-                  capaian: target.capaian ?? "-",
-                  keteranganCapaian: target.keteranganCapaian ?? "-",
-                  faktorPenunjang: target.faktorPenunjang ?? "-",
-                  faktorPenghambat: target.faktorPenghambat ?? "-",
-                  rencanaKinerja: sasaran.sasaran ?? "-",
-                  kodeOpd: sasaran.kodeOpd ?? "",
-                  anggaran: String(target.paguAnggaran ?? "-"),
-                  kodeSasaran: sasaran.kodeSasaran,
-                  kodeIndikator: indikator.kodeIndikator,
-                  paguAnggaran: target.paguAnggaran,
-                },
-              ],
-              anggaran: String(target.paguAnggaran ?? "-"),
-            });
-          });
-        });
-      });
-    });
+    const flattened: RenaksiRow[] = data.map((item) => ({
+      id: item.id,
+      renaksi: item.renaksi ?? "-",
+      nama_pegawai: namaPegawai,
+      nip: item.nip ?? user?.nip ?? "-",
+      rekin: item.sasaran ?? "-",
+      targets: [
+        {
+          targetRealisasiId: item.id,
+          renaksiId: item.kodeRenaksi,
+          renaksi: item.renaksi ?? "-",
+          nip: item.nip ?? user?.nip ?? "-",
+          namaPegawai,
+          rekinId: item.kodeSasaran,
+          rekin: item.sasaran ?? "-",
+          targetId: item.kodeTarget,
+          target: item.target,
+          realisasi: item.realisasi,
+          satuan: item.satuan,
+          tahun: item.tahun,
+          bulan: item.bulan,
+          jenisRealisasi: item.jenisRealisasi,
+          capaian: item.capaian ?? "-",
+          keteranganCapaian: item.keteranganCapaian ?? "-",
+          faktorPenunjang: item.faktorPenunjang ?? "-",
+          faktorPenghambat: item.faktorPenghambat ?? "-",
+          rencanaKinerja: item.sasaran ?? "-",
+          kodeOpd: item.kodeOpd ?? "",
+          anggaran: String(item.paguAnggaran ?? "-"),
+          kodeSasaran: item.kodeSasaran,
+          kodeIndikator: item.kodeIndikator,
+          paguAnggaran: item.paguAnggaran,
+        },
+      ],
+      anggaran: String(item.paguAnggaran ?? "-"),
+    }));
 
     setRows(flattened);
   }, [data, user]);
@@ -303,10 +203,9 @@ const getHeaderColor = (level: string | undefined) => {
       "Nama Pemilik",
       "Rencana Aksi",
       "Anggaran",
-      "Target",
-      "Realisasi",
-      "Satuan",
-      "Capaian",
+      "Target (%)",
+      "Realisasi (%)",
+      "Capaian (%)",
       "Keterangan Capaian",
       "Faktor Penunjang",
       "Faktor Penghambat",
@@ -321,8 +220,7 @@ const getHeaderColor = (level: string | undefined) => {
         const detailRow = [
           target?.target || "-",
           target?.realisasi ?? "-",
-          target?.satuan || "-",
-          formatPercentageText(target?.capaian || "-"),
+          formatPercentageText(target?.capaian || "-").replace(/%$/, ""),
           formatPercentageText(target?.keteranganCapaian || "-"),
           target?.faktorPenunjang || "-",
           target?.faktorPenghambat || "-",
@@ -483,7 +381,7 @@ const getHeaderColor = (level: string | undefined) => {
                 Anggaran
               </td>
               <th
-                colSpan={5}
+                colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
                 {monthColumnLabel}
@@ -508,12 +406,11 @@ const getHeaderColor = (level: string | undefined) => {
               </td>
             </tr>
             <tr className={headerColor}>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Target</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]">Target (%)</th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">
-                Realisasi
+                Realisasi (%)
               </th>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Satuan</th>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian (%)</th>
               <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
             </tr>
           </thead>
@@ -554,11 +451,8 @@ const getHeaderColor = (level: string | undefined) => {
                       )}
                     </div>
                   </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {target?.satuan || "-"}
-                  </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {formatPercentageText(target?.capaian || "-")}
+                  <td className="border-r border-b border-emerald-500 px-10 py-4">
+                    {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {formatPercentageText(target?.keteranganCapaian || "-")}

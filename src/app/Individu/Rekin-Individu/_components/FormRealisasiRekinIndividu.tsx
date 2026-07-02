@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { FormProps, RekinTarget, RekinRealisasiRequest, RekinIndividuResponse } from "@/types";
-import { useApiUrlContext } from "@/context/ApiUrlContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -22,12 +21,10 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
     const activePeriodLabel = selectedTahun && monthLabel ? `${selectedTahun} - ${monthLabel}` : (selectedTahun ?? "Tahun");
-    const { url } = useApiUrlContext();
-    const submitUrl = useMemo(
-        () => `${url}/api/v1/realisasi/rekin`,
-        [url],
-    );
-    const { submit, loading, error } = useSubmitData<RekinIndividuResponse>({ url: submitUrl });
+	
+    const submitUrl = '/api/v1/realisasi/rekin';
+    
+	const { submit, loading, error } = useSubmitData<RekinIndividuResponse>({ url: submitUrl });
     const invalidRealisasiTargets = useMemo(
         () =>
             formData.filter((item) => {
@@ -128,25 +125,25 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 const item = formData[index];
                 return {
                     targetRealisasiId: result.id,
-                    rekinId: result.kodePkRekin,
+                    rekinId: result.kode_pk_rekin,
                     rekin: item?.rekin ?? "",
                     nip: result.nip,
-                    indikatorId: result.kodeIndikatorPkRekin,
+                    indikatorId: result.kode_indikator_pk_rekin,
                     indikator: item?.indikator ?? "",
-                    targetId: result.kodeTargetPkRekin,
+                    targetId: result.kode_target_pk_rekin,
                     target: item?.target ?? "",
                     realisasi: result.realisasi,
                     satuan: item?.satuan ?? "",
                     tahun: result.tahun,
                     bulan: result.bulan,
-                    jenisRealisasi: result.jenisRealisasi as "NAIK" | "TURUN",
-                    capaian: null,
-                    keteranganCapaian: null,
+                    jenisRealisasi: result.jenis_realisasi as "NAIK" | "TURUN",
+                    capaian: result.capaian?.toString() ?? null,
+                    keteranganCapaian: result.keterangan_capaian,
                     idSasaran: item?.idSasaran ?? null,
                     sasaran: null,
-                    faktorPenunjang: result.faktorPenunjang ?? null,
-                    faktorPenghambat: result.faktorPenghambat ?? null,
-                    kodeOpd: result.kodeOpd ?? null,
+                    faktorPenunjang: result.faktor_penunjang ?? null,
+                    faktorPenghambat: result.faktor_penghambat ?? null,
+                    kodeOpd: result.kode_opd ?? null,
                 };
             });
             onSuccess?.(updatedTargets);

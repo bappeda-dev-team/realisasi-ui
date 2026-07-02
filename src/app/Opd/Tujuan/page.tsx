@@ -15,6 +15,7 @@ import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
 import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { ModalTujuanOpd } from "./_components/ModalTujuanOpd";
+import { getSessionId } from "@/lib/session";
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null) return "-";
@@ -199,9 +200,9 @@ export default function TujuanPage() {
       "Indikator",
       "Rumus Perhitungan",
       "Sumber Data",
-      "Target",
+      "Target (%)",
       "Realisasi (%)",
-      "Capaian",
+      "Capaian (%)",
       "Keterangan Capaian",
       "Faktor Penunjang",
       "Faktor Penghambat",
@@ -350,7 +351,9 @@ export default function TujuanPage() {
 
   return (
     <div className="overflow-auto grid gap-2">
-      <h2 className="text-lg font-semibold mb-2">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-lg font-semibold">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
+      </div>
       <TableTujuanOpd
         tahun={String(selectedTahunValue)}
         kodeOpd={kodeOpd}

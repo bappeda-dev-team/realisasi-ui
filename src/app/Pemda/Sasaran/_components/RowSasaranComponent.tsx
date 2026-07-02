@@ -192,7 +192,7 @@ const ColTargetSasaran: React.FC<{
           )}
         </div>
       </td>
-      <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
+      <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian).replace(/%$/, "")}</td>
       <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || "-")}</td>
       <td className="border border-red-400 px-6 py-4">
         <div className="flex flex-col items-center gap-1">
