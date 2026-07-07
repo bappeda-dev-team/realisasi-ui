@@ -34,6 +34,7 @@ interface SelectedCookie {
 interface FilterProps {
   user: User | null;
   disableOpdLock?: boolean;
+  forceOpdLock?: boolean;
 }
 
 interface DinasResponse {
@@ -58,7 +59,7 @@ interface ListPeriode {
   tahun_akhir: number;
 }
 
-export default function TopFilter({ user, disableOpdLock }: FilterProps) {
+export default function TopFilter({ user, disableOpdLock, forceOpdLock }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
     dinas,
@@ -88,6 +89,8 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
   const isSuperAdmin = user ? canAccessPemda(user) : false;
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
+
+  const effectivelyCanEditOpd = (forceOpdLock && userKodeOpd) ? false : canEditOpd;
 
   const {
     data: dataDinas,
@@ -132,13 +135,13 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
         label: d.nama_opd,
       }));
 
-      if (!canEditOpd && !disableOpdLock && userKodeOpd) {
+      if (!effectivelyCanEditOpd && !disableOpdLock && userKodeOpd) {
         options = options.filter((opt) => opt.value === userKodeOpd);
       }
 
       setDinasOptions(options);
     }
-  }, [dataDinas, canEditOpd, userKodeOpd]);
+  }, [dataDinas, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
 
   // ----------------------------
   // DROPDOWN PERIODE
@@ -226,7 +229,7 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
   // AUTO SELECT OPD FOR NON-EDIT USERS (LEVEL 1-4)
   // ----------------------------
   useEffect(() => {
-    if (!canEditOpd && !disableOpdLock && userKodeOpd && dinasOptions.length > 0) {
+    if (!effectivelyCanEditOpd && !disableOpdLock && userKodeOpd && dinasOptions.length > 0) {
       const userOpd = dinasOptions.find((opt) => opt.value === userKodeOpd);
       if (userOpd) {
         setDinas(userOpd.value);
@@ -234,7 +237,7 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
         setNamaDinas(userOpd.label);
       }
     }
-  }, [dinasOptions, canEditOpd, userKodeOpd]);
+  }, [dinasOptions, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
 
   // ----------------------------
   // SIMPAN COOKIE
@@ -285,8 +288,8 @@ export default function TopFilter({ user, disableOpdLock }: FilterProps) {
             onChange={(opt) => setDinas(opt?.value ?? null)}
             placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
             isSearchable
-            isClearable={canEditOpd || disableOpdLock}
-            isDisabled={!canEditOpd && !disableOpdLock}
+            isClearable={effectivelyCanEditOpd || disableOpdLock}
+            isDisabled={!effectivelyCanEditOpd && !disableOpdLock}
           />
 
           {/* PILIH PERIODE */}
