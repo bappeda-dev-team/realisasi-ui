@@ -104,47 +104,57 @@ export default function TableLaporanRenjaSubKegiatan({ laporanType }: { laporanT
                         <tr>
                             <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-red-500">Error: {error}</td>
                         </tr>
-                    ) : (
-                        <tr className="bg-white border-b hover:bg-gray-50">
-                            {isTahunan ? (
-                                <>
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                    {[...Array(12)].map((_, i) => (
-                                        <td key={i} className="border border-emerald-400 px-2 py-4 text-center">
-                                            {reportData?.list_data?.[i + 1] !== undefined ? reportData.list_data[i + 1] : '-'}
+                    ) : !fetchUrl ? (
+                        <tr>
+                            <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-gray-500">Pilih laporan realisasi agar data laporan renja individu muncul.</td>
+                        </tr>
+                    ) : Array.isArray(reportData) && reportData.length > 0 ? (
+                        reportData.map((item: any, index: number) => (
+                            <tr key={index} className="bg-white border-b hover:bg-gray-50">
+                                {isTahunan ? (
+                                    <>
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">{item.indikator || '-'}</td>
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">{item.target ? (isNaN(Number(item.target)) ? item.target : Number(item.target)) : '-'}</td>
+                                        {[...Array(12)].map((_, i) => (
+                                            <td key={i} className="border border-emerald-400 px-2 py-4 text-center">
+                                                {item?.list_data?.[i + 1] !== undefined ? item.list_data[i + 1] : '-'}
+                                            </td>
+                                        ))}
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
+                                    </>
+                                ) : isTriwulan ? (
+                                    <>
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">{item.indikator || '-'}</td>
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">{item.target ? (isNaN(Number(item.target)) ? item.target : Number(item.target)) : '-'}</td>
+                                        {[...Array(4)].map((_, i) => (
+                                            <td key={i} className="border border-emerald-400 px-2 py-4 text-center">
+                                                {item?.list_data?.[i + 1] !== undefined ? item.list_data[i + 1] : '-'}
+                                            </td>
+                                        ))}
+                                        <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td className="border border-emerald-400 px-6 py-4 text-center">{item.indikator || '-'}</td>
+                                        <td className="border border-emerald-400 px-6 py-4 text-center">{item.target ? (isNaN(Number(item.target)) ? item.target : Number(item.target)) : '-'}</td>
+                                        <td className="border border-emerald-400 px-6 py-4 text-center">
+                                            {item?.list_data ? String(Object.values(item.list_data)[0] ?? '-') : '-'}
                                         </td>
-                                    ))}
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                </>
-                            ) : isTriwulan ? (
-                                <>
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                    {[...Array(4)].map((_, i) => (
-                                        <td key={i} className="border border-emerald-400 px-2 py-4 text-center">
-                                            {reportData?.list_data?.[i + 1] !== undefined ? reportData.list_data[i + 1] : '-'}
-                                        </td>
-                                    ))}
-                                    <td className="border border-emerald-400 px-4 py-4 text-center">-</td>
-                                </>
-                            ) : (
-                                <>
-                                    <td className="border border-emerald-400 px-6 py-4 text-center">-</td>
-                                    <td className="border border-emerald-400 px-6 py-4 text-center">-</td>
-                                    <td className="border border-emerald-400 px-6 py-4 text-center">
-                                        {reportData?.list_data ? String(Object.values(reportData.list_data)[0] ?? '-') : '-'}
-                                    </td>
-                                </>
-                            )}
+                                    </>
+                                )}
 
-                            <td className="border border-emerald-400 px-6 py-4">
-                                <div className="flex justify-center w-full">
-                                    <ButtonGreenBorder className="px-6 py-2 text-sm">
-                                        Cetak
-                                    </ButtonGreenBorder>
-                                </div>
-                            </td>
+                                <td className="border border-emerald-400 px-6 py-4">
+                                    <div className="flex justify-center w-full">
+                                        <ButtonGreenBorder className="px-6 py-2 text-sm">
+                                            Cetak
+                                        </ButtonGreenBorder>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-gray-500">Tidak ada data laporan.</td>
                         </tr>
                     )}
                 </tbody>
