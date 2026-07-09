@@ -51,8 +51,8 @@ const SubKegiatanIndividuTable = () => {
     const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const { user } = useUserContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
-    const canEditRealisasi = canEditIndividuRenjaRealisasi(user);
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
+    const canEditRealisasi = canEditIndividuRenjaRealisasi(user) && !isOpdScopedView;
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
     const headerColor = getHeaderColor(userLevel);
@@ -63,11 +63,16 @@ const SubKegiatanIndividuTable = () => {
 
     // Determine kodeOpd and nip for the subkegiatan endpoint
     const effectiveKodeOpd = isOpdScopedView && activatedDinas ? activatedDinas : (user?.kode_opd ?? null);
-    const effectiveNip = isOpdScopedView ? (user?.nip ?? null) : (user?.nip ?? null);
+    const effectiveNip = user?.nip ?? null;
 
-    const apiUrl = effectiveKodeOpd && effectiveNip && activatedTahun && bulanKey
-        ? `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(effectiveNip)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`
-        : null;
+    let apiUrl = null;
+    if (effectiveKodeOpd && activatedTahun && bulanKey) {
+        if (isOpdScopedView) {
+            apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+        } else if (effectiveNip) {
+            apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(effectiveNip)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+        }
+    }
 
     const { data, loading, error, refetch } = useFetchData<RenjaSubKegiatanIndividuResponse[]>({
         url: apiUrl,
