@@ -44,11 +44,12 @@ const Table = () => {
   const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
   const { user } = useUserContext();
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
-  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user);
+  const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
+  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user) && !isOpdScopedView;
 
   const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
-const getHeaderColor = (level: string | undefined) => {
+  const getHeaderColor = (level: string | undefined) => {
     switch (level) {
       case ROLES.LEVEL_1: return 'bg-red-600 text-white';
       case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
@@ -76,10 +77,16 @@ const getHeaderColor = (level: string | undefined) => {
   const monthLabel = getMonthName(activatedBulan);
   const nip = user?.nip;
   const kodeOpd = activatedDinas || user?.kode_opd;
-  const apiUrl =
-    yearLabel && monthKey && nip && kodeOpd
-      ? `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`
-      : null;
+  let apiUrl = null;
+  if (kodeOpd && yearLabel && monthKey) {
+      if (isOpdScopedView) {
+          // berdasarkan kode opd, tahun, bulan
+          apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+      } else if (nip) {
+          // berdasarkan nip, kode opd, tahun, bulan
+          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+      }
+  }
 
   const { data, loading, error, refetch } = useFetchData<RenaksiIndividuItem[]>({
     url: apiUrl,
@@ -305,9 +312,9 @@ const getHeaderColor = (level: string | undefined) => {
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : canBypassNip && !activatedDinas
       ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi individu muncul."
-    : !activatedTahun || !monthLabel
-      ? "Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul."
-      : undefined;
+      : !activatedTahun || !monthLabel
+        ? "Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul."
+        : undefined;
 
   if (infoMessage) {
     return (
@@ -512,7 +519,7 @@ const getHeaderColor = (level: string | undefined) => {
             onClose={closeModal}
             onSuccess={handleRealisasiSuccess}
           />
-      </FormModal>
+        </FormModal>
       )}
 
       {canEditRealisasi && (

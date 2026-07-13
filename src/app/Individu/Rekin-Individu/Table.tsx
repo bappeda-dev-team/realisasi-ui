@@ -46,8 +46,8 @@ const Table = () => {
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
-const getHeaderColor = (level: string | undefined) => {
-        switch(level) {
+    const getHeaderColor = (level: string | undefined) => {
+        switch (level) {
             case ROLES.LEVEL_1: return 'bg-red-600 text-white';
             case ROLES.LEVEL_2: return 'bg-blue-600 text-white';
             case ROLES.LEVEL_3: return 'bg-green-600 text-white';
@@ -57,7 +57,7 @@ const getHeaderColor = (level: string | undefined) => {
     };
 
     const getHeaderFillColor = (level: string | undefined): [number, number, number] => {
-        switch(level) {
+        switch (level) {
             case ROLES.LEVEL_1: return [220, 38, 38];
             case ROLES.LEVEL_2: return [37, 99, 235];
             case ROLES.LEVEL_3: return [22, 163, 74];
@@ -314,9 +314,9 @@ const getHeaderColor = (level: string | undefined) => {
         ? "Silakan login terlebih dahulu untuk melihat data rekin individu."
         : !activatedDinas
             ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data rekin individu muncul."
-        : !yearLabel || !monthLabel
-            ? "Pilih dan aktifkan tahun dan bulan agar data rekin individu muncul."
-            : undefined;
+            : !yearLabel || !monthLabel
+                ? "Pilih dan aktifkan tahun dan bulan agar data rekin individu muncul."
+                : undefined;
 
     if (infoMessage) {
         return (
@@ -383,7 +383,7 @@ const getHeaderColor = (level: string | undefined) => {
                             >
                                 Indikator
                             </td>
-<th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
                                 {yearLabel} - {monthLabel}
                             </th>
                             <th
@@ -454,7 +454,7 @@ const getHeaderColor = (level: string | undefined) => {
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {formatPercentageText(target?.capaian || "-")}
                                     </td>
-<td className="border-r border-b border-emerald-500 px-6 py-4">
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         {formatPercentageText(target?.keteranganCapaian || "-")}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">

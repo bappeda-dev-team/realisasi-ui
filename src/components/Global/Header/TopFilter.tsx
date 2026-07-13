@@ -87,10 +87,11 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
   const [fetchTrigger, setFetchTrigger] = useState<number>(0);
 
   const isSuperAdmin = user ? canAccessPemda(user) : false;
+  const isAdminOpd = user ? user.roles.includes('admin_opd') : false;
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
-  const effectivelyCanEditOpd = (forceOpdLock && userKodeOpd) ? false : canEditOpd;
+  const effectivelyCanEditOpd = (forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd) ? false : canEditOpd;
 
   const {
     data: dataDinas,

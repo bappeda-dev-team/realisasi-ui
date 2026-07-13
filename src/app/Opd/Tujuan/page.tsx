@@ -16,6 +16,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import TableTujuanOpd from "./_components/TableTujuanOpd";
 import { ModalTujuanOpd } from "./_components/ModalTujuanOpd";
 import { getSessionId } from "@/lib/session";
+import { useUserContext } from "@/context/UserContext";
+import { canEditOpdRealisasi } from "@/lib/rbac";
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null) return "-";
@@ -58,6 +60,9 @@ export default function TujuanPage() {
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedTarget, setSelectedTarget] = useState<TargetInfo | null>(null);
+
+  const { user } = useUserContext();
+  const canEdit = canEditOpdRealisasi(user);
 
   const {
     data: penetapanData,
@@ -360,7 +365,7 @@ export default function TujuanPage() {
         bulanLabel={bulanName}
         tujuanOpd={groupedTujuanOpd}
         handleOpenPrintPreview={handleOpenPrintPreview}
-        onOpenRealisasi={handleOpenRealisasi}
+        onOpenRealisasi={canEdit ? handleOpenRealisasi : undefined}
         bulanKey={bulanKey}
         onFaktorSuccess={() => setRefreshTrigger((prev) => prev + 1)}
       />
