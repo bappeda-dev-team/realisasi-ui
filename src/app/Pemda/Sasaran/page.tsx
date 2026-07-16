@@ -66,6 +66,8 @@ const SasaranPage = () => {
       faktorPenghambat: item.faktorPenghambat ?? null,
       satuan: item.satuan ?? "-",
       tahun: String(item.tahun ?? ""),
+      buktiPendukung: item.buktiPendukung ?? null,
+      keteranganBuktiPendukung: item.keteranganBuktiPendukung ?? null,
     }));
   }, [realisasiData]);
 
@@ -96,6 +98,13 @@ const SasaranPage = () => {
           targets: [],
         };
         sasaran.indikator.push(indikator);
+      } else {
+        if ((!indikator.rumusPerhitungan || indikator.rumusPerhitungan === "-") && item.rumusPerhitungan && item.rumusPerhitungan !== "-") {
+          indikator.rumusPerhitungan = item.rumusPerhitungan;
+        }
+        if ((!indikator.sumberData || indikator.sumberData === "-") && item.sumberData && item.sumberData !== "-") {
+          indikator.sumberData = item.sumberData;
+        }
       }
 
       indikator.targets.push(item);

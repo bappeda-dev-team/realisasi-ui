@@ -23,6 +23,8 @@ interface RowTujuanComponentProps {
         satuan: string;
         rumusPerhitungan: string;
         sumberData: string;
+        buktiPendukung?: string | null;
+        keteranganBuktiPendukung?: string | null;
     }) => void;
     bulanKey?: string;
     onFaktorSuccess?: () => void;
@@ -101,6 +103,8 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                     satuan: target.satuan,
                                     rumusPerhitungan: ind.rumusPerhitungan,
                                     sumberData: ind.sumberData,
+                                    buktiPendukung: target.buktiPendukung,
+                                    keteranganBuktiPendukung: target.keteranganBuktiPendukung,
                                 }) : undefined}
                                 onEditFaktorPenunjang={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penunjang' }) : undefined}
                                 onEditFaktorPenghambat={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penghambat' }) : undefined}

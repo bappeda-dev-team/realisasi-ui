@@ -29,6 +29,8 @@ interface SelectedCookie {
   periode: LabelDropdown | null;
   tahun: LabelDropdown | null;
   bulan: LabelDropdown | null;
+  levelRole?: LabelDropdown | null;
+  namaPegawai?: LabelDropdown | null;
 }
 
 interface FilterProps {
@@ -59,6 +61,13 @@ interface ListPeriode {
   tahun_akhir: number;
 }
 
+interface PegawaiData {
+  id: number;
+  nip: string;
+  nama_pegawai: string;
+  status_pegawai: string;
+}
+
 export default function TopFilter({ user, disableOpdLock, forceOpdLock }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
@@ -74,6 +83,12 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
     setTahun,
     setBulan,
     setActivatedBulan,
+    levelRole,
+    setLevelRole,
+    setActivatedLevelRole,
+    namaPegawai,
+    setNamaPegawai,
+    setActivatedNamaPegawai,
   } = useFilterContext();
   const { lastLoginAt } = useUserContext();
   const [ShowToast, setShowToast] = useState(false);
@@ -82,6 +97,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
   const [periodeOptions, setPeriodeOptions] = useState<PeriodeDropdown[]>([]);
   const [tahunOptions, setTahunOptions] = useState<LabelDropdown[]>([]);
   const [bulanOptions, setBulanOptions] = useState<LabelDropdown[]>([]);
+  const [levelRoleOptions, setLevelRoleOptions] = useState<LabelDropdown[]>([]);
+  const [namaPegawaiOptions, setNamaPegawaiOptions] = useState<LabelDropdown[]>([]);
 
   const [loadingTahun, setLoadingTahun] = useState<boolean>(false);
   const [fetchTrigger, setFetchTrigger] = useState<number>(0);
@@ -108,6 +125,15 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
     error: errorPeriode,
   } = useFetchData<PeriodeResponse>({
     url: `/api/periode/periode`,
+    trigger: fetchTrigger,
+  });
+
+  const {
+    data: dataPegawai,
+    loading: loadingPegawai,
+    error: errorPegawai,
+  } = useFetchData<PegawaiData[]>({
+    url: `/api/v1/realisasi/rekin/pegawai`,
     trigger: fetchTrigger,
   });
   // ----------------------------
@@ -166,6 +192,20 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
   }, [dataPeriode]);
 
   // ----------------------------
+  // DROPDOWN PEGAWAI
+  // ----------------------------
+  useEffect(() => {
+    if (dataPegawai && Array.isArray(dataPegawai)) {
+      setNamaPegawaiOptions(
+        dataPegawai.map((p) => ({
+          value: p.nip?.replace(/-$/, ""),
+          label: p.nama_pegawai,
+        }))
+      );
+    }
+  }, [dataPegawai]);
+
+  // ----------------------------
   // DROPDOWN TAHUN
   // ----------------------------
   useEffect(() => {
@@ -204,6 +244,14 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
     ];
 
     setBulanOptions(resp);
+
+    // Dummy options for Level Role since API is not provided
+    setLevelRoleOptions([
+      { label: "Level 1", value: "LEVEL_1" },
+      { label: "Level 2", value: "LEVEL_2" },
+      { label: "Level 3", value: "LEVEL_3" },
+      { label: "Level 4", value: "LEVEL_4" },
+    ]);
   }
 
   // ----------------------------
@@ -223,6 +271,10 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
       setActivatedTahun(cookie.tahun?.value ?? null);
       setBulan(cookie.bulan?.value ?? null);
       setActivatedBulan(cookie.bulan?.value ?? null);
+      setLevelRole(cookie.levelRole?.value ?? null);
+      setActivatedLevelRole(cookie.levelRole?.value ?? null);
+      setNamaPegawai(cookie.namaPegawai?.value ?? null);
+      setActivatedNamaPegawai(cookie.namaPegawai?.value ?? null);
     } catch { }
   }, [periodeOptions]);
 
@@ -250,6 +302,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
       periode: periodeOptions.find((x) => x.value === periode) ?? null,
       tahun: tahunOptions.find((x) => x.value === tahun) ?? null,
       bulan: bulanOptions.find((x) => x.value === bulan) ?? null,
+      levelRole: levelRoleOptions.find((x) => x.value === levelRole) ?? null,
+      namaPegawai: namaPegawaiOptions.find((x) => x.value === namaPegawai) ?? null,
     };
 
     Cookies.set("selectedCookie", JSON.stringify(cookieValue), {
@@ -259,6 +313,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
     setNamaDinas(selectedDinas?.label ?? null);
     setActivatedTahun(tahun);
     setActivatedBulan(bulan);
+    setActivatedLevelRole(levelRole);
+    setActivatedNamaPegawai(namaPegawai);
     setShowToast(true);
   }
 
@@ -330,6 +386,35 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
             isSearchable
             isClearable
           />
+
+          {forceOpdLock && (isSuperAdmin || isAdminOpd) && (
+            <>
+              {/* PILIH LEVEL ROLE */}
+              <Select
+                instanceId="select-level-role"
+                className="text-sm w-full sm:w-44"
+                options={levelRoleOptions}
+                value={levelRoleOptions.find((x) => x.value === levelRole) ?? null}
+                onChange={(opt) => setLevelRole(opt?.value ?? null)}
+                placeholder="Level Role"
+                isSearchable
+                isClearable
+              />
+
+              {/* PILIH NAMA PEGAWAI */}
+              <Select
+                instanceId="select-nama-pegawai"
+                className="text-sm w-full sm:w-44"
+                options={namaPegawaiOptions}
+                isLoading={loadingPegawai}
+                value={namaPegawaiOptions.find((x) => x.value === namaPegawai) ?? null}
+                onChange={(opt) => setNamaPegawai(opt?.value ?? null)}
+                placeholder={loadingPegawai ? "Memuat..." : "Nama Pegawai"}
+                isSearchable
+                isClearable
+              />
+            </>
+          )}
 
           <button
             className="bg-gray-700 text-white px-4 py-2.5 rounded-md text-sm font-semibold cursor-pointer hover:bg-blue-700 transition"

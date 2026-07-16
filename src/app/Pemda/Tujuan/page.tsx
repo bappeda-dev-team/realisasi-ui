@@ -72,6 +72,9 @@ export default function Tujuan() {
             faktorPenghambat: item.faktorPenghambat ?? null,
             satuan: item.satuan ?? "-",
             tahun: String(item.tahun ?? ""),
+            bulan: String(item.bulan ?? ""),
+            buktiPendukung: item.buktiPendukung ?? null,
+            keteranganBuktiPendukung: item.keteranganBuktiPendukung ?? null,
         }));
     }, [realisasiData]);
 
@@ -103,6 +106,13 @@ export default function Tujuan() {
                     targets: [],
                 };
                 tujuan.indikator.push(indikator);
+            } else {
+                if ((!indikator.rumusPerhitungan || indikator.rumusPerhitungan === "-") && item.rumusPerhitungan && item.rumusPerhitungan !== "-") {
+                    indikator.rumusPerhitungan = item.rumusPerhitungan;
+                }
+                if ((!indikator.sumberData || indikator.sumberData === "-") && item.sumberData && item.sumberData !== "-") {
+                    indikator.sumberData = item.sumberData;
+                }
             }
 
             indikator.targets.push(item);
@@ -362,7 +372,7 @@ export default function Tujuan() {
         const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' });
         doc.setFontSize(14);
         doc.text(`Laporan Realisasi Tujuan Pemda - ${jenisLaporan} - ${namaDinas}`, 40, 40);
-        
+
         doc.text(`Tahun: ${selectedTahunValue}`, 40, 58);
 
         const entries = Object.entries(data.listData as Record<string, number>);

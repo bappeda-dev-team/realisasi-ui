@@ -44,6 +44,8 @@ type TargetInfo = {
   target: string;
   realisasi: number | null;
   satuan: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 };
 
 export default function TujuanPage() {
@@ -123,6 +125,8 @@ export default function TujuanPage() {
             kodeOpd: topKodeOpd,
             rumusPerhitungan: ind.rumus_perhitungan ?? '-',
             sumberData: ind.sumber_data ?? '-',
+            buktiPendukung: tgt.bukti_pendukung ?? null,
+            keteranganBuktiPendukung: tgt.keterangan_bukti_pendukung ?? null,
           });
         });
 

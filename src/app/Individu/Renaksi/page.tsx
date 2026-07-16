@@ -8,16 +8,19 @@ import Table from './Table'
 
 const SasaranPage = () => {
   const { user } = useUserContext()
-  const { activatedDinas, activatedTahun, activatedBulan } = useFilterContext()
-  const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD)
+  const { activatedDinas, activatedTahun, activatedBulan, activatedLevelRole, activatedNamaPegawai } = useFilterContext()
+  const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
   const needsOpdSelection = canBypassNip && !activatedDinas
+  const needsPegawaiSelection = canBypassNip && (!activatedLevelRole || !activatedNamaPegawai)
 
-  if ((!user?.nip && !canBypassNip) || needsOpdSelection || !activatedTahun || !activatedBulan) {
+  if ((!user?.nip && !canBypassNip) || needsOpdSelection || !activatedTahun || !activatedBulan || needsPegawaiSelection) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         {needsOpdSelection
           ? 'Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi individu muncul.'
-          : 'Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul.'}
+          : !activatedTahun || !activatedBulan
+            ? 'Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul.'
+            : 'Pilih dan aktifkan Level Role dan Nama Pegawai agar data renaksi individu muncul.'}
       </div>
     )
   }

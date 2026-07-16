@@ -47,7 +47,7 @@ const ProgramTable = () => {
     const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
     const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
 
-    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
     const { user } = useUserContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
@@ -67,9 +67,15 @@ const ProgramTable = () => {
     let apiUrl = null;
     if (effectiveKodeOpd && activatedTahun && bulanKey) {
         if (isOpdScopedView) {
-            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+            if (activatedLevelRole && activatedNamaPegawai) {
+                const safeNip = activatedNamaPegawai.replace(/-$/, "");
+                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
+            } else {
+                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+            }
         } else if (effectiveNip) {
-            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(effectiveNip)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+            const safeNip = effectiveNip.replace(/-$/, "");
+            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
         }
     }
 

@@ -84,6 +84,7 @@ export interface RealisasiTujuan {
   realisasi: number;
   satuan: string;
   tahun: string;
+  bulan: string;
   jenisRealisasi: "NAIK" | "TURUN";
   status: "UNCHECKED" | "CHECKED";
   createdDate: string;
@@ -93,6 +94,8 @@ export interface RealisasiTujuan {
   keteranganCapaian?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export type RealisasiTujuanResponse = RealisasiTujuan[];
@@ -115,6 +118,9 @@ export interface TargetRealisasiCapaian {
   faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
+  bulan: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface TujuanPemdaRealisasiGroupedIndikator {
@@ -146,6 +152,8 @@ export interface TujuanRequest {
   tahun: string;
   bulan: string;
   jenisRealisasi: string;
+  buktiPendukung?: string;
+  keteranganBuktiPendukung?: string;
 }
 
 export interface SasaranRequest {
@@ -161,21 +169,8 @@ export interface SasaranRequest {
   jenisRealisasi: string;
   rumusPerhitungan: string;
   sumberData: string;
-}
-
-export interface SasaranRequest {
-  targetRealisasiId: number | null;
-  sasaranId: string;
-  indikatorId: string;
-  targetId: string;
-  target: string;
-  realisasi: number | '';
-  satuan: string;
-  tahun: string;
-  bulan: string;
-  jenisRealisasi: string;
-  rumusPerhitungan: string;
-  sumberData: string;
+  buktiPendukung?: string;
+  keteranganBuktiPendukung?: string;
 }
 
 export interface Modal<T> {
@@ -229,6 +224,8 @@ export interface RealisasiSasaran {
   keteranganCapaian?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 // tidak dipakai akan dihapus ketika renaksi opd jadi
@@ -259,6 +256,8 @@ export interface RenaksiIndividuResponse {
   anggaran?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface SasaranData {
@@ -384,6 +383,8 @@ export interface RenaksiTarget {
   kodeSasaran?: string;
   kodeIndikator?: string;
   paguAnggaran?: number;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RenaksiRealisasiRequest {
@@ -417,6 +418,8 @@ export interface RenaksiIndividuRealisasiRequest {
   bulan: string;
   satuan: string;
   jenisRealisasi: "NAIK" | "TURUN";
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RenaksiIndividuRealisasiResponse {
@@ -444,6 +447,8 @@ export interface RenaksiIndividuRealisasiResponse {
   lastModifiedBy: string;
   capaian: string;
   keteranganCapaian: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RenaksiTriwulanCell {
@@ -528,6 +533,8 @@ export interface RekinTarget {
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   kodeOpd?: string | null;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RekinRealisasiRequest {
@@ -540,6 +547,8 @@ export interface RekinRealisasiRequest {
   realisasi: number;
   tahun: string;
   bulan: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RekinData {
@@ -608,6 +617,8 @@ export interface RekinIndividuResponse {
   last_modified_by: string;
   capaian?: number | null;
   keterangan_capaian?: string | null;
+  bukti_pendukung?: string | null;
+  keterangan_bukti_pendukung?: string | null;
 }
 
 // ===== Rekin Individu - Penetapan (from penetapan endpoint) =====
@@ -740,6 +751,8 @@ export interface TargetRealisasiCapaianSasaran {
   faktorPenghambat?: string | null;
   satuan: string;
   tahun: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface SasaranPemdaRealisasiGroupedIndikator {
@@ -816,6 +829,8 @@ export interface TujuanOpdTargetRealisasiCapaian {
   kodeOpd: string;
   rumusPerhitungan: string;
   sumberData: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface TujuanOpdRealisasi {
@@ -886,6 +901,8 @@ export interface TujuanOpdPenetapanTarget {
   keterangan_capaian: string | null;
   faktor_penunjang?: string | null;
   faktor_penghambat?: string | null;
+  bukti_pendukung?: string | null;
+  keterangan_bukti_pendukung?: string | null;
 }
 
 export interface TujuanOpdPenetapanIndikator {
@@ -983,6 +1000,8 @@ export interface TujuanOpdRealisasiPayload {
   tahun: string;
   bulan: string;
   kodeOpd: string;
+  buktiPendukung?: string;
+  keteranganBuktiPendukung?: string;
 }
 
 export interface TujuanOpdFaktorPenunjangPayload {
@@ -1346,6 +1365,8 @@ export interface RenjaTarget {
   kodeOpd?: string;
   kodePagu?: string;
   targetRealisasi?: number;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface RenjaBatchRequest {
@@ -1438,6 +1459,8 @@ export interface RenjaSubKegiatanIndividuResponse {
   faktorPenghambat: string;
   createdBy: string;
   lastModifiedBy: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export type RenjaSubKegiatanIndividuResponseList = RenjaSubKegiatanIndividuResponse[];
@@ -1465,6 +1488,8 @@ export interface RenjaProgramIndividuResponse {
   faktorPenghambat: string;
   createdBy: string;
   lastModifiedBy: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export type RenjaProgramIndividuResponseList = RenjaProgramIndividuResponse[];
@@ -1492,6 +1517,8 @@ export interface RenjaKegiatanIndividuResponse {
   faktorPenghambat: string;
   createdBy: string;
   lastModifiedBy: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export type RenjaKegiatanIndividuResponseList = RenjaKegiatanIndividuResponse[];

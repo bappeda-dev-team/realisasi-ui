@@ -19,6 +19,8 @@ interface TableTujuanProps {
     satuan: string;
     rumusPerhitungan: string;
     sumberData: string;
+    buktiPendukung?: string | null;
+    keteranganBuktiPendukung?: string | null;
   }) => void;
   bulanKey?: string;
   onFaktorSuccess?: () => void;
