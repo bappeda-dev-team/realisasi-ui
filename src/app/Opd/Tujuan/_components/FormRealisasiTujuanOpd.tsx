@@ -7,6 +7,7 @@ import { canEditOpdRealisasi } from '@/lib/rbac';
 import { useFilterContext } from '@/context/FilterContext';
 import { TujuanOpdRealisasiResponse, TujuanOpdRealisasiPayload } from '@/types';
 import React, { useState } from 'react';
+import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormRealisasiTujuanOpdProps {
   requestValues: {
@@ -17,6 +18,8 @@ interface FormRealisasiTujuanOpdProps {
     target: string;
     realisasi: number | null;
     satuan: string;
+    buktiPendukung?: string | null;
+    keteranganBuktiPendukung?: string | null;
   } | null;
   onClose: () => void;
   onSuccess: () => void;
@@ -46,6 +49,48 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
     }
     return '';
   });
+  const [fileUrl, setFileUrl] = useState<string | null>(requestValues?.buktiPendukung ?? null);
+  const [keteranganBuktiPendukung, setKeteranganBuktiPendukung] = useState<string>(requestValues?.keteranganBuktiPendukung ?? '');
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    try {
+        const sessionId = getSessionId();
+        if (!sessionId) {
+            alert("Sesi anda telah berakhir. Silakan login kembali.");
+            return;
+        }
+
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", file);
+
+        const res = await fetch(`/api/v1/realisasi/tujuan_opd/upload/file`, {
+            method: "POST",
+            headers: {
+                "X-Session-Id": sessionId,
+            },
+            credentials: "include",
+            body: uploadFormData,
+        });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                notifySessionExpired();
+                throw new Error("Session habis, silakan login kembali.");
+            }
+            throw new Error("Gagal mengunggah file");
+        }
+        
+        const data = await res.json();
+        setFileUrl(data.url);
+    } catch (error) {
+        console.error(error);
+        alert("Terjadi kesalahan saat mengunggah file");
+    }
+  };
+
 
   if (!requestValues) return null;
 
@@ -88,6 +133,8 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
       tahun: String(tahun),
       bulan: normalizedBulan,
       kodeOpd: kodeOpd ?? '',
+      buktiPendukung: fileUrl ?? undefined,
+      keteranganBuktiPendukung: keteranganBuktiPendukung || undefined,
     };
 
     const result = await submit(payload);
@@ -133,6 +180,48 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm">
               {requestValues.satuan}
             </p>
+            
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1 mt-2" htmlFor="fileUpload">
+                Upload Bukti Pendukung:
+            </label>
+            <div className="flex items-center gap-2 mb-2 px-2 py-1 w-full border rounded bg-white">
+                <label className="cursor-pointer shrink-0">
+                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 transition-colors border border-gray-300 inline-block font-medium">
+                        Pilih File
+                    </span>
+                    <input
+                        type="file"
+                        className="hidden"
+                        onChange={handleUploadFile}
+                    />
+                </label>
+                {(() => {
+                    if (!fileUrl) return <span className="text-gray-500 text-sm truncate flex-1">Tidak ada File Yang Dipilih</span>;
+                    const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || 'Lihat File';
+                    const fileName = rawFileName.replace(/^\d+-/, '');
+                    return (
+                        <a 
+                            href={fileUrl} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors inline-block truncate max-w-[200px] align-middle"
+                            title={fileName}
+                        >
+                            {fileName}
+                        </a>
+                    );
+                })()}
+            </div>
+
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1" htmlFor="keteranganUpload">
+                Keterangan Bukti Pendukung:
+            </label>
+            <textarea
+                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                rows={2}
+                value={keteranganBuktiPendukung}
+                onChange={(e) => setKeteranganBuktiPendukung(e.target.value)}
+            />
           </div>
         </div>
       </div>

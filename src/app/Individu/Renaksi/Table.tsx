@@ -41,7 +41,7 @@ const Table = () => {
   const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
   const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
 
-  const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+  const { activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
   const { user } = useUserContext();
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
   const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
@@ -80,11 +80,15 @@ const Table = () => {
   let apiUrl = null;
   if (kodeOpd && yearLabel && monthKey) {
       if (isOpdScopedView) {
-          // berdasarkan kode opd, tahun, bulan
-          apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+          if (activatedLevelRole && activatedNamaPegawai) {
+              const safeNip = activatedNamaPegawai.replace(/-$/, "");
+              apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
+          } else {
+              apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+          }
       } else if (nip) {
-          // berdasarkan nip, kode opd, tahun, bulan
-          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+          const safeNip = nip.replace(/-$/, "");
+          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
       }
   }
 

@@ -30,7 +30,7 @@ interface TableRow {
 
 const Table = () => {
     const { user } = useUserContext();
-    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const canEditRealisasi = canEditIndividuRekinRealisasi(user);
     const [rows, setRows] = useState<TableRow[]>([]);
@@ -74,12 +74,24 @@ const Table = () => {
 
     const nip = user?.nip;
     const kodeOpd = activatedDinas || user?.kode_opd;
-    const apiUrl =
-        yearLabel && monthKey && nip && kodeOpd
-            ? `/api/v1/realisasi/rekin/nip/${encodeURIComponent(nip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`
-            : null;
+    const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
 
-    const { data, loading, error, refetch } = useFetchData<RekinIndividuPenetapanResponse>({
+    let apiUrl = null;
+    if (yearLabel && monthKey && kodeOpd) {
+        if (isAdmin) {
+            if (activatedLevelRole && activatedNamaPegawai) {
+                const safeNip = activatedNamaPegawai.replace(/-$/, "");
+                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
+            } else {
+                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+            }
+        } else if (nip) {
+            const safeNip = nip.replace(/-$/, "");
+            apiUrl = `/api/v1/realisasi/rekin/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
+        }
+    }
+
+    const { data, loading, error, refetch } = useFetchData<any>({
         url: apiUrl,
     });
 
@@ -96,15 +108,54 @@ const Table = () => {
             return;
         }
 
+        if (Array.isArray(data)) {
+            setRows(
+                data.map((item: any, index: number) => {
+                    const targets: RekinTarget[] = [{
+                        targetRealisasiId: item.id ?? null,
+                        rekinId: item.kodePkRekin,
+                        rekin: item.kodePkRekin ?? "-",
+                        nip: item.nip,
+                        indikatorId: item.kodeIndikatorPkRekin ?? "",
+                        indikator: item.kodeIndikatorPkRekin ?? "-",
+                        targetId: item.kodeTargetPkRekin,
+                        target: "-",
+                        realisasi: item.realisasi ?? 0,
+                        satuan: "-",
+                        tahun: String(item.tahun ?? yearLabel),
+                        bulan: monthLabel ?? undefined,
+                        jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        capaian: "-",
+                        keteranganCapaian: "-",
+                        faktorPenunjang: item.faktorPenunjang ?? "-",
+                        faktorPenghambat: item.faktorPenghambat ?? "-",
+                        idSasaran: item.kodeSasaranOpd ?? null,
+                        sasaran: null,
+                        kodeOpd: item.kodeOpd ?? user.kode_opd,
+                    }];
+
+                    return {
+                        id: item.id || index,
+                        rekin: item.kodePkRekin ?? "-",
+                        nama_pegawai: "-",
+                        nip: item.nip ?? "-",
+                        indikator: item.kodeIndikatorPkRekin ?? "-",
+                        targets,
+                    };
+                })
+            );
+            return;
+        }
+
         setRows(
-            (data.rekins ?? []).flatMap((rekinItem) =>
-                rekinItem.indikator_pk.map((indikator) => {
+            (data.rekins ?? []).flatMap((rekinItem: any) =>
+                rekinItem.indikator_pk.map((indikator: any) => {
                     const backendNamaPegawai = data.nama?.trim();
                     const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
                     const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
-                    const nipPegawai = user.nip || "-";
+                    const nipPegawai = data.pegawai_id || user.nip || "-";
 
-                    const targets: RekinTarget[] = indikator.target_pk.map((t) => ({
+                    const targets: RekinTarget[] = indikator.target_pk.map((t: any) => ({
                         targetRealisasiId: t.id ?? null,
                         rekinId: rekinItem.kode_pk,
                         rekin: rekinItem.rekin ?? "-",
@@ -316,7 +367,9 @@ const Table = () => {
             ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data rekin individu muncul."
             : !yearLabel || !monthLabel
                 ? "Pilih dan aktifkan tahun dan bulan agar data rekin individu muncul."
-                : undefined;
+                : (canBypassNip && (!activatedLevelRole || !activatedNamaPegawai))
+                    ? "Pilih dan aktifkan Level Role dan Nama Pegawai agar data rekin individu muncul."
+                    : undefined;
 
     if (infoMessage) {
         return (

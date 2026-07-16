@@ -4,11 +4,8 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useFilterContext } from "@/context/FilterContext";
 import React, { useEffect, useState } from "react";
-import { gabunganDataPerencanaanRealisasi } from "./_lib/gabunganDataSasaranRealisasi";
 import TableIku from "./_components/TableIku";
 import {
-  IkuPemdaPerencanaanResponse,
-  IkuPemdaRealisasiResponse,
   IkuPemda,
   IkuPemdaTargetRealisasiCapaian,
 } from "@/types";
@@ -33,27 +30,14 @@ const IkuPage = () => {
     }
   }
 
-  const tahunAwal = periode[0];
-  const tahunAkhir = periode[periode.length - 1];
-  const jenisPeriode = "rpjmd";
   const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
-  const canFetchPerencanaan =
-    typeof tahunAwal === "number" && typeof tahunAkhir === "number";
-  const {
-    data: ikuPerencanaan,
-    loading: perencanaanLoading,
-    error: perencanaanError,
-  } = useFetchData<IkuPemdaPerencanaanResponse>({
-    url: canFetchPerencanaan
-      ? `/api/perencanaan/indikator_utama/periode/${tahunAwal}/${tahunAkhir}/${jenisPeriode}`
-      : null,
-  });
+
   const {
     data: ikuRealisasi,
     loading: realisasiLoading,
     error: realisasiError,
-  } = useFetchData<IkuPemdaRealisasiResponse>({
-    url: selectedTahun ? `/api/realisasi/ikus/by-tahun/${selectedTahunValue}` : null,
+  } = useFetchData<any[]>({
+    url: "/api/v1/realisasi/ikus/by-tahun/2026",
   });
   const [PerencanaanIku, setPerencanaanIku] = useState<IkuPemda[]>([]);
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
@@ -65,17 +49,44 @@ const IkuPage = () => {
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
 
   useEffect(() => {
-    if (ikuPerencanaan?.data && ikuRealisasi) {
-      const perencanaan = ikuPerencanaan.data;
-      setPerencanaanIku(perencanaan);
+    if (ikuRealisasi) {
+      const uniqueIkus: IkuPemda[] = [];
+      const ikuMap = new Map();
+      const targetRealisasiCapaian: IkuPemdaTargetRealisasiCapaian[] = [];
 
-      const combinedData = gabunganDataPerencanaanRealisasi(
-        perencanaan,
-        ikuRealisasi,
-      );
-      setTargetRealisasiCapaian(combinedData);
+      ikuRealisasi.forEach((r: any) => {
+        if (!ikuMap.has(r.indikatorId)) {
+          ikuMap.set(r.indikatorId, true);
+          uniqueIkus.push({
+            indikator_id: r.indikatorId,
+            indikator: r.indikator,
+            asal_iku: r.asal_iku || r.asalIku || "-",
+            rumus_perhitungan: r.rumus_perhitungan || r.rumusPerhitungan || "-",
+            sumber_data: r.sumber_data || r.sumberData || "-",
+            is_active: true,
+            target: [],
+          });
+        }
+
+        targetRealisasiCapaian.push({
+          targetRealisasiId: r.id,
+          indikatorId: r.indikatorId,
+          indikator: r.indikator,
+          targetId: r.targetId,
+          target: r.target,
+          realisasi: r.realisasi,
+          capaian: r.capaian,
+          satuan: r.satuan,
+          tahun: r.tahun,
+          jenisRealisasi: r.jenisRealisasi,
+          jenisIku: r.jenisIku,
+        });
+      });
+
+      setPerencanaanIku(uniqueIkus);
+      setTargetRealisasiCapaian(targetRealisasiCapaian);
     }
-  }, [ikuPerencanaan, ikuRealisasi]);
+  }, [ikuRealisasi]);
 
   useEffect(() => {
     return () => {
@@ -93,10 +104,8 @@ const IkuPage = () => {
     );
   }
 
-  if (perencanaanLoading || realisasiLoading)
-    return <LoadingBeat loading={perencanaanLoading} />;
-  if (perencanaanError)
-    return <div>Error fetching perencanaan: {perencanaanError}</div>;
+  if (realisasiLoading)
+    return <LoadingBeat loading={realisasiLoading} />;
   if (realisasiError)
     return <div>Error fetching realisasi: {realisasiError}</div>;
 
@@ -309,3 +318,4 @@ const IkuPage = () => {
 };
 
 export default IkuPage;
+

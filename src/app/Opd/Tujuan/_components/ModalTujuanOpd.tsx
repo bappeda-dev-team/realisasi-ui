@@ -13,6 +13,8 @@ interface ModalTujuanOpdProps {
     target: string;
     realisasi: number | null;
     satuan: string;
+    buktiPendukung?: string | null;
+    keteranganBuktiPendukung?: string | null;
   } | null;
   tahun: number;
   bulan: string;

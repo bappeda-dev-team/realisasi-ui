@@ -8,6 +8,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { getSessionId, notifySessionExpired } from "@/lib/session";
 
 type FormRealisasiRenjaTargetIndividuSubKegiatanProps = FormProps<RenjaTarget[], RenjaTarget[]>;
 
@@ -24,6 +25,8 @@ interface SubkegiatanRealisasiRequest {
   pagu: number;
   realisasi_target: number;
   realisasi_pagu: number;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTargetIndividuSubKegiatanProps> = ({ requestValues, onClose, onSuccess }) => {
@@ -70,6 +73,62 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
     );
   };
 
+  const handleKeteranganChange = (targetId: string, tahun: string, value: string) => {
+    setFormData((previous) =>
+      previous.map((item) =>
+        item.targetId === targetId && item.tahun === tahun
+          ? { ...item, keteranganBuktiPendukung: value }
+          : item
+      )
+    );
+  };
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>, targetId: string, tahun: string) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    
+    try {
+        const sessionId = getSessionId();
+        if (!sessionId) {
+            alert("Sesi anda telah berakhir. Silakan login kembali.");
+            return;
+        }
+
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", file);
+
+        const res = await fetch(`/api/v1/realisasi/renja_individu/upload/file`, {
+            method: "POST",
+            headers: {
+                "X-Session-Id": sessionId,
+            },
+            credentials: "include",
+            body: uploadFormData,
+        });
+
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                notifySessionExpired();
+                throw new Error("Session habis, silakan login kembali.");
+            }
+            throw new Error("Gagal mengunggah file");
+        }
+        
+        const data = await res.json();
+        
+        setFormData((previous) =>
+            previous.map((item) =>
+                item.targetId === targetId && item.tahun === tahun
+                    ? { ...item, buktiPendukung: data.url }
+                    : item
+            )
+        );
+    } catch (error) {
+        console.error(error);
+        alert("Terjadi kesalahan saat mengunggah file");
+    }
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setValidationError(null);
@@ -104,6 +163,8 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
       pagu: item.pagu ?? 0,
       realisasi_target: item.realisasi,
       realisasi_pagu: item.realisasiPagu ?? 0,
+      buktiPendukung: item.buktiPendukung,
+      keteranganBuktiPendukung: item.keteranganBuktiPendukung,
     };
 
     setIsSubmitting(true);
@@ -125,6 +186,8 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
             keteranganCapaianPagu: result.keteranganCapaianPagu ?? orig.keteranganCapaianPagu,
             faktorPenunjang: result.faktorPenunjang ?? orig.faktorPenunjang,
             faktorPenghambat: result.faktorPenghambat ?? orig.faktorPenghambat,
+            buktiPendukung: result.buktiPendukung ?? orig.buktiPendukung,
+            keteranganBuktiPendukung: result.keteranganBuktiPendukung ?? orig.keteranganBuktiPendukung,
           };
         }
         // For additional targets (if any), just keep the original
@@ -160,7 +223,7 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
               <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
                 {target.target}
               </p>
-              <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi">
+              <label className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2" htmlFor="realisasi">
                 Realisasi
               </label>
               <input
@@ -173,10 +236,53 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
                   handleChange(target.targetId, target.tahun, event.target.value)
                 }
               />
-              <p className="uppercase text-xs font-bold text-gray-700 mb-2">Satuan</p>
+              <p className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2">Satuan</p>
               <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
                 {target.satuan}
               </p>
+              <label className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2" htmlFor={`fileUpload-${target.targetId}`}>
+                Upload Bukti Pendukung:
+              </label>
+              <div className="flex items-center gap-2 mb-2 px-2 py-1 w-full border rounded bg-white">
+                <label className="cursor-pointer shrink-0">
+                  <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 transition-colors border border-gray-300 inline-block font-medium">
+                    Pilih File
+                  </span>
+                  <input
+                    type="file"
+                    className="hidden"
+                    id={`fileUpload-${target.targetId}`}
+                    onChange={(e) => handleUploadFile(e, target.targetId, target.tahun)}
+                  />
+                </label>
+                {(() => {
+                  if (!target.buktiPendukung) return <span className="text-gray-500 text-sm truncate flex-1">Tidak ada File Yang Dipilih</span>;
+                  const rawFileName = target.buktiPendukung.split('/').pop()?.split('?')[0] || 'Lihat File';
+                  const fileName = rawFileName.replace(/^\d+-/, '');
+                  return (
+                    <a 
+                      href={target.buktiPendukung} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors inline-block truncate max-w-[200px] align-middle"
+                      title={fileName}
+                    >
+                      {fileName}
+                    </a>
+                  );
+                })()}
+              </div>
+
+              <label className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2" htmlFor={`keteranganUpload-${target.targetId}`}>
+                Keterangan Bukti Pendukung:
+              </label>
+              <textarea
+                id={`keteranganUpload-${target.targetId}`}
+                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                rows={2}
+                value={target.keteranganBuktiPendukung || ""}
+                onChange={(e) => handleKeteranganChange(target.targetId, target.tahun, e.target.value)}
+              />
             </div>
           ))}
         </div>

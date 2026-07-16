@@ -11,6 +11,10 @@ export interface FilterContextType {
   activatedTahun: string | null;
   bulan: string | null;
   activatedBulan: string | null;
+  levelRole: string | null;
+  activatedLevelRole: string | null;
+  namaPegawai: string | null;
+  activatedNamaPegawai: string | null;
   setDinas: (v: string | null) => void;
   setActivatedDinas: (v: string | null) => void;
   setNamaDinas: (v: string | null) => void;
@@ -19,6 +23,10 @@ export interface FilterContextType {
   setActivatedTahun: (v: string | null) => void;
   setBulan: (v: string | null) => void;
   setActivatedBulan: (v: string | null) => void;
+  setLevelRole: (v: string | null) => void;
+  setActivatedLevelRole: (v: string | null) => void;
+  setNamaPegawai: (v: string | null) => void;
+  setActivatedNamaPegawai: (v: string | null) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
@@ -34,6 +42,10 @@ export function FilterProvider({
   const [activatedTahun, setActivatedTahun] = useState<string | null>(null);
   const [bulan, setBulan] = useState<string | null>(null);
   const [activatedBulan, setActivatedBulan] = useState<string | null>(null);
+  const [levelRole, setLevelRole] = useState<string | null>(null);
+  const [activatedLevelRole, setActivatedLevelRole] = useState<string | null>(null);
+  const [namaPegawai, setNamaPegawai] = useState<string | null>(null);
+  const [activatedNamaPegawai, setActivatedNamaPegawai] = useState<string | null>(null);
 
   return (
     <FilterContext.Provider
@@ -46,6 +58,10 @@ export function FilterProvider({
         activatedTahun,
         bulan,
         activatedBulan,
+        levelRole,
+        activatedLevelRole,
+        namaPegawai,
+        activatedNamaPegawai,
         setDinas,
         setActivatedDinas,
         setNamaDinas,
@@ -54,6 +70,10 @@ export function FilterProvider({
         setActivatedTahun,
         setBulan,
         setActivatedBulan,
+        setLevelRole,
+        setActivatedLevelRole,
+        setNamaPegawai,
+        setActivatedNamaPegawai,
       }}
     >
       {children}

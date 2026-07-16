@@ -4,6 +4,7 @@ import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } fro
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
 import { getMonthKey } from '@/lib/months';
+import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
     requestValues,
@@ -35,7 +36,7 @@ useEffect(() => {
                 rumusPerhitungan: indikator.rumusPerhitungan ?? '-',
                 sumberData: indikator.sumberData ?? '-',
                 tahun: indikator.tahun,
-                bulan: normalizedBulan ?? '',
+                bulan: (indikator.bulan || normalizedBulan) ?? '',
                 targetId: indikator.targetId,
                 target: typeof indikator.target === 'string'
                     ? indikator.target.replace(',', '.')
@@ -43,6 +44,8 @@ useEffect(() => {
                 satuan: indikator.satuan,
                 realisasi: indikator.realisasi,
                 jenisRealisasi: 'NAIK',
+                buktiPendukung: indikator.buktiPendukung ?? '',
+                keteranganBuktiPendukung: indikator.keteranganBuktiPendukung ?? '',
             })
         });
         setFormData(generatedFormData);
@@ -64,15 +67,69 @@ useEffect(() => {
     };
 
     // handle saat berubah ?
-    const handleChange = (indikatorId: string, tahun: string, value: string) => {
+    const handleChange = (indikatorId: string, tahun: string, targetId: string, value: string) => {
         const trimmed = value.trim();
         const normalizedValue = trimmed.replace(',', '.');
         const numericReal = trimmed === '' ? '' : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
-                item.indikatorId === indikatorId && item.tahun === tahun
+                item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
                     ? { ...item, realisasi: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
+                    : item
+            )
+        );
+    };
+
+    const handleUploadFile = async (indikatorId: string, tahun: string, targetId: string, file: File) => {
+        try {
+            const sessionId = getSessionId();
+            if (!sessionId) {
+                alert("Sesi anda telah berakhir. Silakan login kembali.");
+                return;
+            }
+
+            const uploadFormData = new FormData();
+            uploadFormData.append("file", file);
+
+            const res = await fetch(`/api/v1/realisasi/tujuans/upload/file`, {
+                method: "POST",
+                headers: {
+                    "X-Session-Id": sessionId,
+                },
+                credentials: "include",
+                body: uploadFormData,
+            });
+
+            if (!res.ok) {
+                if (res.status === 401 || res.status === 403) {
+                    notifySessionExpired();
+                    throw new Error("Session habis, silakan login kembali.");
+                }
+                throw new Error("Gagal mengunggah file");
+            }
+            
+            const data = await res.json();
+            const url = data.url;
+
+            setFormData((prev) =>
+                prev.map((item) =>
+                    item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
+                        ? { ...item, buktiPendukung: url }
+                        : item
+                )
+            );
+        } catch (error) {
+            console.error(error);
+            alert("Terjadi kesalahan saat mengunggah file");
+        }
+    };
+
+    const handleKeteranganChange = (indikatorId: string, tahun: string, targetId: string, value: string) => {
+        setFormData((prev) =>
+            prev.map((item) =>
+                item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
+                    ? { ...item, keteranganBuktiPendukung: value }
                     : item
             )
         );
@@ -138,13 +195,60 @@ useEffect(() => {
                                 type="text"
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
-                                value={convertToDisplayString(formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun)?.realisasi ?? null)}
-                                onChange={(e) => handleChange(ind.indikatorId, ind.tahun, e.target.value)}
+                                value={convertToDisplayString(formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.realisasi ?? null)}
+                                onChange={(e) => handleChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
                             />
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
                                 Satuan:
                             </p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">{ind.satuan ?? ''}</p>
+                            
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="fileUpload">
+                                Upload Bukti Pendukung:
+                            </label>
+                            <div className="flex items-center gap-2 mb-2 px-2 py-1 w-full border rounded bg-white">
+                                <label className="cursor-pointer shrink-0">
+                                    <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-xs hover:bg-gray-200 transition-colors border border-gray-300 inline-block font-medium">
+                                        Pilih File
+                                    </span>
+                                    <input
+                                        type="file"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                            if (e.target.files && e.target.files[0]) {
+                                                handleUploadFile(ind.indikatorId, ind.tahun, ind.targetId, e.target.files[0]);
+                                            }
+                                        }}
+                                    />
+                                </label>
+                                {(() => {
+                                    const fileUrl = formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.buktiPendukung;
+                                    if (!fileUrl) return <span className="text-gray-500 text-sm truncate flex-1">Tidak ada File Yang Dipilih</span>;
+                                    const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || 'Lihat File';
+                                    const fileName = rawFileName.replace(/^\d+-/, '');
+                                    return (
+                                        <a 
+                                            href={fileUrl} 
+                                            target="_blank" 
+                                            rel="noreferrer"
+                                            className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors inline-block truncate max-w-[200px] align-middle"
+                                            title={fileName}
+                                        >
+                                            {fileName}
+                                        </a>
+                                    );
+                                })()}
+                            </div>
+
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="keteranganUpload">
+                                Keterangan Bukti Pendukung:
+                            </label>
+                            <textarea
+                                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                                rows={2}
+                                value={formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.keteranganBuktiPendukung ?? ''}
+                                onChange={(e) => handleKeteranganChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
+                            />
                         </div>
                     ))}
                 </div>
