@@ -18,7 +18,7 @@ import { logout } from "./logout";
 //   staff: "bg-stone-100 text-stone-700",
 // };
 
-export default function UserProfile({ user }: { user: User }) {
+export default function UserProfile({ user, hideOpd }: { user: User, hideOpd?: boolean }) {
   const { setUser, setError } = useUserContext();
   const { periode, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
   const level = user?.roles?.[0] ?? "unknown";
@@ -47,8 +47,12 @@ export default function UserProfile({ user }: { user: User }) {
         <span>{activatedTahun}</span>
         <span className="text-white/70">|</span>
         <span>{bulanName}</span>
-        <span className="text-white/70">|</span>
-        <span>{namaDinas ?? 'OPD belum dipilih'}</span>
+        {!hideOpd && (
+          <>
+            <span className="text-white/70">|</span>
+            <span>{namaDinas ?? 'OPD belum dipilih'}</span>
+          </>
+        )}
         <span className="text-white/70">|</span>
         <span>{user?.firstName}</span>
         <span className="text-white/70">|</span>

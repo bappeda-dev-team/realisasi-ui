@@ -37,7 +37,7 @@ const IkuPage = () => {
     loading: realisasiLoading,
     error: realisasiError,
   } = useFetchData<any[]>({
-    url: "/api/v1/realisasi/ikus/by-tahun/2026",
+    url: selectedTahun && activatedBulan ? `/api/v1/realisasi/ikus/by-tahun/${selectedTahun}/by-bulan/${activatedBulan}` : null,
   });
   const [PerencanaanIku, setPerencanaanIku] = useState<IkuPemda[]>([]);
   const [TargetRealisasiCapaian, setTargetRealisasiCapaian] = useState<
@@ -60,7 +60,7 @@ const IkuPage = () => {
           uniqueIkus.push({
             indikator_id: r.indikatorId,
             indikator: r.indikator,
-            asal_iku: r.asal_iku || r.asalIku || "-",
+            asal_iku: r.jenisIku || "-",
             rumus_perhitungan: r.rumus_perhitungan || r.rumusPerhitungan || "-",
             sumber_data: r.sumber_data || r.sumberData || "-",
             is_active: true,
