@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useMemo, useState, useEffect } from "react";
-import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRekinIndividu from "./_components/FormRealisasiRekinIndividu";
@@ -18,6 +18,8 @@ import { RekinIndividuPenetapanResponse, RekinTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRekinRealisasi } from "@/lib/rbac";
+import { TbRefresh } from "react-icons/tb";
+import { getSessionId } from "@/lib/session";
 
 interface TableRow {
     id: number;
@@ -43,6 +45,7 @@ const Table = () => {
     const [selectedFaktorRow, setSelectedFaktorRow] = useState<TableRow | null>(null);
     const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
     const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
+    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
     const userLevel = user?.roles.find(r => r.startsWith('level_'));
 
@@ -371,6 +374,57 @@ const Table = () => {
                     ? "Pilih dan aktifkan Level Role dan Nama Pegawai agar data rekin individu muncul."
                     : undefined;
 
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleSync = async () => {
+        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
+        if (!nipToSync || !kodeOpd || !yearLabel) return;
+
+        setIsSyncing(true);
+        try {
+            const sessionId = getSessionId();
+            const response = await fetch(`/api/v1/realisasi/rekin/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=1`, {
+                method: "POST",
+                headers: {
+                    "X-Session-Id": sessionId ?? "",
+                },
+            });
+            if (!response.ok) {
+                console.error("Failed to sync data");
+            }
+            if (refetch) {
+                await refetch();
+            }
+        } catch (error) {
+            console.error("Error during sync:", error);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const renderSyncButton = () => {
+        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
+        const canSync = nipToSync && kodeOpd && yearLabel;
+
+        return (
+            <div className="flex justify-end mb-2 mr-2 mt-2">
+                <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={!canSync || isSyncing || loading}>
+                    {isSyncing ? (
+                        <div className="flex items-center gap-2">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                            <span>Syncing...</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <TbRefresh size={20} />
+                            <span>Sinkronisasi</span>
+                        </div>
+                    )}
+                </ButtonSky>
+            </div>
+        );
+    };
+
     if (infoMessage) {
         return (
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
@@ -381,33 +435,43 @@ const Table = () => {
 
     if (loading) {
         return (
-            <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-                <LoadingBeat loading={true} />
-                <p className="text-sm text-gray-600 mt-2">
-                    Memuat data rekin individu...
-                </p>
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+                    <LoadingBeat loading={true} />
+                    <p className="text-sm text-gray-600 mt-2">
+                        Memuat data rekin individu...
+                    </p>
+                </div>
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-                Gagal memuat data rekin individu: {error}
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+                    Gagal memuat data rekin individu: {error}
+                </div>
+            </>
         );
     }
 
     if (!rows.length) {
         return (
-            <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data rekin individu tidak ada.
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+                    Data rekin individu tidak ada.
+                </div>
+            </>
         );
     }
 
     return (
         <>
+            {renderSyncButton()}
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table id="print-area-rekin" className="w-full">
                     <thead>
@@ -649,6 +713,35 @@ const Table = () => {
                                 className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
                             >
                                 Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isSyncModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+                    <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+                        <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+                        <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+                        <div className="flex justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsSyncModalOpen(false)}
+                                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                            >
+                                Tidak
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsSyncModalOpen(false);
+                                    handleSync();
+                                }}
+                                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                                Ya
                             </button>
                         </div>
                     </div>

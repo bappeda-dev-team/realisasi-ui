@@ -1,6 +1,8 @@
 "use client";
 
 import { LoadingBeat } from "@/components/Global/Loading";
+import { ButtonSky } from "@/components/Global/Button/button";
+import { TbRefresh } from "react-icons/tb";
 import { useFilterContext } from "@/context/FilterContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
@@ -57,6 +59,8 @@ export default function SasaranPage() {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("sasaran-opd.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   const groupedSasaranOpd = useMemo<SasaranOpdPenetapanGrouped[]>(() => {
     const sasaranOpds = penetapanData?.sasaranOpds ?? [];
@@ -138,28 +142,81 @@ export default function SasaranPage() {
     );
   }
 
+  const handleSync = async () => {
+    if (!kodeOpd || !selectedTahunValue || !bulanKey) return;
+    
+    setIsSyncing(true);
+    try {
+      const sessionId = getSessionId();
+      const response = await fetch(
+        `/api/v1/realisasi/sasaran_opd/${kodeOpd}/tahun/${selectedTahunValue}/sync/penetapan?bulan=${encodeURIComponent(bulanKey)}`,
+        {
+          method: "POST",
+          headers: {
+            "X-Session-Id": sessionId ?? "",
+          },
+        }
+      );
+      if (!response.ok) {
+        console.error("Failed to sync data");
+      }
+      refetchPenetapan();
+    } catch (error) {
+      console.error("Error during sync:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const renderSyncButton = () => (
+    <div className="flex justify-end mb-2 mr-2 mt-2">
+      <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || penetapanLoading}>
+        {isSyncing ? (
+          <div className="flex items-center gap-2">
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Syncing...</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <TbRefresh size={20} />
+            <span>Sinkronisasi</span>
+          </div>
+        )}
+      </ButtonSky>
+    </div>
+  );
+
   if (penetapanLoading) {
     return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-        <LoadingBeat loading={true} />
-        <p className="text-sm text-gray-600 mt-2">Memuat data sasaran OPD...</p>
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+          <LoadingBeat loading={true} />
+          <p className="text-sm text-gray-600 mt-2">Memuat data sasaran OPD...</p>
+        </div>
+      </>
     );
   }
 
   if (penetapanError) {
     return (
-      <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-        Error: {penetapanError}
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+          Error: {penetapanError}
+        </div>
+      </>
     );
   }
 
   if (!groupedSasaranOpd.length) {
     return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-        Data sasaran OPD tidak ada.
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+          Data sasaran OPD tidak ada.
+        </div>
+      </>
     );
   }
 
@@ -321,8 +378,10 @@ export default function SasaranPage() {
   };
 
   return (
-    <div className="overflow-auto grid gap-2">
-      <div className="flex justify-between items-center mb-2">
+    <>
+      {renderSyncButton()}
+      <div className="overflow-auto grid gap-2">
+        <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
       </div>
       <TableSasaranOpd
@@ -372,6 +431,36 @@ export default function SasaranPage() {
           </div>
         </div>
       )}
+
+      {isSyncModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsSyncModalOpen(false)}
+                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Tidak
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSyncModalOpen(false);
+                  handleSync();
+                }}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 }
