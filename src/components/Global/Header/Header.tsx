@@ -61,7 +61,7 @@ export const Header = () => {
     <>
       <TopFilter 
         user={user} 
-        forceOpdLock={pathname.startsWith('/Individu')} 
+        forceOpdLock={pathname.startsWith('/Individu') || pathname.startsWith('/Laporan/Individu')} 
         hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} 
       />
       <nav

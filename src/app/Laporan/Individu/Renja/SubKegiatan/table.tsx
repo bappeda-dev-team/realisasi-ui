@@ -4,36 +4,51 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { getMonthName } from "@/lib/months";
+import { ROLES } from "@/constants/roles";
 
 export default function TableLaporanRenjaSubKegiatan({ laporanType }: { laporanType?: string }) {
     const isTahunan = laporanType === 'Tahunan';
     const isTriwulan = laporanType === 'Triwulan';
     const isBulanan = laporanType === 'Bulanan';
-    const { activatedTahun, activatedDinas, activatedBulan } = useFilterContext();
+    const { activatedTahun, activatedDinas, activatedBulan, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
     const { user } = useUserContext();
 
     const tahunLabel = activatedTahun ?? "2025";
     const bulanName = getMonthName(activatedBulan) ?? "Januari";
     const nip = user?.nip ?? "";
     const kodeOpd = activatedDinas ?? user?.kode_opd ?? "";
+    
+    const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
 
     let fetchUrl: string | null = null;
-    if (laporanType && activatedTahun && nip && kodeOpd) {
+    if (laporanType && activatedTahun && kodeOpd) {
         const tahun = activatedTahun;
         const jenisLaporan = laporanType.toUpperCase();
 
-        let url = `/api/v1/realisasi/renja_individu/subkegiatan/laporan/nip/${nip}/kodeOpd/${kodeOpd}/tahun/${tahun}/jenisLaporan/${jenisLaporan}`;
+        let url = "";
 
-        const params = new URLSearchParams();
-        if (isBulanan) {
-            params.append('bulan', activatedBulan ?? "1");
+        if (isAdmin) {
+            if (activatedLevelRole && activatedNamaPegawai) {
+                const safeNip = activatedNamaPegawai.replace(/-$/, "");
+                url = `/api/v1/realisasi/renja_individu/subkegiatan/laporan/kodeOpd/${kodeOpd}/tahun/${tahun}/jenisLaporan/${jenisLaporan}/levelRole/${activatedLevelRole}/nip/${safeNip}`;
+            }
+        } else if (nip) {
+            const safeNip = nip.replace(/-$/, "");
+            url = `/api/v1/realisasi/renja_individu/subkegiatan/laporan/nip/${safeNip}/kodeOpd/${kodeOpd}/tahun/${tahun}/jenisLaporan/${jenisLaporan}`;
         }
 
-        const queryString = params.toString();
-        if (queryString) {
-            url += `?${queryString}`;
+        if (url) {
+            const params = new URLSearchParams();
+            if (isBulanan) {
+                params.append('bulan', activatedBulan ?? "1");
+            }
+
+            const queryString = params.toString();
+            if (queryString) {
+                url += `?${queryString}`;
+            }
+            fetchUrl = url;
         }
-        fetchUrl = url;
     }
 
     const { data: reportData, loading, error } = useFetchData<any>({
