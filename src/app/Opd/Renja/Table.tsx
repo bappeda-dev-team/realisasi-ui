@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from "react";
-import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { useState, useMemo, useEffect } from 'react';
+
+import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
+import { TbRefresh } from "react-icons/tb";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
@@ -11,6 +13,7 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { getSessionId } from "@/lib/session";
 import FormFaktorPenunjangRenjaOpd from "./_components/FormFaktorPenunjangRenjaOpd";
 import FormFaktorPenghambatRenjaOpd from "./_components/FormFaktorPenghambatRenjaOpd";
 
@@ -287,6 +290,8 @@ const Table = () => {
     const [pdfFileName, setPdfFileName] = useState<string>("renja-opd.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
     const [selectedFaktorTarget, setSelectedFaktorTarget] = useState<SelectedFaktorTarget | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
     const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
 
@@ -635,36 +640,89 @@ const Table = () => {
         };
     }, [pdfPreviewUrl]);
 
+    const handleSync = async () => {
+        if (!kodeOpd || !activatedTahun || !bulanKey) return;
+        
+        setIsSyncing(true);
+        try {
+            const sessionId = getSessionId();
+            const response = await fetch(
+                `/api/v1/realisasi/renja_opd/${kodeOpd}/tahun/${activatedTahun}/sync/penetapan?bulan=${encodeURIComponent(bulanKey)}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Session-Id": sessionId ?? "",
+                    },
+                }
+            );
+            if (!response.ok) {
+                console.error("Failed to sync data");
+            }
+            refetch();
+        } catch (error) {
+            console.error("Error during sync:", error);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const renderSyncButton = () => (
+        <div className="flex justify-end mb-2 mr-2 mt-2">
+            <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || loading}>
+                {isSyncing ? (
+                    <div className="flex items-center gap-2">
+                        <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                        <span>Syncing...</span>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2">
+                        <TbRefresh size={20} />
+                        <span>Sinkronisasi</span>
+                    </div>
+                )}
+            </ButtonSky>
+        </div>
+    );
+
     if (loading) {
         return (
-            <div className="rounded border border-sky-200 px-4 py-6 text-center">
-                <LoadingBeat loading={true} />
-                <p className="text-sm text-gray-600 mt-2">
-                    Memuat data renja OPD...
-                </p>
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-sky-200 px-4 py-6 text-center">
+                    <LoadingBeat loading={true} />
+                    <p className="text-sm text-gray-600 mt-2">
+                        Memuat data renja OPD...
+                    </p>
+                </div>
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-red-600">
-                Error: {error}
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-red-600">
+                    Error: {error}
+                </div>
+            </>
         );
     }
 
     if (!rows.length) {
         return (
-            <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600">
-                Data renja OPD tidak ada.
-            </div>
+            <>
+                {renderSyncButton()}
+                <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600">
+                    Data renja OPD tidak ada.
+                </div>
+            </>
         );
     }
 
     return (
         <>
-
+            {renderSyncButton()}
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table id="print-area-renja" className="w-full">
                     <thead>
@@ -869,6 +927,35 @@ const Table = () => {
                         }}
                     />
                 </FormModal>
+            )}
+            
+            {isSyncModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+                    <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+                        <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+                        <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+                        <div className="flex justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsSyncModalOpen(false)}
+                                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                            >
+                                Tidak
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsSyncModalOpen(false);
+                                    handleSync();
+                                }}
+                                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                                Ya
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </>
     );

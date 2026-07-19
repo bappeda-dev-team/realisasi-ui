@@ -37,6 +37,7 @@ interface FilterProps {
   user: User | null;
   disableOpdLock?: boolean;
   forceOpdLock?: boolean;
+  hideOpd?: boolean;
 }
 
 interface DinasResponse {
@@ -68,7 +69,7 @@ interface PegawaiData {
   status_pegawai: string;
 }
 
-export default function TopFilter({ user, disableOpdLock, forceOpdLock }: FilterProps) {
+export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
     dinas,
@@ -336,18 +337,20 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock }: Filter
       {user && (
         <div className="flex flex-col sm:flex-row items-center gap-2 md:w-auto ml-auto">
           {/* PILIH DINAS */}
-          <Select
-            instanceId="select-dinas"
-            className="text-sm w-full sm:w-64"
-            options={dinasOptions}
-            isLoading={loadingDinas}
-            value={dinasOptions.find((x) => x.value === dinas) ?? null}
-            onChange={(opt) => setDinas(opt?.value ?? null)}
-            placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
-            isSearchable
-            isClearable={effectivelyCanEditOpd || disableOpdLock}
-            isDisabled={!effectivelyCanEditOpd && !disableOpdLock}
-          />
+          {!hideOpd && (
+            <Select
+              instanceId="select-dinas"
+              className="text-sm w-full sm:w-64"
+              options={dinasOptions}
+              isLoading={loadingDinas}
+              value={dinasOptions.find((x) => x.value === dinas) ?? null}
+              onChange={(opt) => setDinas(opt?.value ?? null)}
+              placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
+              isSearchable
+              isClearable={effectivelyCanEditOpd || disableOpdLock}
+              isDisabled={!effectivelyCanEditOpd && !disableOpdLock}
+            />
+          )}
 
           {/* PILIH PERIODE */}
           <Select

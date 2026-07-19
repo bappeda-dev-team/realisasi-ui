@@ -59,7 +59,11 @@ export const Header = () => {
 
   return (
     <>
-      <TopFilter user={user} forceOpdLock={pathname.startsWith('/Individu')} />
+      <TopFilter 
+        user={user} 
+        forceOpdLock={pathname.startsWith('/Individu') || pathname.startsWith('/Laporan/Individu')} 
+        hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} 
+      />
       <nav
         className={`inset-x-1 m-1 ml-2 bg-[#1C1D1D] shadow-lg shadow-slate-300 rounded-xl transition duration-300`}
       >
@@ -137,7 +141,7 @@ export const Header = () => {
 
             {!loading && !user && <Login onClick={() => setModalLogin(true)} />}
 
-            {!loading && user && <UserProfile user={user} />}
+            {!loading && user && <UserProfile user={user} hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} />}
           </div>
         </div>
         <ToastSuccess

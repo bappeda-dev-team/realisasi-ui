@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react'
 import Select from "react-select"
 import TableLaporanRekinIndividu from './table'
-
+import { useFilterContext } from "@/context/FilterContext"
+import { useUserContext } from "@/context/UserContext"
+import { ROLES } from "@/constants/roles"
 const laporanOptions = [
   { value: 'Bulanan', label: 'Bulanan' },
   { value: 'Triwulan', label: 'Triwulan' },
@@ -13,6 +15,11 @@ const laporanOptions = [
 export default function LaporanRekinIndividu() {
   const [selectedLaporanOption, setSelectedLaporanOption] = useState<{ label: string; value: string } | null>(null)
   const [isLoaded, setIsLoaded] = useState(false)
+  const { activatedLevelRole, activatedNamaPegawai } = useFilterContext()
+  const { user } = useUserContext()
+  
+  const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD)
+  const needsPegawaiSelection = isAdmin && (!activatedLevelRole || !activatedNamaPegawai)
 
   useEffect(() => {
     const saved = localStorage.getItem('selectedLaporanIndividuRekin')
@@ -68,6 +75,10 @@ export default function LaporanRekinIndividu() {
       {!isLoaded ? null : !selectedLaporanOption ? (
         <div className="p-5 bg-red-100 border border-red-400 rounded text-red-700 my-5">
           Pilih laporan realisasi agar data laporan rekin individu muncul.
+        </div>
+      ) : needsPegawaiSelection ? (
+        <div className="p-5 bg-red-100 border border-red-400 rounded text-red-700 my-5">
+          Pilih dan aktifkan Level Role dan Nama Pegawai agar data laporan rekin individu muncul.
         </div>
       ) : (
         <TableLaporanRekinIndividu laporanType={selectedLaporanOption?.value} />
