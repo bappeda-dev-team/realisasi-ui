@@ -14,8 +14,7 @@ interface FormFaktorPenunjangRenaksiIndividuProps {
     nip: string;
     currentValue: string;
     kodeOpd: string;
-    kodeSasaran: string;
-    kodeIndikator: string;
+    kodeRekin: string;
     onClose: () => void;
     onSuccess: () => void;
 }
@@ -28,8 +27,7 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
     nip,
     currentValue,
     kodeOpd,
-    kodeSasaran,
-    kodeIndikator,
+    kodeRekin,
     onClose,
     onSuccess,
 }) => {
@@ -63,10 +61,9 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
                     nip,
                     tahun,
                     bulan: normalizedBulan,
-                    kodeSasaran,
+                    kodeRekin,
                     kodeRenaksi: renaksiId,
-                    kodeIndikator,
-                    kodeTarget: targetId,
+                    kodePelaksanaan: targetId,
                     faktorPenunjang: value,
                 }),
             });

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
-import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRenaksiIndividu from "./_components/FormRealisasiRenaksiIndividu";
@@ -18,6 +18,8 @@ import { RenaksiIndividuItem, RenaksiTarget } from "@/types";
 import { getHeaderColor } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
+import { TbRefresh } from "react-icons/tb";
+import { getSessionId } from "@/lib/session";
 
 interface RenaksiRow {
   id: number;
@@ -40,10 +42,13 @@ const Table = () => {
   const [selectedFaktorRow, setSelectedFaktorRow] = useState<RenaksiRow | null>(null);
   const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
   const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const { activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
   const { user } = useUserContext();
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
+  const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
   const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
   const canEditRealisasi = canEditIndividuRenaksiRealisasi(user) && !isOpdScopedView;
 
@@ -78,74 +83,83 @@ const Table = () => {
   const nip = user?.nip;
   const kodeOpd = activatedDinas || user?.kode_opd;
   let apiUrl = null;
-  if (kodeOpd && yearLabel && monthKey) {
-      if (isOpdScopedView) {
-          if (activatedLevelRole && activatedNamaPegawai) {
-              const safeNip = activatedNamaPegawai.replace(/-$/, "");
-              apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
-          } else {
-              apiUrl = `/api/v1/realisasi/renaksi_individu/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
-          }
-      } else if (nip) {
-          const safeNip = nip.replace(/-$/, "");
-          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
+  if (kodeOpd && yearLabel) {
+      let safeNip = null;
+      if (isOpdScopedView && activatedNamaPegawai) {
+          safeNip = activatedNamaPegawai.replace(/-$/, "");
+      } else if (!isOpdScopedView && nip) {
+          safeNip = nip.replace(/-$/, "");
+      }
+
+      if (safeNip) {
+          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan`;
       }
   }
 
-  const { data, loading, error, refetch } = useFetchData<RenaksiIndividuItem[]>({
+  const { data, loading, error, refetch } = useFetchData<any>({
     url: apiUrl,
   });
 
   useEffect(() => {
-    if (!data || !user) {
+    if (!data || !user || !data.rekins) {
       setRows([]);
       return;
     }
 
-    const namaPegawai = [user.firstName, user.lastName]
+    const namaPegawai = data.nama || [user.firstName, user.lastName]
       .filter(Boolean)
       .join(" ")
       .trim() || user.username || "-";
 
-    const flattened: RenaksiRow[] = data.map((item) => ({
-      id: item.id,
-      renaksi: item.renaksi ?? "-",
-      nama_pegawai: namaPegawai,
-      nip: item.nip ?? user?.nip ?? "-",
-      rekin: item.sasaran ?? "-",
-      targets: [
-        {
-          targetRealisasiId: item.id,
-          renaksiId: item.kodeRenaksi,
-          renaksi: item.renaksi ?? "-",
-          nip: item.nip ?? user?.nip ?? "-",
-          namaPegawai,
-          rekinId: item.kodeSasaran,
-          rekin: item.sasaran ?? "-",
-          targetId: item.kodeTarget,
-          target: item.target,
-          realisasi: item.realisasi,
-          satuan: item.satuan,
-          tahun: item.tahun,
-          bulan: item.bulan,
-          jenisRealisasi: item.jenisRealisasi,
-          capaian: item.capaian ?? "-",
-          keteranganCapaian: item.keteranganCapaian ?? "-",
-          faktorPenunjang: item.faktorPenunjang ?? "-",
-          faktorPenghambat: item.faktorPenghambat ?? "-",
-          rencanaKinerja: item.sasaran ?? "-",
-          kodeOpd: item.kodeOpd ?? "",
-          anggaran: String(item.paguAnggaran ?? "-"),
-          kodeSasaran: item.kodeSasaran,
-          kodeIndikator: item.kodeIndikator,
-          paguAnggaran: item.paguAnggaran,
-        },
-      ],
-      anggaran: String(item.paguAnggaran ?? "-"),
-    }));
+    const flattened: RenaksiRow[] = [];
+    let idCounter = 1;
+
+    data.rekins.forEach((rekin: any) => {
+      rekin.renaksis?.forEach((renaksi: any) => {
+        renaksi.pelaksanaans?.forEach((pelaksanaan: any) => {
+          flattened.push({
+            id: idCounter++,
+            renaksi: renaksi.nama_renaksi ?? "-",
+            nama_pegawai: namaPegawai,
+            nip: data.pegawai_id ?? user?.nip ?? "-",
+            rekin: rekin.rekin ?? "-",
+            targets: [
+              {
+                targetRealisasiId: pelaksanaan.id,
+                renaksiId: renaksi.kode_renaksi,
+                renaksi: renaksi.nama_renaksi ?? "-",
+                nip: data.pegawai_id ?? user?.nip ?? "-",
+                namaPegawai,
+                rekinId: rekin.kode_pk,
+                rekin: rekin.rekin ?? "-",
+                targetId: pelaksanaan.kode_pelaksanaan,
+                target: pelaksanaan.bobot_pelaksanaan,
+                realisasi: pelaksanaan.realisasi,
+                satuan: "%",
+                tahun: yearLabel ?? "",
+                bulan: pelaksanaan.bulan_pelaksanaan.toString(),
+                jenisRealisasi: pelaksanaan.jenis_realisasi || "NAIK",
+                capaian: pelaksanaan.capaian ?? "-",
+                keteranganCapaian: pelaksanaan.keterangan_capaian ?? "-",
+                faktorPenunjang: pelaksanaan.faktor_penunjang || "-",
+                faktorPenghambat: pelaksanaan.faktor_penghambat || "-",
+                buktiPendukung: pelaksanaan.bukti_pendukung || null,
+                keteranganBuktiPendukung: pelaksanaan.keterangan_bukti_pendukung || null,
+                rencanaKinerja: rekin.rekin ?? "-",
+                kodeOpd: data.kode_opd ?? "",
+                anggaran: String(renaksi.anggaran_renaksi ?? "-"),
+                kodeRekin: rekin.kode_pk,
+                paguAnggaran: renaksi.anggaran_renaksi,
+              },
+            ],
+            anggaran: String(renaksi.anggaran_renaksi ?? "-"),
+          });
+        });
+      });
+    });
 
     setRows(flattened);
-  }, [data, user]);
+  }, [data, user, monthKey, yearLabel]);
 
   const monthColumnLabel = `${activatedTahun} - ${monthLabel}`;
 
@@ -312,6 +326,55 @@ const Table = () => {
     previewDoc.save(pdfFileName);
   };
 
+  const handleSync = async () => {
+    const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
+    if (!nipToSync || !kodeOpd || !yearLabel) return;
+
+    setIsSyncing(true);
+    try {
+      const sessionId = getSessionId();
+      const response = await fetch(`/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan`, {
+        method: "POST",
+        headers: {
+          "X-Session-Id": sessionId ?? "",
+        },
+      });
+      if (!response.ok) {
+        console.error("Failed to sync data");
+      }
+      if (refetch) {
+        await refetch();
+      }
+    } catch (error) {
+      console.error("Error during sync:", error);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const renderSyncButton = () => {
+    const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
+    const canSync = nipToSync && kodeOpd && yearLabel;
+
+    return (
+      <div className="flex justify-end mb-2 mr-2 mt-2">
+        <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={!canSync || isSyncing || loading}>
+          {isSyncing ? (
+            <div className="flex items-center gap-2">
+              <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+              <span>Syncing...</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <TbRefresh size={20} />
+              <span>Sinkronisasi</span>
+            </div>
+          )}
+        </ButtonSky>
+      </div>
+    );
+  };
+
   const infoMessage = !user || (!user?.nip && !canBypassNip)
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : canBypassNip && !activatedDinas
@@ -330,33 +393,43 @@ const Table = () => {
 
   if (loading) {
     return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-        <LoadingBeat loading={true} />
-        <p className="text-sm text-gray-600 mt-2">
-          Memuat data renaksi individu...
-        </p>
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+          <LoadingBeat loading={true} />
+          <p className="text-sm text-gray-600 mt-2">
+            Memuat data renaksi individu...
+          </p>
+        </div>
+      </>
     );
   }
 
   if (error) {
     return (
-      <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-        Gagal memuat data renaksi: {error}
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+          Gagal memuat data renaksi: {error}
+        </div>
+      </>
     );
   }
 
   if (!rows.length) {
     return (
-      <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-        Data renaksi individu tidak ada.
-      </div>
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+          Data renaksi individu tidak ada.
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      {renderSyncButton()}
       <div className="overflow-auto m-2 rounded-t-xl">
         <table id="print-area-renaksi" className="w-full">
           <thead>
@@ -395,7 +468,7 @@ const Table = () => {
                 colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
-                {monthColumnLabel}
+                Data Pelaksanaan
               </th>
               <th
                 rowSpan={2}
@@ -428,9 +501,10 @@ const Table = () => {
           <tbody>
             {rows.map((row, index) => {
               const target = row.targets[0];
+              const isTargetActive = target?.bulan === (monthKey || "0");
               const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
               return (
-                <tr key={row.id}>
+                <tr key={row.id} className={isTargetActive ? "bg-blue-50" : "bg-white opacity-70"}>
                   <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
                     {index + 1}
                   </td>
@@ -452,7 +526,7 @@ const Table = () => {
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
                       <span>{target?.realisasi ?? "-"}</span>
-                      {canEditRealisasi && (
+                      {canEditRealisasi && isTargetActive && (
                         <ButtonGreenBorder
                           className="w-full"
                           onClick={() => openModal(row)}
@@ -540,8 +614,7 @@ const Table = () => {
             nip={selectedFaktorRow?.nip ?? ""}
             currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
             kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
-            kodeSasaran={selectedFaktorRow?.targets[0]?.kodeSasaran ?? ""}
-            kodeIndikator={selectedFaktorRow?.targets[0]?.kodeIndikator ?? ""}
+            kodeRekin={selectedFaktorRow?.targets[0]?.kodeRekin ?? ""}
             onClose={handleCloseFaktorPenunjang}
             onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
           />
@@ -561,8 +634,7 @@ const Table = () => {
             nip={selectedFaktorRow?.nip ?? ""}
             currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
             kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? ""}
-            kodeSasaran={selectedFaktorRow?.targets[0]?.kodeSasaran ?? ""}
-            kodeIndikator={selectedFaktorRow?.targets[0]?.kodeIndikator ?? ""}
+            kodeRekin={selectedFaktorRow?.targets[0]?.kodeRekin ?? ""}
             onClose={handleCloseFaktorPenghambat}
             onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
           />
@@ -609,6 +681,35 @@ const Table = () => {
                 className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
               >
                 Download PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isSyncModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsSyncModalOpen(false)}
+                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Tidak
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSyncModalOpen(false);
+                  handleSync();
+                }}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Ya
               </button>
             </div>
           </div>

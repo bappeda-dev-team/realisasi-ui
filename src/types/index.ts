@@ -380,8 +380,7 @@ export interface RenaksiTarget {
   anggaran?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
-  kodeSasaran?: string;
-  kodeIndikator?: string;
+  kodeRekin?: string;
   paguAnggaran?: number;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
@@ -407,12 +406,9 @@ export interface RenaksiIndividuRealisasiRequest {
   targetRealisasiId: number;
   kodeOpd: string;
   nip: string;
-  kodeSasaran: string;
+  kodeRekin: string;
   kodeRenaksi: string;
-  kodeIndikator: string;
-  kodeTarget: string;
-  target: number;
-  paguAnggaran: number;
+  kodePelaksanaan: string;
   realisasi: number;
   tahun: string;
   bulan: string;
@@ -424,31 +420,26 @@ export interface RenaksiIndividuRealisasiRequest {
 
 export interface RenaksiIndividuRealisasiResponse {
   id: number;
-  kodeOpd: string;
+  kode_opd: string;
   nip: string;
-  kodeSasaran: string;
-  sasaran: string;
-  kodeRenaksi: string;
-  renaksi: string;
-  kodeIndikator: string;
-  indikator: string;
-  kodeTarget: string;
-  target: number;
-  paguAnggaran: number;
+  kode_rekin: string;
+  kode_renaksi: string;
+  kode_pelaksanaan: string;
   realisasi: number;
+  bobot_pelaksanaan: number;
+  capaian: number;
+  keterangan_capaian: string;
   tahun: string;
   bulan: string;
   satuan: string;
   status: string;
-  jenisRealisasi: "NAIK" | "TURUN";
-  faktorPenunjang: string;
-  faktorPenghambat: string;
-  createdBy: string;
-  lastModifiedBy: string;
-  capaian: string;
-  keteranganCapaian: string;
-  buktiPendukung?: string | null;
-  keteranganBuktiPendukung?: string | null;
+  jenis_realisasi: "NAIK" | "TURUN";
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  bukti_pendukung?: string | null;
+  keterangan_bukti_pendukung?: string | null;
+  created_by: string;
+  last_modified_by: string;
 }
 
 export interface RenaksiTriwulanCell {

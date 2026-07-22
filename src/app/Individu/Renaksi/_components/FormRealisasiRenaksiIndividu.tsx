@@ -73,7 +73,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
     const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>, targetId: string, tahun: string) => {
         if (!e.target.files || e.target.files.length === 0) return;
         const file = e.target.files[0];
-        
+
         try {
             const sessionId = getSessionId();
             if (!sessionId) {
@@ -100,9 +100,9 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                 }
                 throw new Error("Gagal mengunggah file");
             }
-            
+
             const data = await res.json();
-            
+
             setFormData((previous) =>
                 previous.map((item) =>
                     item.targetId === targetId && item.tahun === tahun
@@ -142,12 +142,9 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             targetRealisasiId: first.targetRealisasiId ?? 0,
             kodeOpd: first.kodeOpd ?? "",
             nip: first.nip,
-            kodeSasaran: first.kodeSasaran ?? "",
+            kodeRekin: first.kodeRekin ?? "",
             kodeRenaksi: first.renaksiId,
-            kodeIndikator: first.kodeIndikator ?? "",
-            kodeTarget: first.targetId,
-            target: first.target,
-            paguAnggaran: first.paguAnggaran ?? 0,
+            kodePelaksanaan: first.targetId,
             realisasi: first.realisasi ?? 0,
             tahun: first.tahun,
             bulan: bulanKey,
@@ -167,17 +164,16 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                 targetRealisasiId: result.id ?? null,
                 realisasi: result.realisasi ?? 0,
                 satuan: result.satuan ?? first.satuan,
-                jenisRealisasi: result.jenisRealisasi ?? first.jenisRealisasi,
-                capaian: result.capaian ?? "-",
-                keteranganCapaian: result.keteranganCapaian ?? null,
-                faktorPenunjang: result.faktorPenunjang ?? "-",
-                faktorPenghambat: result.faktorPenghambat ?? "-",
-                kodeOpd: result.kodeOpd ?? first.kodeOpd,
-                kodeSasaran: result.kodeSasaran ?? first.kodeSasaran,
-                kodeIndikator: result.kodeIndikator ?? first.kodeIndikator,
-                paguAnggaran: result.paguAnggaran ?? first.paguAnggaran,
-                buktiPendukung: result.buktiPendukung ?? first.buktiPendukung,
-                keteranganBuktiPendukung: result.keteranganBuktiPendukung ?? first.keteranganBuktiPendukung,
+                jenisRealisasi: result.jenis_realisasi ?? first.jenisRealisasi,
+                capaian: result.capaian !== null && result.capaian !== undefined ? String(result.capaian) : "-",
+                keteranganCapaian: result.keterangan_capaian ?? null,
+                faktorPenunjang: result.faktor_penunjang || first.faktorPenunjang || "-",
+                faktorPenghambat: result.faktor_penghambat || first.faktorPenghambat || "-",
+                kodeOpd: result.kode_opd ?? first.kodeOpd,
+                kodeRekin: result.kode_rekin ?? first.kodeRekin,
+                paguAnggaran: first.paguAnggaran,
+                buktiPendukung: result.bukti_pendukung ?? first.buktiPendukung,
+                keteranganBuktiPendukung: result.keterangan_bukti_pendukung ?? first.keteranganBuktiPendukung,
             };
             onSuccess?.([updatedTarget]);
             onClose();
@@ -246,9 +242,9 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                                     const rawFileName = target.buktiPendukung.split('/').pop()?.split('?')[0] || 'Lihat File';
                                     const fileName = rawFileName.replace(/^\d+-/, '');
                                     return (
-                                        <a 
-                                            href={target.buktiPendukung} 
-                                            target="_blank" 
+                                        <a
+                                            href={target.buktiPendukung}
+                                            target="_blank"
                                             rel="noreferrer"
                                             className="text-xs bg-blue-500 text-white px-3 py-1.5 rounded hover:bg-blue-600 transition-colors inline-block truncate max-w-[200px] align-middle"
                                             title={fileName}
