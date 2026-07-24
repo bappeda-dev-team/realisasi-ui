@@ -72,30 +72,30 @@ export interface PerencanaanTujuanPemdaResponse {
 
 export interface RealisasiTujuan {
   id: number;
-  tujuanId: string;
-  tujuan: string;
-  visiMisi?: string | null;
-  indikatorId: string;
-  indikator: string;
-  rumusPerhitungan?: string | null;
-  sumberData?: string | null;
-  targetId: string;
-  target: string;
+  visi: string;
+  misi: string;
+  kode_tujuan_pemda: string;
+  kode_indikator: string;
+  kode_target: string;
   realisasi: number;
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
-  status: "UNCHECKED" | "CHECKED";
-  createdDate: string;
-  lastModifiedDate: string;
-  version: number;
-  capaian: string;
-  keteranganCapaian?: string | null;
-  faktorPenunjang?: string | null;
-  faktorPenghambat?: string | null;
-  buktiPendukung?: string | null;
-  keteranganBuktiPendukung?: string | null;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  tujuan_pemda: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  target: number;
+  capaian: number;
+  hasil_capaian: string;
+  jenis_realisasi: string;
+  created_by: string;
+  last_modified_by: string;
+  bukti_pendukung: string;
+  keterangan_bukti_pendukung: string;
 }
 
 export type RealisasiTujuanResponse = RealisasiTujuan[];
@@ -140,37 +140,30 @@ export interface TujuanPemdaRealisasiGrouped {
 
 export interface TujuanRequest {
   targetRealisasiId: number | null;
-  tujuanId: string;
-  visiMisi: string;
-  indikatorId: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-  targetId: string;
-  target: string;
+  kodeTujuanPemda: string;
+  kodeIndikator: string;
+  kodeTarget: string;
   realisasi: number | '';
   satuan: string;
   tahun: string;
   bulan: string;
   jenisRealisasi: string;
-  buktiPendukung?: string;
-  keteranganBuktiPendukung?: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface SasaranRequest {
   targetRealisasiId: number | null;
-  sasaranId: string;
-  indikatorId: string;
-  targetId: string;
-  target: string;
+  kodeSasaranPemda: string;
+  kodeIndikator: string;
+  kodeTarget: string;
   realisasi: number | '';
   satuan: string;
   tahun: string;
   bulan: string;
   jenisRealisasi: string;
-  rumusPerhitungan: string;
-  sumberData: string;
-  buktiPendukung?: string;
-  keteranganBuktiPendukung?: string;
+  buktiPendukung?: string | null;
+  keteranganBuktiPendukung?: string | null;
 }
 
 export interface Modal<T> {
@@ -686,6 +679,9 @@ export interface IkuPemdaTargetRealisasiCapaian {
   targetId: string;
   target: string;
   realisasi: number;
+  keteranganCapaian: string | null;
+  faktorPenunjang: string | null;
+  faktorPenghambat: string | null;
   capaian: string;
   satuan: string;
   tahun: string;
@@ -705,6 +701,9 @@ export interface IkuPemdaRealisasi {
   capaian: string;
   jenisRealisasi: "NAIK" | "TURUN" | null;
   jenisIku: "TUJUAN" | "SASARAN" | null;
+  keteranganCapaian?: string | null;
+  faktorPenunjang?: string | null;
+  faktorPenghambat?: string | null;
 }
 
 export type IkuPemdaRealisasiResponse = IkuPemdaRealisasi[];
@@ -1682,4 +1681,271 @@ export interface RenjaPenetapanResponse {
   programs: RenjaPenetapanProgram[];
   kegiatans: RenjaPenetapanKegiatan[];
   subkegiatans: RenjaPenetapanSubkegiatan[];
+}
+
+export interface TujuanPemdaPenetapanTarget {
+  kode_target: string;
+  satuan: string;
+  target: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  bukti_pendukung: string;
+  keterangan_bukti_pendukung: string;
+}
+
+export interface TujuanPemdaPenetapanIndikator {
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  targets: TujuanPemdaPenetapanTarget[];
+}
+
+export interface TujuanPemdaPenetapanItem {
+  id: number;
+  visi: string;
+  misi: string;
+  targetRealisasiId: number | null;
+  renjaId: string;
+  renja: string;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  pagu: number;
+  targetId: string;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  capaian?: string;
+  keteranganCapaian?: string;
+}
+
+export interface RenjaPaguBatchRequest {
+  targetRealisasiId: number | null;
+  kodeRenja: string;
+  jenisRenja: string;
+  nip: string;
+  idIndikator: string;
+  indikator: string;
+  pagu: number;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  bulan?: string;
+  jenisRealisasi: string;
+}
+
+export interface RenjaTargetOpdResponse {
+  id: number | null;
+  jenisRenjaId: string;
+  jenisRenjaTarget: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number | null;
+  satuan: string;
+  tahun: string;
+  bulan: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  kodeOpd: string;
+  kodeRenja: string;
+  status: string;
+  createdBy: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  lastModifiedBy: string;
+  version: number;
+  capaian: string;
+  keteranganCapaian: string;
+}
+
+export interface RenjaTargetOpdRequest {
+  targetRealisasiId: number | null;
+  jenisRenjaId: string;
+  jenisRenja: string;
+  indikatorId: string;
+  indikator: string;
+  targetId: string;
+  target: string;
+  realisasi: number | null;
+  satuan: string;
+  tahun: string;
+  bulan: string;
+  jenisRealisasi: string;
+  kodeOpd: string;
+  kodeRenja: string;
+}
+
+export interface RenjaPaguOpdResponse {
+  id: number | null;
+  jenisRenjaId: string;
+  jenisRenjaPagu: "PROGRAM" | "KEGIATAN" | "SUB_KEGIATAN";
+  pagu: number;
+  realisasi: number | null;
+  satuan: string;
+  tahun: string;
+  bulan: string;
+  jenisRealisasi: "NAIK" | "TURUN";
+  kodeOpd: string;
+  kodeRenja: string;
+  status: "CHECKED" | "UNCHECKED";
+  createdBy: string;
+  createdDate: string;
+  lastModifiedDate: string;
+  lastModifiedBy: string;
+  version: number;
+  capaian: string;
+  keteranganCapaian: string;
+}
+
+export interface RenjaPaguOpdBatchRequest {
+  targetRealisasiId: number | null;
+  jenisRenjaId: string;
+  jenisRenja: string;
+  pagu: number;
+  realisasi: number;
+  satuan: string;
+  tahun: string;
+  bulan: string;
+  jenisRealisasi: string;
+  kodeOpd: string;
+  kodeRenja: string;
+}
+
+// ===== Renja OPD - Penetapan (from renja-service on port 9001) =====
+export interface RenjaPenetapanTarget {
+  id: number;
+  kode_target: string;
+  tahun: number;
+  bulan: number | null;
+  target: number;
+  realisasi: number | null;
+  satuan: string;
+  capaian: number | null;
+  keterangan_capaian: string | null;
+  faktor_penunjang?: string | null;
+  faktor_penghambat?: string | null;
+}
+
+export interface RenjaPenetapanIndikator {
+  id: number;
+  kode_indikator: string;
+  indikator: string;
+  targets: RenjaPenetapanTarget[];
+}
+
+export interface RenjaPenetapanProgram {
+  id: number;
+  kode_program: string;
+  program: string;
+  is_locked: boolean;
+  indikators: RenjaPenetapanIndikator[];
+  pagu_anggaran: number | null;
+}
+
+export interface RenjaPenetapanKegiatan {
+  id: number;
+  kode_kegiatan: string;
+  kegiatan: string;
+  is_locked: boolean;
+  indikators: RenjaPenetapanIndikator[];
+  pagu_anggaran: number | null;
+}
+
+export interface RenjaPenetapanSubkegiatan {
+  id: number;
+  kode_subkegiatan: string;
+  subkegiatan: string;
+  is_locked: boolean;
+  indikators: RenjaPenetapanIndikator[];
+  pagu_anggaran: number | null;
+}
+
+export interface RenjaPenetapanResponse {
+  kode_opd: string;
+  tahun: number;
+  bulan: number;
+  programs: RenjaPenetapanProgram[];
+  kegiatans: RenjaPenetapanKegiatan[];
+  subkegiatans: RenjaPenetapanSubkegiatan[];
+}
+
+export interface TujuanPemdaPenetapanTarget {
+  kode_target: string;
+  satuan: string;
+  target: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  bukti_pendukung: string;
+  keterangan_bukti_pendukung: string;
+}
+
+export interface TujuanPemdaPenetapanIndikator {
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  targets: TujuanPemdaPenetapanTarget[];
+}
+
+export interface TujuanPemdaPenetapanItem {
+  id: number;
+  visi: string;
+  misi: string;
+  kode_tujuan_pemda: string;
+  tujuan_pemda: string;
+  indikators: TujuanPemdaPenetapanIndikator[];
+}
+
+export interface TujuanPemdaPenetapanResponse {
+  tahun: number;
+  bulan: number;
+  tujuanPemdas: TujuanPemdaPenetapanItem[];
+}
+
+export interface SasaranPemdaPenetapanTarget {
+  kode_target: string;
+  satuan: string;
+  target: number;
+  realisasi: number;
+  capaian: number;
+  keterangan_capaian: string;
+  faktor_penunjang: string;
+  faktor_penghambat: string;
+  bukti_pendukung: string;
+  keterangan_bukti_pendukung: string;
+}
+
+export interface SasaranPemdaPenetapanIndikator {
+  kode_indikator: string;
+  indikator: string;
+  rumus_perhitungan: string;
+  sumber_data: string;
+  definisi_operasional: string;
+  targets: SasaranPemdaPenetapanTarget[];
+}
+
+export interface SasaranPemdaPenetapanItem {
+  id: number;
+  kode_sasaran_pemda: string;
+  sasaran_pemda: string;
+  indikators: SasaranPemdaPenetapanIndikator[];
+}
+
+export interface SasaranPemdaPenetapanResponse {
+  tahun_aktif: number;
+  bulan: number;
+  data: SasaranPemdaPenetapanItem[];
 }

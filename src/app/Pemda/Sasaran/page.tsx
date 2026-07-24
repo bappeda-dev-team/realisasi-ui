@@ -8,7 +8,7 @@ import { useUserContext } from "@/context/UserContext";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { canEditPemdaRealisasi } from "@/lib/rbac";
 import {
-  RealisasiSasaranResponse,
+  SasaranPemdaPenetapanResponse,
   SasaranPemdaRealisasiGrouped,
   TargetRealisasiCapaianSasaran,
 } from "@/types";
@@ -18,6 +18,9 @@ import FormRealisasiSasaranPemda from "./_components/FormRealisasiSasaranPemda";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import { ButtonSky } from "@/components/Global/Button/button";
+import { TbRefresh } from "react-icons/tb";
+import { getSessionId } from "@/lib/session";
 
 const SasaranPage = () => {
   const { user } = useUserContext();
@@ -32,8 +35,8 @@ const SasaranPage = () => {
     loading: realisasiLoading,
     error: realisasiError,
     refetch: refetchRealisasi,
-  } = useFetchData<RealisasiSasaranResponse>({
-    url: selectedTahun && bulanKey ? `/api/v1/realisasi/sasarans/by-tahun/${selectedTahun}/by-bulan/${encodeURIComponent(bulanKey)}` : null,
+  } = useFetchData<SasaranPemdaPenetapanResponse>({
+    url: selectedTahun && bulanKey ? `/api/v1/realisasi/sasarans/by-tahun/${selectedTahunNum}/penetapan?bulan=${encodeURIComponent(bulanKey)}` : null,
   });
 
   const [OpenModal, setOpenModal] = useState<boolean>(false);
@@ -44,70 +47,44 @@ const SasaranPage = () => {
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
   const [pdfFileName, setPdfFileName] = useState("sasaran-pemda.pdf");
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-  const targetRealisasiCapaian = useMemo<TargetRealisasiCapaianSasaran[]>(() => {
-    return (realisasiData ?? []).map((item) => ({
-      targetRealisasiId: item.id ?? null,
-      sasaranPemda: item.sasaran ?? "-",
-      sasaranId: String(item.sasaranId),
-      indikatorId: String(item.indikatorId),
-      indikator: item.indikator ?? "-",
-      rumusPerhitungan: item.rumusPerhitungan ?? "-",
-      sumberData: item.sumberData ?? "-",
-      targetId: String(item.targetId),
-      target: item.target ?? "-",
-      realisasi: item.realisasi ?? 0,
-      capaian: item.capaian ?? "-",
-      keteranganCapaian: item.keteranganCapaian ?? "-",
-      faktorPenunjang: item.faktorPenunjang ?? null,
-      faktorPenghambat: item.faktorPenghambat ?? null,
-      satuan: item.satuan ?? "-",
-      tahun: String(item.tahun ?? ""),
-      buktiPendukung: item.buktiPendukung ?? null,
-      keteranganBuktiPendukung: item.keteranganBuktiPendukung ?? null,
-    }));
-  }, [realisasiData]);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
+  const [syncError, setSyncError] = useState<string | null>(null);
 
   const groupedSasaranPemda = useMemo<SasaranPemdaRealisasiGrouped[]>(() => {
-    const sasaranMap = new Map<string, SasaranPemdaRealisasiGrouped>();
+    if (!realisasiData || !realisasiData.data) return [];
 
-    targetRealisasiCapaian.forEach((item) => {
-      const sasaranKey = item.sasaranId;
-      const indikatorKey = item.indikatorId;
-
-      let sasaran = sasaranMap.get(sasaranKey);
-      if (!sasaran) {
-        sasaran = {
-          sasaranId: sasaranKey,
-          sasaranPemda: item.sasaranPemda,
-          indikator: [],
-        };
-        sasaranMap.set(sasaranKey, sasaran);
-      }
-
-      let indikator = sasaran.indikator.find((row) => row.id === indikatorKey);
-      if (!indikator) {
-        indikator = {
-          id: indikatorKey,
-          indikator: item.indikator,
-          rumusPerhitungan: item.rumusPerhitungan,
-          sumberData: item.sumberData,
-          targets: [],
-        };
-        sasaran.indikator.push(indikator);
-      } else {
-        if ((!indikator.rumusPerhitungan || indikator.rumusPerhitungan === "-") && item.rumusPerhitungan && item.rumusPerhitungan !== "-") {
-          indikator.rumusPerhitungan = item.rumusPerhitungan;
-        }
-        if ((!indikator.sumberData || indikator.sumberData === "-") && item.sumberData && item.sumberData !== "-") {
-          indikator.sumberData = item.sumberData;
-        }
-      }
-
-      indikator.targets.push(item);
-    });
-
-    return Array.from(sasaranMap.values());
-  }, [targetRealisasiCapaian]);
+    return realisasiData.data.map((sasaran) => ({
+      sasaranId: sasaran.kode_sasaran_pemda,
+      sasaranPemda: sasaran.sasaran_pemda,
+      indikator: sasaran.indikators.map((ind) => ({
+        id: ind.kode_indikator,
+        indikator: ind.indikator,
+        rumusPerhitungan: ind.rumus_perhitungan,
+        sumberData: ind.sumber_data,
+        targets: ind.targets.map((tgt) => ({
+          targetRealisasiId: null,
+          sasaranPemda: sasaran.sasaran_pemda,
+          sasaranId: sasaran.kode_sasaran_pemda,
+          indikatorId: ind.kode_indikator,
+          indikator: ind.indikator,
+          rumusPerhitungan: ind.rumus_perhitungan,
+          sumberData: ind.sumber_data,
+          targetId: tgt.kode_target,
+          target: String(tgt.target),
+          realisasi: tgt.realisasi,
+          capaian: tgt.capaian !== null && tgt.capaian !== undefined ? String(tgt.capaian) : "",
+          keteranganCapaian: tgt.keterangan_capaian,
+          faktorPenunjang: tgt.faktor_penunjang,
+          faktorPenghambat: tgt.faktor_penghambat,
+          satuan: tgt.satuan,
+          tahun: String(realisasiData.tahun_aktif),
+          buktiPendukung: tgt.bukti_pendukung,
+          keteranganBuktiPendukung: tgt.keterangan_bukti_pendukung,
+        }))
+      }))
+    }));
+  }, [realisasiData]);
 
   useEffect(() => {
     return () => {
@@ -117,24 +94,81 @@ const SasaranPage = () => {
     };
   }, [pdfPreviewUrl]);
 
-  if (realisasiLoading)
-    return <LoadingBeat loading={realisasiLoading} />;
-  if (realisasiError)
-    return <div>Error fetching realisasi: {realisasiError}</div>;
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      const sessionId = getSessionId();
+      const response = await fetch(
+        `/api/v1/realisasi/sasarans/pemda/sasaran/sync`,
+        {
+          method: "POST",
+          headers: {
+            "X-Session-Id": sessionId ?? "",
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to sync data");
+      }
+      refetchRealisasi();
+    } catch (error) {
+      console.error("Error during sync:", error);
+      setSyncError("Tidak ada data penetapan yang siap disinkronkan");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
-  if (groupedSasaranPemda.length === 0) {
-    return (
-      <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-        Data sasaran pemda tidak ada.
-      </div>
-    );
-  }
+  const renderSyncButton = () => (
+    <div className="flex justify-end mb-2 mr-2 mt-2">
+      <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || realisasiLoading}>
+        {isSyncing ? (
+          <div className="flex items-center gap-2">
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+            <span>Syncing...</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <TbRefresh size={20} />
+            <span>Sinkronisasi</span>
+          </div>
+        )}
+      </ButtonSky>
+    </div>
+  );
 
   if (!selectedTahun || !activatedBulan || !bulanKey || !bulanName) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         Pilih dan aktifkan periode, tahun, dan bulan agar data sasaran pemda muncul.
       </div>
+    );
+  }
+
+  if (realisasiLoading)
+    return (
+      <>
+        {renderSyncButton()}
+        <LoadingBeat loading={realisasiLoading} />
+      </>
+    );
+
+  if (realisasiError)
+    return (
+      <>
+        {renderSyncButton()}
+        <div>Error fetching realisasi: {realisasiError}</div>
+      </>
+    );
+
+  if (groupedSasaranPemda.length === 0) {
+    return (
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+          Data sasaran pemda tidak ada.
+        </div>
+      </>
     );
   }
 
@@ -239,8 +273,8 @@ const SasaranPage = () => {
             sanitizeForPdf(indikator.sumberData),
             sanitizeForPdf(target.target),
             sanitizeForPdf(target.realisasi ?? 0),
-            sanitizeForPdf(formatPercentageText(target.capaian).replace(/%$/, "")),
-            sanitizeForPdf(formatPercentageText(target.keteranganCapaian)),
+            sanitizeForPdf(target.capaian ? formatPercentageText(target.capaian).replace(/%$/, "") : "-"),
+            sanitizeForPdf(target.keteranganCapaian ? formatPercentageText(target.keteranganCapaian) : "-"),
             sanitizeForPdf(target.faktorPenunjang ?? "-"),
             sanitizeForPdf(target.faktorPenghambat ?? "-"),
           ]);
@@ -335,9 +369,11 @@ const SasaranPage = () => {
   };
 
   return (
-    <div className="overflow-auto grid gap-2">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Realisasi Sasaran Pemda</h2>
+    <>
+      {renderSyncButton()}
+      <div className="overflow-auto grid gap-2">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-semibold">Realisasi Sasaran Pemda</h2>
       </div>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableSasaran
@@ -419,7 +455,61 @@ const SasaranPage = () => {
           </div>
         </div>
       )}
+
+      {isSyncModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+            <div className="flex justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsSyncModalOpen(false)}
+                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+              >
+                Tidak
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSyncModalOpen(false);
+                  handleSync();
+                }}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              >
+                Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {syncError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setSyncError(null)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Gagal Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">{syncError}</p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setSyncError(null)}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 w-full"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+    </>
   );
 };
 

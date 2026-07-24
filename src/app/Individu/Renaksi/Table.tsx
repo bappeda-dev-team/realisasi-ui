@@ -64,6 +64,15 @@ const Table = () => {
     }
   };
 
+  const formatRupiah = (value: any): string => {
+    if (value === null || value === undefined || value === "-" || isNaN(Number(value))) return "-";
+    return new Intl.NumberFormat("id-ID", {
+      style: "decimal",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Number(value));
+  };
+
   const getHeaderFillColor = (level: string | undefined): [number, number, number] => {
     switch (level) {
       case ROLES.LEVEL_1: return [220, 38, 38];
@@ -227,7 +236,7 @@ const Table = () => {
       "Sasaran Kinerja",
       "Nama Pemilik",
       "Rencana Aksi",
-      "Anggaran",
+      "Anggaran (Rp)",
       "Target (%)",
       "Realisasi (%)",
       "Capaian (%)",
@@ -257,7 +266,7 @@ const Table = () => {
             { content: item.rekin || "-", rowSpan: targets.length },
             { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
             { content: item.renaksi || "-", rowSpan: targets.length },
-            { content: item.anggaran || "-", rowSpan: targets.length },
+            { content: formatRupiah(item.anggaran), rowSpan: targets.length },
             ...detailRow,
           ]);
           return;
@@ -462,13 +471,13 @@ const Table = () => {
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[150px] text-center"
               >
-                Anggaran
+                Anggaran (Rp)
               </td>
               <th
                 colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
-                Data Pelaksanaan
+                {monthColumnLabel}
               </th>
               <th
                 rowSpan={2}
@@ -517,8 +526,8 @@ const Table = () => {
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {row.renaksi || "-"}
                   </td>
-                  <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {row.anggaran || "-"}
+                  <td className="border-r border-b border-emerald-500 px-6 py-4 whitespace-nowrap">
+                    {formatRupiah(row.anggaran)}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     {target?.target || "-"}

@@ -97,9 +97,9 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                     title={`Faktor Penunjang - ${faktorTarget.target.indikator}`}
                 >
                     <FormFaktorPenunjang
-                        tujuanId={tujuan.tujuanId}
-                        indikatorId={faktorTarget.indikatorId}
-                        targetId={faktorTarget.target.targetId}
+                        kodeTujuanPemda={tujuan.tujuanId}
+                        kodeIndikator={faktorTarget.indikatorId}
+                        kodeTarget={faktorTarget.target.targetId}
                         tahun={String(tahun)}
                         bulan={bulanKey ?? ''}
                         currentValue={faktorTarget.target.faktorPenunjang ?? ''}
@@ -119,9 +119,9 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                     title={`Faktor Penghambat - ${faktorTarget.target.indikator}`}
                 >
                     <FormFaktorPenghambat
-                        tujuanId={tujuan.tujuanId}
-                        indikatorId={faktorTarget.indikatorId}
-                        targetId={faktorTarget.target.targetId}
+                        kodeTujuanPemda={tujuan.tujuanId}
+                        kodeIndikator={faktorTarget.indikatorId}
+                        kodeTarget={faktorTarget.target.targetId}
                         tahun={String(tahun)}
                         bulan={bulanKey ?? ''}
                         currentValue={faktorTarget.target.faktorPenghambat ?? ''}

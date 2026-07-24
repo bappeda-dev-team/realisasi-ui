@@ -51,9 +51,9 @@ const FormFaktorPenunjangSasaran: React.FC<FormFaktorPenunjangSasaranProps> = ({
         },
         credentials: 'include',
         body: JSON.stringify({
-          sasaranId,
-          indikatorId,
-          targetId,
+          kodeSasaranPemda: sasaranId,
+          kodeIndikator: indikatorId,
+          kodeTarget: targetId,
           tahun,
           bulan: normalizedBulan,
           faktorPenunjang: value,
