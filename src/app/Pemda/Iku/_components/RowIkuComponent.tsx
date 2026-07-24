@@ -34,14 +34,21 @@ export default function RowIkuComponent({
                             key={target.targetRealisasiId || idx}
                             target={target.target}
                             realisasi={target.realisasi}
+                            keteranganCapaian={target.keteranganCapaian}
                             capaian={target.capaian}
                         />
                     ))
                 ) : (
-                    <td colSpan={3} className="border border-sky-500 px-6 py-4 text-center text-gray-400 italic">
+                    <td colSpan={4} className="border border-sky-500 px-6 py-4 text-center text-gray-400 italic">
                         Tidak ada target
                     </td>
                 )}
+                <td className="border-r border-b border-sky-500 px-6 py-4 text-center">
+                    {targetList.length > 0 ? targetList[0].faktorPenunjang || "-" : "-"}
+                </td>
+                <td className="border-r border-b border-sky-500 px-6 py-4 text-center">
+                    {targetList.length > 0 ? targetList[0].faktorPenghambat || "-" : "-"}
+                </td>
                 <td className="border border-sky-500 px-6 py-4 text-center">
                     <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
                         Cetak
@@ -55,10 +62,12 @@ export default function RowIkuComponent({
 const ColTargetIku: React.FC<{
     target: string;
     realisasi: number;
+    keteranganCapaian: string | null;
     capaian: string;
 }> = ({
     target,
     realisasi,
+    keteranganCapaian,
     capaian
 }) => {
         return (
@@ -66,6 +75,7 @@ const ColTargetIku: React.FC<{
                 <td className="border border-sky-500 px-6 py-4 text-center">{target}</td>
                 <td className="border border-sky-500 px-6 py-4 text-center">{realisasi}</td>
                 <td className="border border-sky-500 px-6 py-4 text-center">{formatPercentageText(capaian).replace(/%$/, "")}</td>
+                <td className="border border-sky-500 px-6 py-4">{keteranganCapaian || "-"}</td>
             </>
         );
     }

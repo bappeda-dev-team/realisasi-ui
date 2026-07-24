@@ -25,24 +25,18 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
         [requestValues, tahun]
     );
 
-    // fill data awal
+// fill data awal
 useEffect(() => {
         const generatedFormData: TujuanRequest[] = filteredRequestValues.map((indikator) => {
             return ({
                 targetRealisasiId: indikator.targetRealisasiId,
-                tujuanId: indikator.tujuanId,
-                visiMisi: indikator.visiMisi ?? '-',
-                indikatorId: indikator.indikatorId,
-                rumusPerhitungan: indikator.rumusPerhitungan ?? '-',
-                sumberData: indikator.sumberData ?? '-',
+                kodeTujuanPemda: indikator.tujuanId,
+                kodeIndikator: indikator.indikatorId,
+                kodeTarget: indikator.targetId,
+                realisasi: indikator.realisasi,
+                satuan: indikator.satuan,
                 tahun: indikator.tahun,
                 bulan: (indikator.bulan || normalizedBulan) ?? '',
-                targetId: indikator.targetId,
-                target: typeof indikator.target === 'string'
-                    ? indikator.target.replace(',', '.')
-                    : indikator.target,
-                satuan: indikator.satuan,
-                realisasi: indikator.realisasi,
                 jenisRealisasi: 'NAIK',
                 buktiPendukung: indikator.buktiPendukung ?? '',
                 keteranganBuktiPendukung: indikator.keteranganBuktiPendukung ?? '',
@@ -67,21 +61,21 @@ useEffect(() => {
     };
 
     // handle saat berubah ?
-    const handleChange = (indikatorId: string, tahun: string, targetId: string, value: string) => {
+    const handleChange = (kodeIndikator: string, tahun: string, kodeTarget: string, value: string) => {
         const trimmed = value.trim();
         const normalizedValue = trimmed.replace(',', '.');
         const numericReal = trimmed === '' ? '' : parseFloat(normalizedValue);
 
         setFormData((prev) =>
             prev.map((item) =>
-                item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
+                item.kodeIndikator === kodeIndikator && item.tahun === tahun && item.kodeTarget === kodeTarget
                     ? { ...item, realisasi: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
                     : item
             )
         );
     };
 
-    const handleUploadFile = async (indikatorId: string, tahun: string, targetId: string, file: File) => {
+    const handleUploadFile = async (kodeIndikator: string, tahun: string, kodeTarget: string, file: File) => {
         try {
             const sessionId = getSessionId();
             if (!sessionId) {
@@ -114,7 +108,7 @@ useEffect(() => {
 
             setFormData((prev) =>
                 prev.map((item) =>
-                    item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
+                    item.kodeIndikator === kodeIndikator && item.tahun === tahun && item.kodeTarget === kodeTarget
                         ? { ...item, buktiPendukung: url }
                         : item
                 )
@@ -125,10 +119,10 @@ useEffect(() => {
         }
     };
 
-    const handleKeteranganChange = (indikatorId: string, tahun: string, targetId: string, value: string) => {
+    const handleKeteranganChange = (kodeIndikator: string, tahun: string, kodeTarget: string, value: string) => {
         setFormData((prev) =>
             prev.map((item) =>
-                item.indikatorId === indikatorId && item.tahun === tahun && item.targetId === targetId
+                item.kodeIndikator === kodeIndikator && item.tahun === tahun && item.kodeTarget === kodeTarget
                     ? { ...item, keteranganBuktiPendukung: value }
                     : item
             )
@@ -195,7 +189,7 @@ useEffect(() => {
                                 type="text"
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
-                                value={convertToDisplayString(formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.realisasi ?? null)}
+                                value={convertToDisplayString(formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.realisasi ?? null)}
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
                             />
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2">
@@ -222,7 +216,7 @@ useEffect(() => {
                                     />
                                 </label>
                                 {(() => {
-                                    const fileUrl = formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.buktiPendukung;
+                                    const fileUrl = formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.buktiPendukung;
                                     if (!fileUrl) return <span className="text-gray-500 text-sm truncate flex-1">Tidak ada File Yang Dipilih</span>;
                                     const rawFileName = fileUrl.split('/').pop()?.split('?')[0] || 'Lihat File';
                                     const fileName = rawFileName.replace(/^\d+-/, '');
@@ -246,7 +240,7 @@ useEffect(() => {
                             <textarea
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 rows={2}
-                                value={formData.find((f) => f.indikatorId === ind.indikatorId && f.tahun === ind.tahun && f.targetId === ind.targetId)?.keteranganBuktiPendukung ?? ''}
+                                value={formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.keteranganBuktiPendukung ?? ''}
                                 onChange={(e) => handleKeteranganChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
                             />
                         </div>

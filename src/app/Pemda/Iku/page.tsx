@@ -55,10 +55,10 @@ const IkuPage = () => {
       const targetRealisasiCapaian: IkuPemdaTargetRealisasiCapaian[] = [];
 
       ikuRealisasi.forEach((r: any) => {
-        if (!ikuMap.has(r.indikatorId)) {
-          ikuMap.set(r.indikatorId, true);
+        if (!ikuMap.has(r.kode_indikator)) {
+          ikuMap.set(r.kode_indikator, true);
           uniqueIkus.push({
-            indikator_id: r.indikatorId,
+            indikator_id: r.kode_indikator,
             indikator: r.indikator,
             asal_iku: r.jenisIku || "-",
             rumus_perhitungan: r.rumus_perhitungan || r.rumusPerhitungan || "-",
@@ -70,11 +70,14 @@ const IkuPage = () => {
 
         targetRealisasiCapaian.push({
           targetRealisasiId: r.id,
-          indikatorId: r.indikatorId,
+          indikatorId: r.kode_indikator,
           indikator: r.indikator,
-          targetId: r.targetId,
+          targetId: r.kode_target,
           target: r.target,
           realisasi: r.realisasi,
+          keteranganCapaian: r.keteranganCapaian,
+          faktorPenunjang: r.faktorPenunjang,
+          faktorPenghambat: r.faktorPenghambat,
           capaian: r.capaian,
           satuan: r.satuan,
           tahun: r.tahun,
@@ -151,6 +154,9 @@ const IkuPage = () => {
       "Target (%)",
       "Realisasi (%)",
       "Capaian (%)",
+      "Keterangan Capaian",
+      "Faktor Penunjang",
+      "Faktor Penghambat",
     ]];
 
     const tableBody: any[] = [];
@@ -170,6 +176,9 @@ const IkuPage = () => {
           "-",
           "-",
           "-",
+          "-",
+          "-",
+          "-",
         ]);
         return;
       }
@@ -184,6 +193,9 @@ const IkuPage = () => {
           sanitizeForPdf(target.target),
           sanitizeForPdf(target.realisasi ?? 0),
           sanitizeForPdf(formatPercentageText(target.capaian)),
+          sanitizeForPdf(target.keteranganCapaian || "-"),
+          sanitizeForPdf(target.faktorPenunjang || "-"),
+          sanitizeForPdf(target.faktorPenghambat || "-"),
         ]);
       });
     });
@@ -210,13 +222,16 @@ const IkuPage = () => {
       },
       columnStyles: {
         0: { cellWidth: 26, halign: "center" },
-        1: { cellWidth: 220 },
-        2: { cellWidth: 100 },
-        3: { cellWidth: 140 },
-        4: { cellWidth: 100 },
+        1: { cellWidth: 130 },
+        2: { cellWidth: 60 },
+        3: { cellWidth: 80 },
+        4: { cellWidth: 60 },
         5: { cellWidth: 45, halign: "center" },
         6: { cellWidth: 45, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
+        8: { cellWidth: 80 },
+        9: { cellWidth: 80 },
+        10: { cellWidth: 80 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },

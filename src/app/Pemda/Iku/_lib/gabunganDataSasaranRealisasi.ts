@@ -30,6 +30,9 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: IkuPemdaPerencanaa
                     tahun: target.tahun,
                     jenisRealisasi: realizationEntry.jenisRealisasi,
                     jenisIku: realizationEntry.jenisIku,
+                    keteranganCapaian: realizationEntry.keteranganCapaian || null,
+                    faktorPenunjang: realizationEntry.faktorPenunjang || null,
+                    faktorPenghambat: realizationEntry.faktorPenghambat || null,
                 });
             } else {
                 hasil.push({
@@ -44,6 +47,9 @@ export function gabunganDataPerencanaanRealisasi(perencanaan: IkuPemdaPerencanaa
                     tahun: target.tahun,
                     jenisRealisasi: null,
                     jenisIku: null,
+                    keteranganCapaian: null,
+                    faktorPenunjang: null,
+                    faktorPenghambat: null,
                 });
             }
         });

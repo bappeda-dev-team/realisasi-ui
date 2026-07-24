@@ -5,9 +5,9 @@ import { getMonthKey } from '@/lib/months';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 interface FormFaktorPenghambatProps {
-  tujuanId: string;
-  indikatorId: string;
-  targetId: string;
+  kodeTujuanPemda: string;
+  kodeIndikator: string;
+  kodeTarget: string;
   tahun: string;
   bulan: string;
   currentValue: string;
@@ -16,9 +16,9 @@ interface FormFaktorPenghambatProps {
 }
 
 const FormFaktorPenghambat: React.FC<FormFaktorPenghambatProps> = ({
-  tujuanId,
-  indikatorId,
-  targetId,
+  kodeTujuanPemda,
+  kodeIndikator,
+  kodeTarget,
   tahun,
   bulan,
   currentValue,
@@ -51,9 +51,9 @@ const FormFaktorPenghambat: React.FC<FormFaktorPenghambatProps> = ({
         },
         credentials: 'include',
         body: JSON.stringify({
-          tujuanId,
-          indikatorId,
-          targetId,
+          kodeTujuanPemda,
+          kodeIndikator,
+          kodeTarget,
           tahun,
           bulan: normalizedBulan,
           faktorPenghambat: value,

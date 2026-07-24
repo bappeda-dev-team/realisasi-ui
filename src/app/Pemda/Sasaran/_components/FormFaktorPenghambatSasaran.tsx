@@ -51,9 +51,9 @@ const FormFaktorPenghambatSasaran: React.FC<FormFaktorPenghambatSasaranProps> = 
         },
         credentials: 'include',
         body: JSON.stringify({
-          sasaranId,
-          indikatorId,
-          targetId,
+          kodeSasaranPemda: sasaranId,
+          kodeIndikator: indikatorId,
+          kodeTarget: targetId,
           tahun,
           bulan: normalizedBulan,
           faktorPenghambat: value,
