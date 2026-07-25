@@ -16,6 +16,8 @@ import autoTable from "jspdf-autotable";
 import { getSessionId } from "@/lib/session";
 import FormFaktorPenunjangRenjaOpd from "./_components/FormFaktorPenunjangRenjaOpd";
 import FormFaktorPenghambatRenjaOpd from "./_components/FormFaktorPenghambatRenjaOpd";
+import { useUserContext } from "@/context/UserContext";
+import { ROLES } from "@/constants/roles";
 
 interface RenjaNodeTargetValue {
     targetRealisasiId?: number | null;
@@ -294,6 +296,10 @@ const Table = () => {
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
     const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { user } = useUserContext();
+    const userLevel = user?.roles?.find((r: string) => r.startsWith('level_'));
+    const isSuperAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN);
+    const hideSyncButton = isSuperAdmin || (userLevel && [ROLES.LEVEL_1, ROLES.LEVEL_2, ROLES.LEVEL_3, ROLES.LEVEL_4].includes(userLevel as any));
 
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
@@ -666,7 +672,9 @@ const Table = () => {
         }
     };
 
-    const renderSyncButton = () => (
+    const renderSyncButton = () => {
+        if (hideSyncButton) return null;
+        return (
         <div className="flex justify-end mb-2 mr-2 mt-2">
             <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || loading}>
                 {isSyncing ? (
@@ -683,6 +691,7 @@ const Table = () => {
             </ButtonSky>
         </div>
     );
+    };
 
     if (loading) {
         return (
