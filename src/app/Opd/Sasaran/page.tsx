@@ -17,6 +17,8 @@ import jsPDF from "jspdf";
 import React, { useEffect, useMemo, useState } from "react";
 import { getSessionId } from "@/lib/session";
 import TableSasaranOpd from "./_components/TableSasaranOpd";
+import { useUserContext } from "@/context/UserContext";
+import { ROLES } from "@/constants/roles";
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null) return "-";
@@ -38,6 +40,10 @@ const sanitizeForPdf = (value: unknown) => {
 export default function SasaranPage() {
   const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, activatedBulan, namaDinas: namaOpd } =
     useFilterContext();
+  const { user } = useUserContext();
+  const userLevel = user?.roles?.find((r: string) => r.startsWith('level_'));
+  const isSuperAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN);
+  const hideSyncButton = isSuperAdmin || (userLevel && [ROLES.LEVEL_1, ROLES.LEVEL_2, ROLES.LEVEL_3, ROLES.LEVEL_4].includes(userLevel as any));
 
   const selectedTahunValue = selectedTahun ? parseInt(selectedTahun, 10) : 2025;
   const bulanKey = getMonthKey(activatedBulan);
@@ -168,7 +174,9 @@ export default function SasaranPage() {
     }
   };
 
-  const renderSyncButton = () => (
+  const renderSyncButton = () => {
+    if (hideSyncButton) return null;
+    return (
     <div className="flex justify-end mb-2 mr-2 mt-2">
       <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || penetapanLoading}>
         {isSyncing ? (
@@ -185,6 +193,7 @@ export default function SasaranPage() {
       </ButtonSky>
     </div>
   );
+  };
 
   if (penetapanLoading) {
     return (

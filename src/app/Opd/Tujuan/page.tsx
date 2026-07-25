@@ -20,6 +20,7 @@ import { ModalTujuanOpd } from "./_components/ModalTujuanOpd";
 import { getSessionId } from "@/lib/session";
 import { useUserContext } from "@/context/UserContext";
 import { canEditOpdRealisasi } from "@/lib/rbac";
+import { ROLES } from "@/constants/roles";
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null) return "-";
@@ -69,6 +70,9 @@ export default function TujuanPage() {
 
   const { user } = useUserContext();
   const canEdit = canEditOpdRealisasi(user);
+  const userLevel = user?.roles?.find((r: string) => r.startsWith('level_'));
+  const isSuperAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN);
+  const hideSyncButton = isSuperAdmin || (userLevel && [ROLES.LEVEL_1, ROLES.LEVEL_2, ROLES.LEVEL_3, ROLES.LEVEL_4].includes(userLevel as any));
 
   const {
     data: penetapanData,
@@ -193,7 +197,9 @@ export default function TujuanPage() {
     }
   };
 
-  const renderSyncButton = () => (
+  const renderSyncButton = () => {
+    if (hideSyncButton) return null;
+    return (
     <div className="flex justify-end mb-2 mr-2 mt-2">
       <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={isSyncing || penetapanLoading}>
         {isSyncing ? (
@@ -210,6 +216,7 @@ export default function TujuanPage() {
       </ButtonSky>
     </div>
   );
+  };
 
   if (penetapanLoading) {
     return (
