@@ -1,13 +1,16 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { FetchResponse } from '@/types'
 import { getSessionId, notifySessionExpired } from "@/lib/session";
+import { isNetworkError, notifyNetworkError } from "@/lib/network-error";
 
 interface useFetchDataProps {
     url: string | null;
     trigger?: number;
+    retryCount?: number;
+    retryDelay?: number;
 }
 
-export const useFetchData = <T>({ url, trigger }: useFetchDataProps): FetchResponse<T> & { refetch: () => void } => {
+export const useFetchData = <T>({ url, trigger, retryCount = 3, retryDelay = 1000 }: useFetchDataProps): FetchResponse<T> & { refetch: () => void } => {
     const [data, setData] = useState<T | undefined>(undefined);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | undefined>(undefined);
@@ -34,37 +37,59 @@ export const useFetchData = <T>({ url, trigger }: useFetchDataProps): FetchRespo
         setLoading(true)
         setError(undefined)
 
-        try {
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: { 'X-Session-Id': sessionId },
-                signal,
-            });
-            if (!response.ok) {
-                if (response.status === 401 || response.status === 403) {
-                    notifySessionExpired();
-                    throw new Error("Session habis, silakan login kembali.");
-                }
-                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
-            }
-            const responseData: T = await response.json();
-            if (!signal.aborted && requestIdRef.current === requestId) {
-                setData(responseData);
-            }
-        } catch (err) {
-            if (signal.aborted) {
-                return;
-            }
+        let lastError: Error | undefined;
 
-            if (requestIdRef.current === requestId) {
-                setError(err instanceof Error ? err.message : 'An error occurred');
-            }
-        } finally {
-            if (!signal.aborted && requestIdRef.current === requestId) {
-                setLoading(false);
+        for (let attempt = 0; attempt <= retryCount; attempt++) {
+            if (signal.aborted) return;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'X-Session-Id': sessionId },
+                    signal,
+                });
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        notifySessionExpired();
+                        throw new Error("Session habis, silakan login kembali.");
+                    }
+                    throw new Error(`HTTP ${response.status} - ${response.statusText}`);
+                }
+                const responseData: T = await response.json();
+                if (!signal.aborted && requestIdRef.current === requestId) {
+                    setData(responseData);
+                }
+                lastError = undefined;
+                break;
+            } catch (err) {
+                if (signal.aborted) return;
+                lastError = err instanceof Error ? err : new Error('Terjadi error!');
+
+                if (lastError.message.includes("Session habis")) {
+                    throw lastError;
+                }
+
+                const networkErr = isNetworkError(lastError);
+                if (networkErr && attempt < retryCount) {
+                    await new Promise(resolve => setTimeout(resolve, retryDelay * (attempt + 1)));
+                    continue;
+                }
+
+                if (networkErr) {
+                    notifyNetworkError();
+                    lastError = undefined;
+                }
+                break;
             }
         }
-    }, [url]);
+
+        if (!signal.aborted && requestIdRef.current === requestId) {
+            if (lastError) {
+                setError(lastError.message);
+            }
+            setLoading(false);
+        }
+    }, [url, retryCount, retryDelay]);
 
     useEffect(() => {
         const controller = new AbortController();
