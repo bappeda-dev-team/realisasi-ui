@@ -25,6 +25,9 @@ const isNetworkWeak = (online: boolean, type: EffectiveType): boolean => {
 
 export const useNetworkStatus = (): NetworkStatus => {
   const [status, setStatus] = useState<NetworkStatus>(() => {
+    if (typeof navigator === 'undefined') {
+      return { isOnline: true, effectiveType: "4g", isWeak: false };
+    }
     const online = navigator.onLine;
     const effectiveType = getEffectiveType();
     return {

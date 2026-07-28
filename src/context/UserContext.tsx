@@ -58,6 +58,7 @@ export function UserProvider({
 
   // Select opd for super_admin / admin_opd
   const readOpdCookie = (): OpdSelectedCookie => {
+    if (typeof document === 'undefined') return { selected: false, locked: false };
     const raw = Cookies.get(OPD_SELECTED_COOKIE);
     if (!raw) return { selected: false, locked: false };
     try {
