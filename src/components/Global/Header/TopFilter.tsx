@@ -38,6 +38,7 @@ interface FilterProps {
   disableOpdLock?: boolean;
   forceOpdLock?: boolean;
   hideOpd?: boolean;
+  opdLocked?: boolean;
 }
 
 interface DinasResponse {
@@ -69,7 +70,7 @@ interface PegawaiData {
   status_pegawai: string;
 }
 
-export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd }: FilterProps) {
+export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd, opdLocked }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
     dinas,
@@ -80,6 +81,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd 
     setDinas,
     setActivatedDinas,
     setNamaDinas,
+    namaDinas,
     setPeriode,
     setTahun,
     setBulan,
@@ -109,7 +111,9 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd 
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
-  const effectivelyCanEditOpd = (forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd) ? false : canEditOpd;
+  const effectivelyCanEditOpd = opdLocked
+    ? false
+    : (forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd) ? false : canEditOpd;
 
   const {
     data: dataDinas,
@@ -170,6 +174,21 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd 
       setDinasOptions(options);
     }
   }, [dataDinas, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
+
+  // ----------------------------
+  // PASTIKAN OPD YANG DIPILIH ADA DI OPTIONS SAAT LOCKED
+  // ----------------------------
+  useEffect(() => {
+    if (opdLocked && dinas && namaDinas) {
+      setDinasOptions((prev) => {
+        const exists = prev.some((opt) => opt.value === dinas);
+        if (!exists) {
+          return [{ value: dinas, label: namaDinas }, ...prev];
+        }
+        return prev;
+      });
+    }
+  }, [opdLocked, dinas, namaDinas]);
 
   // ----------------------------
   // DROPDOWN PERIODE

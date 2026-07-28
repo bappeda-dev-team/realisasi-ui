@@ -15,10 +15,12 @@ import { useUserContext } from "@/context/UserContext";
 import { ToastSuccess, ToastError } from "@/components/Global/Alert";
 import Login from "@/components/Global/Header/Login";
 import FormLogin from "@/components/Global/Header/FormLogin";
+import OpdSelectionModal from "@/components/Global/Header/OpdSelectionModal";
 import { getAccessibleMenus } from "@/lib/rbac";
+import { ROLES } from "@/constants/roles";
 
 export const Header = () => {
-  const { user, loading, error, lastLoginAt } = useUserContext();
+  const { user, loading, error, lastLoginAt, opdSelected, opdLocked } = useUserContext();
   const pathname = usePathname();
   const [ShowToastSuccess, setShowToastSuccess] = useState(false);
   const [ShowToastError, setShowToastError] = useState(false);
@@ -57,12 +59,19 @@ export const Header = () => {
     }
   }, [error]);
 
+  const needsOpdSelection =
+    user &&
+    !opdSelected &&
+    (user.roles.includes(ROLES.SUPER_ADMIN) ||
+      user.roles.includes(ROLES.ADMIN_OPD));
+
   return (
     <>
       <TopFilter 
         user={user} 
         forceOpdLock={pathname.startsWith('/Individu') || pathname.startsWith('/Laporan/Individu')} 
         hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} 
+        opdLocked={opdLocked}
       />
       <nav
         className={`inset-x-1 m-1 ml-2 bg-[#1C1D1D] shadow-lg shadow-slate-300 rounded-xl transition duration-300`}
@@ -161,6 +170,8 @@ export const Header = () => {
             onSuccess={() => setModalLogin(false)}
           />
         )}
+
+        {needsOpdSelection && <OpdSelectionModal />}
       </nav>
     </>
   );

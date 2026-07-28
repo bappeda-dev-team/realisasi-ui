@@ -15,6 +15,7 @@ export async function logout(): Promise<void> {
     }
 
     cookieStore.delete("sessionId")
+    cookieStore.delete("opdSelected")
 
     redirect("/")
 }
