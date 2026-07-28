@@ -533,7 +533,7 @@ const ProgramTable = () => {
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span>{row.jenisRenja || "-"}</span>
+                                                    <span>{row.renja || "-"}</span>
                                                     <span className="text-sm text-gray-500">({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
