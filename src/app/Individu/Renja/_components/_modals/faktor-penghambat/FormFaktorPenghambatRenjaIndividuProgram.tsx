@@ -11,6 +11,7 @@ interface FormFaktorPenghambatRenjaIndividuProgramProps {
   kode: string;
   kodeIndikator: string;
   kodeTarget: string;
+  kodePagu: string;
   tahun: string;
   bulan: string;
   currentValue: string;
@@ -26,6 +27,7 @@ const FormFaktorPenghambatRenjaIndividuProgram: React.FC<FormFaktorPenghambatRen
   kode,
   kodeIndikator,
   kodeTarget,
+  kodePagu,
   tahun,
   bulan,
   currentValue,
@@ -62,6 +64,7 @@ const FormFaktorPenghambatRenjaIndividuProgram: React.FC<FormFaktorPenghambatRen
           [KODE_FIELD]: kode,
           kodeIndikator,
           kodeTarget,
+          kodePagu,
           tahun,
           bulan: normalizedBulan,
           faktorPenghambat: value,

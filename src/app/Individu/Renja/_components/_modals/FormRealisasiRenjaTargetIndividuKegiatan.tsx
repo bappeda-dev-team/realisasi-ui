@@ -21,8 +21,6 @@ interface KegiatanRealisasiRequest {
   kodeIndikator: string;
   kodeTarget: string;
   kodePagu: string;
-  target: number;
-  pagu: number;
   realisasi: number;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
@@ -154,12 +152,10 @@ const FormRealisasiRenjaTargetIndividuKegiatan: React.FC<FormRealisasiRenjaTarge
       tahun: item.tahun,
       bulan: monthKey,
       nip: item.nip,
-      kodeKegiatan: item.kodeRenja,
+      kodeKegiatan: item.kodePk || item.kodeRenja,
       kodeIndikator: item.idIndikator,
       kodeTarget: item.targetId,
       kodePagu: item.kodePagu ?? "",
-      target: parseFloat(item.target) || 0,
-      pagu: item.pagu ?? 0,
       realisasi: item.realisasi,
       buktiPendukung: item.buktiPendukung,
       keteranganBuktiPendukung: item.keteranganBuktiPendukung,
@@ -176,9 +172,9 @@ const FormRealisasiRenjaTargetIndividuKegiatan: React.FC<FormRealisasiRenjaTarge
           return {
             ...orig,
             targetRealisasiId: result.id ?? orig.targetRealisasiId,
-            realisasi: result.realisasi ?? orig.realisasi,
-            capaian: String(result.capaian ?? orig.capaian ?? ""),
-            keteranganCapaian: result.keteranganCapaian ?? orig.keteranganCapaian,
+            realisasi: result.realisasiTarget ?? result.realisasi ?? orig.realisasi,
+            capaian: String(result.capaianTarget ?? result.capaian ?? orig.capaian ?? ""),
+            keteranganCapaian: result.keteranganCapaianTarget ?? result.keteranganCapaian ?? orig.keteranganCapaian,
             faktorPenunjang: result.faktorPenunjang ?? orig.faktorPenunjang,
             faktorPenghambat: result.faktorPenghambat ?? orig.faktorPenghambat,
             buktiPendukung: result.buktiPendukung ?? orig.buktiPendukung,

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenjaTarget, RenjaProgramIndividuResponse } from "@/types";
+import { FormProps, RenjaTarget } from "@/types";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -21,8 +21,6 @@ interface ProgramRealisasiRequest {
   kodeIndikator: string;
   kodeTarget: string;
   kodePagu: string;
-  target: number;
-  pagu: number;
   realisasi: number;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
@@ -44,7 +42,7 @@ const FormRealisasiRenjaTargetIndividuProgram: React.FC<FormRealisasiRenjaTarget
 
   const submitUrl = '/api/v1/realisasi/renja_individu/program';
 
-  const { submit, loading, error } = useSubmitData<RenjaProgramIndividuResponse>({ url: submitUrl });
+  const { submit, loading, error } = useSubmitData<any>({ url: submitUrl });
 
   useEffect(() => {
     if (!requestValues?.length) {
@@ -154,12 +152,10 @@ const FormRealisasiRenjaTargetIndividuProgram: React.FC<FormRealisasiRenjaTarget
       tahun: item.tahun,
       bulan: monthKey,
       nip: item.nip,
-      kodeProgram: item.kodeRenja,
+      kodeProgram: item.kodePk || item.kodeRenja,
       kodeIndikator: item.idIndikator,
       kodeTarget: item.targetId,
       kodePagu: item.kodePagu ?? "",
-      target: parseFloat(item.target) || 0,
-      pagu: item.pagu ?? 0,
       realisasi: item.realisasi,
       buktiPendukung: item.buktiPendukung,
       keteranganBuktiPendukung: item.keteranganBuktiPendukung,
@@ -176,9 +172,9 @@ const FormRealisasiRenjaTargetIndividuProgram: React.FC<FormRealisasiRenjaTarget
           return {
             ...orig,
             targetRealisasiId: result.id ?? orig.targetRealisasiId,
-            realisasi: result.realisasi ?? orig.realisasi,
-            capaian: String(result.capaian ?? orig.capaian ?? ""),
-            keteranganCapaian: result.keteranganCapaian ?? orig.keteranganCapaian,
+            realisasi: result.realisasiTarget ?? result.realisasi ?? orig.realisasi,
+            capaian: String(result.capaianTarget ?? result.capaian ?? orig.capaian ?? ""),
+            keteranganCapaian: result.keteranganCapaianTarget ?? result.keteranganCapaian ?? orig.keteranganCapaian,
             faktorPenunjang: result.faktorPenunjang ?? orig.faktorPenunjang,
             faktorPenghambat: result.faktorPenghambat ?? orig.faktorPenghambat,
             buktiPendukung: result.buktiPendukung ?? orig.buktiPendukung,

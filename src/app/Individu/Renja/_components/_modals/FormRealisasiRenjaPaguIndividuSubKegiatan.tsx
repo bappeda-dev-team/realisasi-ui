@@ -64,7 +64,7 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasiPagu: isNaN(parsedValue) ? 0 : parsedValue }
+                    ? { ...item, realisasiPagu: isNaN(parsedValue) || value === '' ? null : parsedValue }
                     : item
             )
         );
@@ -96,7 +96,7 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
             tahun: item.tahun,
             bulan: monthKey,
             nip: item.nip,
-            kodeSubKegiatan: item.kodeRenja,
+            kodeSubKegiatan: item.kodePk ?? item.kodeRenja,
             kodeIndikator: item.idIndikator,
             kodeTarget: item.targetId,
             kodePagu: item.kodePagu ?? "",
@@ -173,7 +173,7 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasiPagu ?? ''}
+                                value={target.realisasiPagu || ''}
                                 onChange={(event) =>
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }

@@ -1357,6 +1357,7 @@ export interface RenjaTarget {
   targetRealisasi?: number;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
+  kodePk?: string;
 }
 
 export interface RenjaBatchRequest {
@@ -1499,19 +1500,81 @@ export interface RenjaKegiatanIndividuResponse {
   kodePagu: string;
   pagu: number;
   target: number;
-  realisasi: number;
+  realisasiTarget?: number;
+  realisasi?: number;
   jenisRealisasi: string;
-  capaian: number;
-  keteranganCapaian: string;
-  faktorPenunjang: string;
-  faktorPenghambat: string;
-  createdBy: string;
-  lastModifiedBy: string;
+  capaianTarget?: number;
+  capaian?: number;
+  keteranganCapaianTarget?: string;
+  keteranganCapaian?: string;
+  faktorPenunjang?: string;
+  faktorPenghambat?: string;
+  createdBy?: string;
+  lastModifiedBy?: string;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
 
 export type RenjaKegiatanIndividuResponseList = RenjaKegiatanIndividuResponse[];
+
+export interface RenjaIndividuPenetapanTarget {
+  id: number;
+  kode_target: string;
+  tahun: number;
+  target: number;
+  satuan: string;
+  realisasi_target: number | null;
+  realisasi_pagu: number | null;
+  capaian_target: number | null;
+  keterangan_capaian_target: string | null;
+  capaian_pagu: number | null;
+  keterangan_capaian_pagu: string | null;
+  faktor_penunjang: string | null;
+  faktor_penghambat: string | null;
+  bukti_pendukung?: string | null;
+  keterangan_bukti_pendukung?: string | null;
+  jenis_realisasi: string;
+}
+
+export interface RenjaIndividuPenetapanIndikator {
+  id: number;
+  kode_indikator: string;
+  indikator: string;
+  targets: RenjaIndividuPenetapanTarget[];
+}
+
+export interface RenjaIndividuPenetapanItem {
+  id: number;
+  kode_pk: string;
+  level_pk: number;
+  pegawai_id: string;
+  nama_pegawai: string;
+  kode_program: string;
+  nama_program: string;
+  kode_pagu_program?: string;
+  pagu_program?: number;
+  indikator_programs?: RenjaIndividuPenetapanIndikator[];
+  kode_kegiatan?: string;
+  nama_kegiatan?: string;
+  kode_pagu_kegiatan?: string;
+  pagu_kegiatan?: number;
+  indikator_kegiatans?: RenjaIndividuPenetapanIndikator[];
+  kode_subkegiatan?: string;
+  nama_subkegiatan?: string;
+  kode_pagu_subkegiatan?: string;
+  pagu_subkegiatan?: number;
+  indikator_subkegiatans?: RenjaIndividuPenetapanIndikator[];
+}
+
+export interface RenjaIndividuPenetapanResponse {
+  pegawai_id: string;
+  nama: string;
+  kode_opd: string;
+  tahun_aktif: number;
+  bulan: number;
+  renjas: RenjaIndividuPenetapanItem[];
+}
+
 
 export interface RenjaPaguTarget {
   targetRealisasiId: number | null;

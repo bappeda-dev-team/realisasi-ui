@@ -155,7 +155,7 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
       tahun: item.tahun,
       bulan: monthKey,
       nip: item.nip,
-      kodeSubKegiatan: item.kodeRenja,
+      kodeSubKegiatan: item.kodePk ?? item.kodeRenja,
       kodeIndikator: item.idIndikator,
       kodeTarget: item.targetId,
       kodePagu: item.kodePagu ?? "",
