@@ -43,7 +43,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasiPagu: isNaN(parsedValue) ? 0 : parsedValue }
+                    ? { ...item, realisasiPagu: isNaN(parsedValue) || value === '' ? null : parsedValue }
                     : item
             )
         );
@@ -131,7 +131,7 @@ const FormRealisasiRenjaPagu: React.FC<FormRealisasiRenjaPaguProps> = ({ request
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
                                 step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasiPagu ?? ''}
+                                value={target.realisasiPagu || ''}
                                 onChange={(event) =>
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }

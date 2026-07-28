@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from "react";
-import { ButtonGreenBorder } from "@/components/Global/Button/button";
+import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
+import { TbRefresh } from "react-icons/tb";
 import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
@@ -12,7 +13,6 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { getHeaderColor, getHeaderFillColor } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
-    RenjaSubKegiatanIndividuResponse,
 } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -25,13 +25,14 @@ import { canEditIndividuRenjaRealisasi } from "@/lib/rbac";
 import { getSessionId } from '@/lib/session';
 
 interface SubKegiatanRow {
-    id: number;
+    id: string | number;
     renja: string;
     nama_pegawai: string;
     nip: string;
     kodeRenja: string;
     jenisRenja: string;
     indikator: string;
+    kodePk?: string;
     targets: RenjaTarget[];
 }
 
@@ -47,6 +48,8 @@ const SubKegiatanIndividuTable = () => {
     const [selectedFaktorRow, setSelectedFaktorRow] = useState<SubKegiatanRow | null>(null);
     const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
     const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
     const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
     const { user } = useUserContext();
@@ -70,17 +73,17 @@ const SubKegiatanIndividuTable = () => {
         if (isOpdScopedView) {
             if (activatedLevelRole && activatedNamaPegawai) {
                 const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
+                apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
             } else {
                 apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
             }
         } else if (effectiveNip) {
             const safeNip = effectiveNip.replace(/-$/, "");
-            apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+            apiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
         }
     }
 
-    const { data, loading, error, refetch } = useFetchData<RenjaSubKegiatanIndividuResponse[]>({
+    const { data, loading, error, refetch } = useFetchData<any>({
         url: apiUrl,
     });
 
@@ -95,47 +98,141 @@ const SubKegiatanIndividuTable = () => {
             return;
         }
 
-        setRows(
-            data.map((item) => ({
-                id: item.id,
-                renja: item.subKegiatan ?? "-",
-                nama_pegawai: item.nip ?? "-",
-                nip: item.nip ?? "-",
-                kodeRenja: item.kodeSubKegiatan ?? "-",
-                jenisRenja: "SUB_KEGIATAN",
-                indikator: item.indikator ?? "-",
-                targets: [{
-                    targetRealisasiId: item.id ?? null,
-                    renjaId: item.kodeSubKegiatan ?? "",
+        if (Array.isArray(data)) {
+            setRows(
+                data.map((item: any) => ({
+                    id: item.id,
                     renja: item.subKegiatan ?? "-",
+                    nama_pegawai: item.nip ?? "-",
+                    nip: item.nip ?? "-",
                     kodeRenja: item.kodeSubKegiatan ?? "-",
                     jenisRenja: "SUB_KEGIATAN",
-                    nip: item.nip ?? "-",
-                    idIndikator: item.kodeIndikator ?? "",
                     indikator: item.indikator ?? "-",
-                    targetId: item.kodeTarget ?? "",
-                    target: String(item.targetRealisasi ?? "-"),
-                    realisasi: item.realisasiTarget,
-                    satuan: "%",
-                    tahun: item.tahun ?? activatedTahun ?? "",
-                    bulan: item.bulan ?? bulanName ?? undefined,
-                    jenisRealisasi: item.jenisRealisasi as "NAIK" | "TURUN",
-                    capaian: String(item.capaian ?? "-"),
-                    keteranganCapaian: item.keteranganCapaian ?? "-",
-                    pagu: item.pagu ?? null,
-                    realisasiPagu: item.realisasiPagu ?? null,
-                    satuanPagu: "Rupiah",
-                    capaianPagu: String(item.capaianPagu ?? "-"),
-                    keteranganCapaianPagu: item.keteranganCapaianPagu ?? "-",
-                    faktorPenunjang: item.faktorPenunjang ?? null,
-                    faktorPenghambat: item.faktorPenghambat ?? null,
-                    kodeOpd: item.kodeOpd ?? effectiveKodeOpd ?? "",
-                    kodePagu: item.kodePagu ?? "",
-                    targetRealisasi: item.targetRealisasi ?? 0,
-                }],
-            }))
+                    targets: [{
+                        targetRealisasiId: item.id ?? null,
+                        renjaId: item.kodeSubKegiatan ?? "",
+                        renja: item.subKegiatan ?? "-",
+                        kodeRenja: item.kodeSubKegiatan ?? "-",
+                        jenisRenja: "SUB_KEGIATAN",
+                        nip: item.nip ?? "-",
+                        idIndikator: item.kodeIndikator ?? "",
+                        indikator: item.indikator ?? "-",
+                        targetId: item.kodeTarget ?? "",
+                        target: String(item.targetRealisasi ?? "-"),
+                        realisasi: item.realisasiTarget,
+                        satuan: "%",
+                        tahun: item.tahun ?? activatedTahun ?? "",
+                        bulan: item.bulan ?? bulanName ?? undefined,
+                        jenisRealisasi: item.jenisRealisasi as "NAIK" | "TURUN",
+                        capaian: String(item.capaian ?? "-"),
+                        keteranganCapaian: item.keteranganCapaian ?? "-",
+                        pagu: item.pagu ?? null,
+                        realisasiPagu: item.realisasiPagu ?? null,
+                        satuanPagu: "Rupiah",
+                        capaianPagu: String(item.capaianPagu ?? "-"),
+                        keteranganCapaianPagu: item.keteranganCapaianPagu ?? "-",
+                        faktorPenunjang: item.faktorPenunjang ?? null,
+                        faktorPenghambat: item.faktorPenghambat ?? null,
+                        kodeOpd: item.kodeOpd ?? effectiveKodeOpd ?? "",
+                        kodePagu: item.kodePagu ?? "",
+                        targetRealisasi: item.targetRealisasi ?? 0,
+                    }],
+                }))
+            );
+            return;
+        }
+
+        setRows(
+            (data.renjas ?? []).flatMap((renjaItem: any) =>
+                (renjaItem.indikator_subkegiatans ?? []).map((indikator: any, indIndex: number) => {
+                    const backendNamaPegawai = renjaItem.nama_pegawai?.trim() || data.nama?.trim();
+                    const fallbackNamaPegawai = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.username || "-";
+                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
+                    const nipPegawai = renjaItem.pegawai_id || data.pegawai_id || user?.nip || "-";
+
+                    let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
+                        targetRealisasiId: t.id ?? null,
+                        renjaId: renjaItem.kode_subkegiatan ?? "",
+                        renja: renjaItem.nama_subkegiatan ?? "-",
+                        kodeRenja: renjaItem.kode_subkegiatan ?? "-",
+                        jenisRenja: "SUB_KEGIATAN",
+                        nip: nipPegawai,
+                        idIndikator: indikator.kode_indikator ?? "",
+                        indikator: indikator.indikator ?? "-",
+                        targetId: t.kode_target ?? "",
+                        target: String(t.target ?? "-"),
+                        realisasi: t.realisasi_target ?? 0,
+                        satuan: t.satuan ?? "%",
+                        tahun: String(t.tahun ?? data.tahun_aktif ?? activatedTahun ?? ""),
+                        bulan: bulanName ?? undefined,
+                        jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        capaian: t.capaian_target != null ? String(t.capaian_target) : "-",
+                        keteranganCapaian: t.keterangan_capaian_target ?? "-",
+                        pagu: renjaItem.pagu_subkegiatan ?? null,
+                        realisasiPagu: t.realisasi_pagu ?? null,
+                        satuanPagu: "Rupiah",
+                        capaianPagu: t.capaian_pagu != null ? String(t.capaian_pagu) : "-",
+                        keteranganCapaianPagu: t.keterangan_capaian_pagu ?? "-",
+                        faktorPenunjang: t.faktor_penunjang ?? null,
+                        faktorPenghambat: t.faktor_penghambat ?? null,
+                        kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                        kodePagu: renjaItem.kode_pagu_subkegiatan ?? "",
+                        targetRealisasi: t.target ?? 0,
+                        buktiPendukung: t.bukti_pendukung ?? null,
+                        keteranganBuktiPendukung: t.keterangan_bukti_pendukung ?? null,
+                        kodePk: renjaItem.kode_pk || undefined,
+                    }));
+
+                    if (targets.length === 0) {
+                        targets = [{
+                            targetRealisasiId: null,
+                            renjaId: renjaItem.kode_subkegiatan ?? "",
+                            renja: renjaItem.nama_subkegiatan ?? "-",
+                            kodeRenja: renjaItem.kode_subkegiatan ?? "-",
+                            jenisRenja: "SUB_KEGIATAN",
+                            nip: nipPegawai,
+                            idIndikator: indikator.kode_indikator ?? "",
+                            indikator: indikator.indikator ?? "-",
+                            targetId: "",
+                            target: "-",
+                            realisasi: 0,
+                            satuan: "%",
+                            tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
+                            bulan: bulanName ?? undefined,
+                            jenisRealisasi: "NAIK",
+                            capaian: "-",
+                            keteranganCapaian: "-",
+                            pagu: renjaItem.pagu_subkegiatan ?? null,
+                            realisasiPagu: null,
+                            satuanPagu: "Rupiah",
+                            capaianPagu: "-",
+                            keteranganCapaianPagu: "-",
+                            faktorPenunjang: null,
+                            faktorPenghambat: null,
+                            kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                            kodePagu: renjaItem.kode_pagu_subkegiatan ?? "",
+                            targetRealisasi: 0,
+                            buktiPendukung: null,
+                            keteranganBuktiPendukung: null,
+                            kodePk: renjaItem.kode_pk || undefined,
+                        }];
+                    }
+
+                    return {
+                        id: renjaItem.kode_pk ? `${renjaItem.kode_pk}_${indikator.id || indIndex}` : (indikator.id || indIndex),
+                        renja: renjaItem.nama_subkegiatan ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        kodeRenja: renjaItem.kode_subkegiatan ?? "-",
+                        jenisRenja: "SUB_KEGIATAN",
+                        indikator: indikator.indikator ?? "-",
+                        kodePk: renjaItem.kode_pk || undefined,
+                        targets,
+                    };
+                })
+            )
         );
-    }, [data, user, activatedTahun, bulanKey, bulanName]);
+    }, [data, user, activatedTahun, bulanKey, bulanName, effectiveKodeOpd]);
 
     const openModal = (row: SubKegiatanRow, type: 'target' | 'pagu' = 'pagu') => {
         if (!canEditRealisasi) return;
@@ -182,6 +279,57 @@ const SubKegiatanIndividuTable = () => {
         setIsModalOpen(false);
         setSelectedRow(null);
         refetch();
+    };
+
+    const handleSync = async () => {
+        const nipToSync = effectiveNip?.replace(/-$/, "");
+        if (!nipToSync || !effectiveKodeOpd || !activatedTahun) return;
+
+        setIsSyncing(true);
+        try {
+            const sessionId = getSessionId();
+            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan`, {
+                method: "POST",
+                headers: {
+                    "X-Session-Id": sessionId ?? "",
+                },
+            });
+            if (!response.ok) {
+                console.error("Failed to sync data");
+            }
+            if (refetch) {
+                await refetch();
+            }
+        } catch (error) {
+            console.error("Error during sync:", error);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const renderSyncButton = () => {
+        if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
+
+        const nipToSync = effectiveNip?.replace(/-$/, "");
+        const canSync = nipToSync && effectiveKodeOpd && activatedTahun;
+
+        return (
+            <div className="flex justify-end mb-2 mr-2 mt-2">
+                <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={!canSync || isSyncing || loading}>
+                    {isSyncing ? (
+                        <div className="flex items-center gap-2">
+                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
+                            <span>Syncing...</span>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <TbRefresh size={20} />
+                            <span>Sinkronisasi</span>
+                        </div>
+                    )}
+                </ButtonSky>
+            </div>
+        );
     };
 
     const formatRupiah = (value: number | null | undefined): string => {
@@ -248,8 +396,8 @@ const SubKegiatanIndividuTable = () => {
                 if (targetIndex === 0) {
                     tableBody.push([
                         { content: index + 1, rowSpan: targets.length },
-                        { content: `${user?.firstName || "-"} \n (${row.nip || "-"})`, rowSpan: targets.length },
-                        { content: `${row.jenisRenja || "-"} (${row.kodeRenja || "-"})`, rowSpan: targets.length },
+                        { content: `${row.nama_pegawai || user?.firstName || "-"} \n (${row.nip || "-"})`, rowSpan: targets.length },
+                        { content: `${row.renja || "-"} \n (${row.kodeRenja || "-"})${row.kodePk ? ` \n [PK: ${row.kodePk}]` : ""}`, rowSpan: targets.length },
                         { content: row.indikator || "-", rowSpan: targets.length },
                         ...detailRow,
                     ]);
@@ -344,6 +492,7 @@ const SubKegiatanIndividuTable = () => {
                 <div className="flex justify-between items-center px-4 py-3">
                     <h3 className="font-semibold text-gray-800">Renja Individu (Sub Kegiatan)</h3>
                 </div>
+                {renderSyncButton()}
                 {loading ? (
                     <div className="rounded border border-emerald-200 px-4 py-6 text-center">
                         <LoadingBeat loading={true} />
@@ -362,8 +511,8 @@ const SubKegiatanIndividuTable = () => {
                                 <tr className={`text-xm ${headerColor}`}>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama/NIP</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Sub Kegiatan</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]">Indikator</td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Sub Kegiatan</td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                                     <th colSpan={8} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Sub Kegiatan ${activatedTahun} - ${bulanName}`}</th>
                                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>
                                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penghambat</th>
@@ -390,13 +539,13 @@ const SubKegiatanIndividuTable = () => {
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-800">{user?.firstName || "-"}</span>
+                                                    <span className="font-semibold text-gray-800">{row.nama_pegawai || user?.firstName || "-"}</span>
                                                     <span className="text-sm text-gray-500">({row.nip || "-"})</span>
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span>{row.jenisRenja || "-"}</span>
+                                                    <span>{row.renja || "-"}</span>
                                                     <span className="text-sm text-gray-500">({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
@@ -526,9 +675,10 @@ const SubKegiatanIndividuTable = () => {
                 >
                     <FormFaktorPenunjangRenjaIndividuSubKegiatan
                         kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? effectiveKodeOpd ?? ""}
-                        kode={selectedFaktorRow?.targets[0]?.renjaId ?? ""}
+                        kode={selectedFaktorRow?.targets[0]?.kodePk ?? selectedFaktorRow?.targets[0]?.renjaId ?? ""}
                         kodeIndikator={selectedFaktorRow?.targets[0]?.idIndikator ?? ""}
                         kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        kodePagu={selectedFaktorRow?.targets[0]?.kodePagu ?? ""}
                         tahun={activatedTahun ?? ""}
                         bulan={bulanName ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
@@ -549,9 +699,10 @@ const SubKegiatanIndividuTable = () => {
                 >
                     <FormFaktorPenghambatRenjaIndividuSubKegiatan
                         kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? effectiveKodeOpd ?? ""}
-                        kode={selectedFaktorRow?.targets[0]?.renjaId ?? ""}
+                        kode={selectedFaktorRow?.targets[0]?.kodePk ?? selectedFaktorRow?.targets[0]?.renjaId ?? ""}
                         kodeIndikator={selectedFaktorRow?.targets[0]?.idIndikator ?? ""}
                         kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}
+                        kodePagu={selectedFaktorRow?.targets[0]?.kodePagu ?? ""}
                         tahun={activatedTahun ?? ""}
                         bulan={bulanName ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
@@ -604,6 +755,35 @@ const SubKegiatanIndividuTable = () => {
                                 className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
                             >
                                 Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isSyncModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+                    <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+                        <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+                        <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+                        <div className="flex justify-center gap-3">
+                            <button
+                                type="button"
+                                onClick={() => setIsSyncModalOpen(false)}
+                                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                            >
+                                Tidak
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsSyncModalOpen(false);
+                                    handleSync();
+                                }}
+                                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            >
+                                Ya
                             </button>
                         </div>
                     </div>

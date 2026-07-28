@@ -8,6 +8,7 @@ import { useUserContext } from "@/context/UserContext";
 import { authenticate } from "@/lib/auth";
 import { setSessionId } from "@/lib/session";
 import { getDefaultPage } from "@/lib/rbac";
+import { ROLES } from "@/constants/roles";
 
 interface FormLoginProps {
   onClose: () => void;
@@ -24,7 +25,7 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
   const { submit, loading, error } = useAuthUser({
     url: `/auth-api/auth/login`,
   });
-  const { setUser, setError, setLastLoginAt } = useUserContext();
+  const { setUser, setError, setLastLoginAt, setOpdSelected, setOpdLocked } = useUserContext();
 
   const [formData, setFormData] = useState<LoginRequest>({
     username: "",
@@ -50,8 +51,20 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
       setError(null);
       setLastLoginAt(Date.now());
 
-      const defaultPage = getDefaultPage(user);
-      router.push(defaultPage);
+      const needsOpdSelection =
+        user.roles.includes(ROLES.SUPER_ADMIN) ||
+        user.roles.includes(ROLES.ADMIN_OPD);
+
+      if (needsOpdSelection) {
+        setOpdSelected(false);
+        setOpdLocked(false);
+        // Jangan redirect — biarkan OpdSelectionModal tampil
+      } else {
+        setOpdSelected(true);
+        setOpdLocked(false);
+        const defaultPage = getDefaultPage(user);
+        router.push(defaultPage);
+      }
 
       onSuccess();
     }

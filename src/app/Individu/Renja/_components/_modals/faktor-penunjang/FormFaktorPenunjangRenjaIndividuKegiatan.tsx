@@ -11,6 +11,7 @@ interface FormFaktorPenunjangRenjaIndividuKegiatanProps {
   kode: string;
   kodeIndikator: string;
   kodeTarget: string;
+  kodePagu: string;
   tahun: string;
   bulan: string;
   currentValue: string;
@@ -26,6 +27,7 @@ const FormFaktorPenunjangRenjaIndividuKegiatan: React.FC<FormFaktorPenunjangRenj
   kode,
   kodeIndikator,
   kodeTarget,
+  kodePagu,
   tahun,
   bulan,
   currentValue,
@@ -62,6 +64,7 @@ const FormFaktorPenunjangRenjaIndividuKegiatan: React.FC<FormFaktorPenunjangRenj
           [KODE_FIELD]: kode,
           kodeIndikator,
           kodeTarget,
+          kodePagu,
           tahun,
           bulan: normalizedBulan,
           faktorPenunjang: value,

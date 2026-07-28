@@ -3,7 +3,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { clearSessionId } from "@/lib/session";
 import { TbLogout } from "react-icons/tb";
-import { logout } from "./logout";
+import { logout as serverLogout } from "./logout";
 
 // TODO: map this with user profile
 // const roleColors: Record<string, string> = {
@@ -36,7 +36,7 @@ export default function UserProfile({ user, hideOpd }: { user: User, hideOpd?: b
     clearSessionId();
     setUser(null);
     setError(null);
-    await logout();
+    await serverLogout();
   };
 
   return (

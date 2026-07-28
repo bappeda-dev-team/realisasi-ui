@@ -102,11 +102,7 @@ export default function TableLaporanSasaran({ laporanType }: { laporanType?: str
                         <tr>
                             <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-gray-500">Pilih laporan realisasi agar data laporan sasaran pemda muncul.</td>
                         </tr>
-                    ) : !reportData || (Array.isArray(reportData) && reportData.length === 0) ? (
-                        <tr>
-                            <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-gray-500">Tidak ada data laporan.</td>
-                        </tr>
-                    ) : (
+                    ) : Array.isArray(reportData) && reportData.length > 0 ? (
                         reportData.map((item: any, index: number) => (
                             <tr key={index} className="bg-white border-b hover:bg-gray-50">
                                 {isTahunan ? (
@@ -150,6 +146,10 @@ export default function TableLaporanSasaran({ laporanType }: { laporanType?: str
                                 </td>
                             </tr>
                         ))
+                    ) : (
+                        <tr>
+                            <td colSpan={isTahunan ? 16 : isTriwulan ? 8 : 4} className="text-center py-4 text-gray-500">Tidak ada data laporan.</td>
+                        </tr>
                     )}
                 </tbody>
             </table>
