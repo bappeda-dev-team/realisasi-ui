@@ -63,22 +63,21 @@ const ProgramTable = () => {
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
 
-    // Determine kodeOpd and nip for the program endpoint
-    const effectiveKodeOpd = isOpdScopedView && activatedDinas ? activatedDinas : (user?.kode_opd ?? null);
-    const effectiveNip = user?.nip ?? null;
+    // Determine kodeOpd for the program endpoint
+    const kodeOpd = activatedDinas || user?.kode_opd || null;
 
     let apiUrl = null;
-    if (effectiveKodeOpd && activatedTahun && bulanKey) {
+    if (kodeOpd && activatedTahun && bulanKey) {
         if (isOpdScopedView) {
             if (activatedLevelRole && activatedNamaPegawai) {
                 const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
+                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
             } else {
-                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
+                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
             }
-        } else if (effectiveNip) {
-            const safeNip = effectiveNip.replace(/-$/, "");
-            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
+        } else if (user?.nip && userLevel) {
+            const safeNip = user.nip.replace(/-$/, "");
+            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(userLevel)}/nip/${encodeURIComponent(safeNip)}`;
         }
     }
 
@@ -120,21 +119,23 @@ const ProgramTable = () => {
                         target: String(item.target ?? "-"),
                         realisasi: item.realisasi ?? 0,
                         satuan: "%",
-                        tahun: item.tahun ?? activatedTahun ?? "",
+                        tahun: String(item.tahun ?? activatedTahun ?? ""),
                         bulan: item.bulan ?? bulanName ?? undefined,
                         jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
-                        capaian: String(item.capaian ?? "-"),
+                        capaian: item.capaian != null ? String(item.capaian) : "-",
                         keteranganCapaian: item.keteranganCapaian ?? "-",
                         pagu: item.pagu ?? null,
-                        realisasiPagu: item.realisasi ?? null,
+                        realisasiPagu: item.realisasiPagu ?? null,
                         satuanPagu: "Rupiah",
-                        capaianPagu: String(item.capaian ?? "-"),
-                        keteranganCapaianPagu: item.keteranganCapaian ?? "-",
+                        capaianPagu: item.capaianPagu != null ? String(item.capaianPagu) : "-",
+                        keteranganCapaianPagu: item.keteranganCapaianPagu ?? "-",
                         faktorPenunjang: item.faktorPenunjang ?? null,
                         faktorPenghambat: item.faktorPenghambat ?? null,
-                        kodeOpd: item.kodeOpd ?? effectiveKodeOpd ?? "",
+                        kodeOpd: item.kodeOpd ?? kodeOpd ?? "",
                         kodePagu: item.kodePagu ?? "",
                         targetRealisasi: item.target ?? 0,
+                        buktiPendukung: item.buktiPendukung ?? null,
+                        keteranganBuktiPendukung: item.keteranganBuktiPendukung ?? null,
                     }],
                 }))
             );
@@ -174,7 +175,7 @@ const ProgramTable = () => {
                         keteranganCapaianPagu: t.keterangan_capaian_pagu ?? "-",
                         faktorPenunjang: t.faktor_penunjang ?? null,
                         faktorPenghambat: t.faktor_penghambat ?? null,
-                        kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                        kodeOpd: data.kode_opd ?? kodeOpd ?? "",
                         kodePagu: renjaItem.kode_pagu_program ?? "",
                         targetRealisasi: t.target ?? 0,
                         buktiPendukung: t.bukti_pendukung ?? null,
@@ -208,7 +209,7 @@ const ProgramTable = () => {
                             keteranganCapaianPagu: "-",
                             faktorPenunjang: null,
                             faktorPenghambat: null,
-                            kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                            kodeOpd: data.kode_opd ?? kodeOpd ?? "",
                             kodePagu: renjaItem.kode_pagu_program ?? "",
                             targetRealisasi: 0,
                             buktiPendukung: null,
@@ -231,7 +232,7 @@ const ProgramTable = () => {
                 })
             )
         );
-    }, [data, user, activatedTahun, bulanKey, bulanName, effectiveKodeOpd]);
+    }, [data, user, activatedTahun, bulanKey, bulanName, kodeOpd]);
 
     const openModal = (row: RenjaRow, type: 'target' | 'pagu' = 'target') => {
         if (!canEditRealisasi) return;
@@ -281,13 +282,13 @@ const ProgramTable = () => {
     };
 
     const handleSync = async () => {
-        const nipToSync = effectiveNip?.replace(/-$/, "");
-        if (!nipToSync || !effectiveKodeOpd || !activatedTahun) return;
+        const nipToSync = user?.nip?.replace(/-$/, "");
+        if (!nipToSync || !kodeOpd || !activatedTahun) return;
 
         setIsSyncing(true);
         try {
             const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan`, {
+            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan`, {
                 method: "POST",
                 headers: {
                     "X-Session-Id": sessionId ?? "",
@@ -309,8 +310,8 @@ const ProgramTable = () => {
     const renderSyncButton = () => {
         if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
 
-        const nipToSync = effectiveNip?.replace(/-$/, "");
-        const canSync = nipToSync && effectiveKodeOpd && activatedTahun;
+        const nipToSync = user?.nip?.replace(/-$/, "");
+        const canSync = nipToSync && kodeOpd && activatedTahun;
 
         return (
             <div className="flex justify-end mb-2 mr-2 mt-2">
@@ -635,7 +636,7 @@ const ProgramTable = () => {
                     title={`Faktor Penunjang - ${selectedFaktorRow?.renja ?? selectedFaktorRow?.nip ?? ""}`}
                 >
                     <FormFaktorPenunjangRenjaIndividuProgram
-                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? effectiveKodeOpd ?? ""}
+                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? kodeOpd ?? ""}
                         kode={selectedFaktorRow?.targets[0]?.kodePk ?? selectedFaktorRow?.targets[0]?.renjaId ?? ""}
                         kodeIndikator={selectedFaktorRow?.targets[0]?.idIndikator ?? ""}
                         kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}
@@ -659,7 +660,7 @@ const ProgramTable = () => {
                     title={`Faktor Penghambat - ${selectedFaktorRow?.renja ?? selectedFaktorRow?.nip ?? ""}`}
                 >
                     <FormFaktorPenghambatRenjaIndividuProgram
-                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? effectiveKodeOpd ?? ""}
+                        kodeOpd={selectedFaktorRow?.targets[0]?.kodeOpd ?? kodeOpd ?? ""}
                         kode={selectedFaktorRow?.targets[0]?.kodePk ?? selectedFaktorRow?.targets[0]?.renjaId ?? ""}
                         kodeIndikator={selectedFaktorRow?.targets[0]?.idIndikator ?? ""}
                         kodeTarget={selectedFaktorRow?.targets[0]?.targetId ?? ""}

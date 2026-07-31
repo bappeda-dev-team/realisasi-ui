@@ -19,15 +19,15 @@ import { getSessionId } from "@/lib/session";
 interface TableRow {
     id: number;
     rekin: string;
-    nama_pegawai: string;
-    nip: string;
     indikator: string;
+    rumusPerhitungan: string;
+    sumberData: string;
     targets: RekinTarget[];
 }
 
 const SasaranOpdTable = () => {
     const { user } = useUserContext();
-    const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
+    const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const [rows, setRows] = useState<TableRow[]>([]);
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
@@ -44,23 +44,11 @@ const SasaranOpdTable = () => {
     const monthKey = getMonthKey(activatedBulan);
     const monthLabel = getMonthName(activatedBulan);
 
-    const nip = user?.nip;
     const kodeOpd = activatedDinas || user?.kode_opd;
-    const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
 
     let apiUrl = null;
     if (yearLabel && monthKey && kodeOpd) {
-        if (isAdmin) {
-            if (activatedLevelRole && activatedNamaPegawai) {
-                const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
-            } else {
-                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
-            }
-        } else if (nip) {
-            const safeNip = nip.replace(/-$/, "");
-            apiUrl = `/api/v1/realisasi/rekin/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
-        }
+        apiUrl = `/api/v1/realisasi/sasaran_opd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
     }
 
     const { data, loading, error, refetch } = useFetchData<any>({
@@ -78,87 +66,51 @@ const SasaranOpdTable = () => {
             return;
         }
 
-        if (Array.isArray(data)) {
-            setRows(
-                data.map((item: any, index: number) => {
-                    const targets: RekinTarget[] = [{
-                        targetRealisasiId: item.id ?? null,
-                        rekinId: item.kodePkRekin,
-                        rekin: item.kodePkRekin ?? "-",
-                        nip: item.nip,
-                        indikatorId: item.kodeIndikatorPkRekin ?? "",
-                        indikator: item.kodeIndikatorPkRekin ?? "-",
-                        targetId: item.kodeTargetPkRekin,
-                        target: "-",
-                        realisasi: item.realisasi ?? 0,
-                        satuan: "-",
-                        tahun: String(item.tahun ?? yearLabel),
-                        bulan: monthLabel ?? undefined,
-                        jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
-                        capaian: "-",
-                        keteranganCapaian: "-",
-                        faktorPenunjang: item.faktorPenunjang ?? "-",
-                        faktorPenghambat: item.faktorPenghambat ?? "-",
-                        idSasaran: item.kodeSasaranOpd ?? null,
-                        sasaran: null,
-                        kodeOpd: item.kodeOpd ?? user.kode_opd,
-                    }];
-
-                    return {
-                        id: item.id || index,
-                        rekin: item.kodePkRekin ?? "-",
-                        nama_pegawai: "-",
-                        nip: item.nip ?? "-",
-                        indikator: item.kodeIndikatorPkRekin ?? "-",
-                        targets,
-                    };
-                })
-            );
+        const sasaranOpds = data?.sasaranOpds ?? [];
+        if (!Array.isArray(sasaranOpds) || sasaranOpds.length === 0) {
+            setRows([]);
             return;
         }
 
-        setRows(
-            (data.rekins ?? []).flatMap((rekinItem: any) =>
-                rekinItem.indikator_pk.map((indikator: any) => {
-                    const backendNamaPegawai = data.nama?.trim();
-                    const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
-                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
-                    const nipPegawai = data.pegawai_id || user.nip || "-";
+        const newRows: TableRow[] = [];
+        sasaranOpds.forEach((sasaran: any) => {
+            (sasaran.indikators ?? []).forEach((indikator: any) => {
+                const targets: RekinTarget[] = (indikator.targets ?? []).map((t: any) => ({
+                    targetRealisasiId: t.id ?? null,
+                    rekinId: sasaran.kode_sasaran_opd,
+                    rekin: sasaran.sasaran_opd ?? "-",
+                    nip: user.nip ?? "-",
+                    indikatorId: indikator.kode_indikator ?? "",
+                    indikator: indikator.indikator ?? "-",
+                    targetId: t.kode_target,
+                    target: String(t.target ?? "-"),
+                    realisasi: t.realisasi ?? 0,
+                    satuan: t.satuan ?? "-",
+                    tahun: String(t.tahun ?? data.tahun ?? yearLabel),
+                    bulan: monthLabel ?? undefined,
+                    jenisRealisasi: "NAIK",
+                    capaian: t.capaian != null ? String(t.capaian) : "-",
+                    keteranganCapaian: t.keterangan_capaian ?? "-",
+                    faktorPenunjang: t.faktor_penunjang ?? "-",
+                    faktorPenghambat: t.faktor_penghambat ?? "-",
+                    idSasaran: sasaran.kode_sasaran_opd ?? null,
+                    sasaran: sasaran.sasaran_opd ?? null,
+                    kodeOpd: data.kode_opd ?? user.kode_opd,
+                    buktiPendukung: t.bukti_pendukung ?? null,
+                }));
 
-                    const targets: RekinTarget[] = indikator.target_pk.map((t: any) => ({
-                        targetRealisasiId: t.id ?? null,
-                        rekinId: rekinItem.kode_pk,
-                        rekin: rekinItem.rekin ?? "-",
-                        nip: nipPegawai,
-                        indikatorId: indikator.kode_indikator_pk ?? "",
-                        indikator: indikator.nama_indikator_pk ?? "-",
-                        targetId: t.kode_target_pk,
-                        target: String(t.target ?? "-"),
-                        realisasi: t.realisasi ?? 0,
-                        satuan: t.satuan ?? "-",
-                        tahun: String(t.tahun ?? data.tahun_aktif ?? yearLabel),
-                        bulan: monthLabel ?? undefined,
-                        jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
-                        capaian: t.capaian != null ? String(t.capaian) : "-",
-                        keteranganCapaian: t.keterangan_capaian ?? "-",
-                        faktorPenunjang: t.faktor_penunjang ?? "-",
-                        faktorPenghambat: t.faktor_penghambat ?? "-",
-                        idSasaran: null,
-                        sasaran: null,
-                        kodeOpd: data.kode_opd ?? user.kode_opd,
-                    }));
+                newRows.push({
+                    id: indikator.id,
+                    rekin: sasaran.sasaran_opd ?? "-",
+                    indikator: indikator.indikator ?? "-",
+                    rumusPerhitungan: indikator.rumus_perhitungan ?? "-",
+                    sumberData: indikator.sumber_data ?? "-",
+                    targets,
+                });
+            });
+        });
 
-                    return {
-                        id: indikator.id,
-                        rekin: rekinItem.rekin ?? "-",
-                        nama_pegawai: namaPegawai,
-                        nip: nipPegawai,
-                        indikator: indikator.nama_indikator_pk ?? "-",
-                        targets,
-                    };
-                }),
-            ),
-        );
+        setRows(newRows);
     }, [data, user, yearLabel, monthLabel]);
 
     const createPdfDocument = () => {
@@ -178,9 +130,10 @@ const SasaranOpdTable = () => {
 
         const tableHead = [[
             "No",
-            "Rencana Kinerja",
-            "Nama Pemilik",
+            "Sasaran",
             "Indikator",
+            "Rumus Perhitungan",
+            "Sumber Data",
             "Target (%)",
             "Realisasi (%)",
             "Capaian (%)",
@@ -208,8 +161,9 @@ const SasaranOpdTable = () => {
                     tableBody.push([
                         { content: index + 1, rowSpan: targets.length },
                         { content: item.rekin || "-", rowSpan: targets.length },
-                        { content: `${item.nama_pegawai || "-"} (${item.nip || "-"})`, rowSpan: targets.length },
                         { content: item.indikator || "-", rowSpan: targets.length },
+                        { content: item.rumusPerhitungan || "-", rowSpan: targets.length },
+                        { content: item.sumberData || "-", rowSpan: targets.length },
                         ...detailRow,
                     ]);
                     return;
@@ -284,20 +238,17 @@ const SasaranOpdTable = () => {
             ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renja individu muncul."
             : !yearLabel || !monthLabel
                 ? "Pilih dan aktifkan tahun dan bulan agar data renja individu muncul."
-                : (canBypassNip && (!activatedLevelRole || !activatedNamaPegawai))
-                    ? "Pilih dan aktifkan Level Role dan Nama Pegawai agar data renja individu muncul."
-                    : undefined;
+                : undefined;
 
     const [isSyncing, setIsSyncing] = useState(false);
 
     const handleSync = async () => {
-        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-        if (!nipToSync || !kodeOpd || !yearLabel) return;
+        if (!kodeOpd || !yearLabel) return;
 
         setIsSyncing(true);
         try {
             const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/rekin/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=1`, {
+            const response = await fetch(`/api/v1/realisasi/sasaran_opd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=1`, {
                 method: "POST",
                 headers: {
                     "X-Session-Id": sessionId ?? "",
@@ -319,8 +270,7 @@ const SasaranOpdTable = () => {
     const renderSyncButton = () => {
         if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
 
-        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-        const canSync = nipToSync && kodeOpd && yearLabel;
+        const canSync = kodeOpd && yearLabel;
 
         return (
             <div className="flex justify-end mb-2 mr-2 mt-2">
@@ -386,19 +336,25 @@ const SasaranOpdTable = () => {
                                         rowSpan={2}
                                         className="border-r border-b px-6 py-3 min-w-[400px] text-center"
                                     >
-                                        Rencana Kinerja
-                                    </td>
-                                    <td
-                                        rowSpan={2}
-                                        className="border-r border-b px-6 py-3 min-w-[200px]"
-                                    >
-                                        Nama Pemilik
+                                        Sasaran
                                     </td>
                                     <td
                                         rowSpan={2}
                                         className="border-r border-b px-6 py-3 min-w-[300px]"
                                     >
                                         Indikator
+                                    </td>
+                                    <td
+                                        rowSpan={2}
+                                        className="border-r border-b px-6 py-3 min-w-[300px]"
+                                    >
+                                        Rumus Perhitungan
+                                    </td>
+                                    <td
+                                        rowSpan={2}
+                                        className="border-r border-b px-6 py-3 min-w-[300px]"
+                                    >
+                                        Sumber Data
                                     </td>
                                     <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
                                         {yearLabel} - {monthLabel}
@@ -443,15 +399,15 @@ const SasaranOpdTable = () => {
                                                         {item.rekin || "-"}
                                                     </td>
                                                     <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
-                                                        <div className="flex flex-col items-center gap-2 ">
-                                                            <p>{item.nama_pegawai || "-"}</p>
-                                                            <p>({item.nip || "-"})</p>
-                                                        </div>
-                                                    </td>
-                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
                                                         <div className="flex gap-2 items-center">
                                                             <p>{item.indikator || "-"}</p>
                                                         </div>
+                                                    </td>
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                        {item.rumusPerhitungan || "-"}
+                                                    </td>
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                        {item.sumberData || "-"}
                                                     </td>
                                                 </>
                                             )}

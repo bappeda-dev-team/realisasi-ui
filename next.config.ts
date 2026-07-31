@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
 const API_REALISASI = process.env.NEXT_PUBLIC_API_REALISASI || "http://localhost:8080"
 const API_RENJA = process.env.NEXT_PUBLIC_API_RENJA || "http://localhost:9001"
+const API_KEPEGAWAIAN = process.env.NEXT_PUBLIC_API_KEPEGAWAIAN || "https://kepegawaian-service-mahulu-test.zeabur.app"
 const ALLOWED_DEV_ORIGINS = process.env.NEXT_PUBLIC_DEV_ORIGINS || "http://localhost:9000"
 
 const nextConfig: NextConfig = {
@@ -23,6 +24,10 @@ const nextConfig: NextConfig = {
       {
         source: "/renja-service/:path*",
         destination: `${API_RENJA}/:path*`
+      },
+      {
+        source: "/kepegawaian-service/:path*",
+        destination: `${API_KEPEGAWAIAN}/:path*`
       },
       // {
       //   source: "/user-info/:path",
