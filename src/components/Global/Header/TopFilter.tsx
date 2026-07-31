@@ -115,6 +115,12 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     ? false
     : (forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd) ? false : canEditOpd;
 
+  // User level_1-4 di halaman Individu terkunci ke kode_opd sendiri.
+  // OPD-nya dikelola oleh auto-select, jadi cookie tidak boleh menimpanya.
+  const isOpdForceLocked = Boolean(
+    forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd,
+  );
+
   const {
     data: dataDinas,
     loading: loadingDinas,
@@ -137,8 +143,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     data: dataPegawai,
     loading: loadingPegawai,
     error: errorPegawai,
-  } = useFetchData<PegawaiData[]>({
-    url: `/api/v1/realisasi/rekin/pegawai`,
+  } = useFetchData<{ data: PegawaiData[] }>({
+    url: `/kepegawaian-service/pegawai`,
     trigger: fetchTrigger,
   });
   // ----------------------------
@@ -215,9 +221,9 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   // DROPDOWN PEGAWAI
   // ----------------------------
   useEffect(() => {
-    if (dataPegawai && Array.isArray(dataPegawai)) {
+    if (dataPegawai?.data) {
       setNamaPegawaiOptions(
-        dataPegawai.map((p) => ({
+        dataPegawai.data.map((p) => ({
           value: p.nip?.replace(/-$/, ""),
           label: p.nama_pegawai,
         }))
@@ -278,25 +284,63 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   // RESTORE DARI COOKIE
   // ----------------------------
   useEffect(() => {
+    if (!user) return;
+
     const cookieStr = Cookies.get("selectedCookie");
     if (!cookieStr) return;
 
+    let cookie: SelectedCookie;
     try {
-      const cookie: SelectedCookie = JSON.parse(cookieStr);
-      setDinas(cookie.dinas?.value ?? null);
-      setActivatedDinas(cookie.dinas?.value ?? null);
-      setNamaDinas(cookie.dinas?.label ?? null);
-      setPeriode(cookie.periode?.value ?? null);
-      setTahun(cookie.tahun?.value ?? null);
-      setActivatedTahun(cookie.tahun?.value ?? null);
-      setBulan(cookie.bulan?.value ?? null);
-      setActivatedBulan(cookie.bulan?.value ?? null);
-      setLevelRole(cookie.levelRole?.value ?? null);
-      setActivatedLevelRole(cookie.levelRole?.value ?? null);
-      setNamaPegawai(cookie.namaPegawai?.value ?? null);
-      setActivatedNamaPegawai(cookie.namaPegawai?.value ?? null);
-    } catch { }
-  }, [periodeOptions]);
+      cookie = JSON.parse(cookieStr);
+    } catch {
+      return;
+    }
+
+    // OPD yang terkunci (level_1-4 di halaman Individu) selalu memakai
+    // kode_opd user sendiri via auto-select, jangan di-overwrite cookie.
+    if (!isOpdForceLocked && cookie.dinas?.value) {
+      const adaDiOptions = dinasOptions.some(
+        (opt) => opt.value === cookie.dinas?.value,
+      );
+      // Restore hanya jika nilainya ada di daftar, atau daftar belum termuat.
+      if (dinasOptions.length === 0 || adaDiOptions) {
+        setDinas(cookie.dinas.value);
+        setActivatedDinas(cookie.dinas.value);
+        setNamaDinas(cookie.dinas.label ?? null);
+      }
+    }
+
+    setPeriode(cookie.periode?.value ?? null);
+    setTahun(cookie.tahun?.value ?? null);
+    setActivatedTahun(cookie.tahun?.value ?? null);
+    setBulan(cookie.bulan?.value ?? null);
+    setActivatedBulan(cookie.bulan?.value ?? null);
+    setLevelRole(cookie.levelRole?.value ?? null);
+    setActivatedLevelRole(cookie.levelRole?.value ?? null);
+    setNamaPegawai(cookie.namaPegawai?.value ?? null);
+    setActivatedNamaPegawai(cookie.namaPegawai?.value ?? null);
+  }, [
+    periodeOptions,
+    dinasOptions,
+    user,
+    forceOpdLock,
+    userKodeOpd,
+    isSuperAdmin,
+    isAdminOpd,
+    isOpdForceLocked,
+    setDinas,
+    setActivatedDinas,
+    setNamaDinas,
+    setPeriode,
+    setTahun,
+    setActivatedTahun,
+    setBulan,
+    setActivatedBulan,
+    setLevelRole,
+    setActivatedLevelRole,
+    setNamaPegawai,
+    setActivatedNamaPegawai,
+  ]);
 
   // ----------------------------
   // AUTO SELECT OPD FOR NON-EDIT USERS (LEVEL 1-4)
