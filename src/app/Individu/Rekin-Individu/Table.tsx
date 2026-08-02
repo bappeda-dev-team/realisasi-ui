@@ -15,7 +15,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RekinIndividuPenetapanResponse, RekinTarget } from "@/types";
-import { getHeaderColor } from "@/lib/userLevelStyle";
+import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRekinRealisasi } from "@/lib/rbac";
 import { TbRefresh } from "react-icons/tb";
@@ -47,7 +47,7 @@ const Table = () => {
     const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
-    const userLevel = user?.roles.find(r => r.startsWith('level_'));
+    const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
 
     const getHeaderColor = (level: string | undefined) => {
         switch (level) {
@@ -68,8 +68,8 @@ const Table = () => {
             default: return [16, 185, 129];
         }
     };
-    const headerColor = getHeaderColor(userLevel);
-    const headerFillColor = getHeaderFillColor(userLevel);
+    const headerColor = getHeaderColor(effectiveLevel);
+    const headerFillColor = getHeaderFillColor(effectiveLevel);
 
     const yearLabel = activatedTahun;
     const monthKey = getMonthKey(activatedBulan);

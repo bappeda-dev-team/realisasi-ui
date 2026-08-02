@@ -11,7 +11,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RekinTarget } from "@/types";
-import { getHeaderColor, getHeaderFillColor } from "@/lib/userLevelStyle";
+import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { TbRefresh } from "react-icons/tb";
 import { getSessionId } from "@/lib/session";
@@ -27,7 +27,7 @@ interface TableRow {
 
 const SasaranOpdTable = () => {
     const { user } = useUserContext();
-    const { activatedDinas, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
+    const { activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const [rows, setRows] = useState<TableRow[]>([]);
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
@@ -36,9 +36,9 @@ const SasaranOpdTable = () => {
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
-    const userLevel = user?.roles.find(r => r.startsWith('level_'));
-    const headerColor = getHeaderColor(userLevel);
-    const headerFillColor = getHeaderFillColor(userLevel);
+    const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
+    const headerColor = getHeaderColor(effectiveLevel);
+    const headerFillColor = getHeaderFillColor(effectiveLevel);
 
     const yearLabel = activatedTahun;
     const monthKey = getMonthKey(activatedBulan);

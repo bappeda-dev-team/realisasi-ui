@@ -10,7 +10,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { getHeaderColor, getHeaderFillColor } from "@/lib/userLevelStyle";
+import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
     RenjaKegiatanIndividuResponse,
@@ -58,9 +58,9 @@ const KegiatanTable = () => {
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
     const canEditRealisasi = canEditIndividuRenjaRealisasi(user) && !isOpdScopedView;
 
-    const userLevel = user?.roles.find(r => r.startsWith('level_'));
-    const headerColor = getHeaderColor(userLevel);
-    const headerFillColor = getHeaderFillColor(userLevel);
+    const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
+    const headerColor = getHeaderColor(effectiveLevel);
+    const headerFillColor = getHeaderFillColor(effectiveLevel);
 
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
