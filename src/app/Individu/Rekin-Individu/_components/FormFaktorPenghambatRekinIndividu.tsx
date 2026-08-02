@@ -16,7 +16,7 @@ interface FormFaktorPenghambatRekinIndividuProps {
     nip: string;
     currentValue: string;
     onClose: () => void;
-    onSuccess: () => void;
+    onSuccess: (value: string) => void;
 }
 
 const FormFaktorPenghambatRekinIndividu: React.FC<FormFaktorPenghambatRekinIndividuProps> = ({
@@ -72,7 +72,7 @@ const FormFaktorPenghambatRekinIndividu: React.FC<FormFaktorPenghambatRekinIndiv
                 throw new Error('Session habis, silakan login kembali.');
             }
             if (!res.ok) throw new Error('Gagal menyimpan');
-            onSuccess();
+            onSuccess(value);
         } catch (err) {
             alert('Terjadi kesalahan saat menyimpan');
             console.error(err);

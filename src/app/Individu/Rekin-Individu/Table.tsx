@@ -132,6 +132,8 @@ const Table = () => {
                         keteranganCapaian: "-",
                         faktorPenunjang: item.faktorPenunjang ?? "-",
                         faktorPenghambat: item.faktorPenghambat ?? "-",
+                        buktiPendukung: item.buktiPendukung ?? null,
+                        keteranganBuktiPendukung: item.keteranganBuktiPendukung ?? null,
                         idSasaran: item.kodeSasaranOpd ?? null,
                         sasaran: null,
                         kodeOpd: item.kodeOpd ?? user.kode_opd,
@@ -176,6 +178,8 @@ const Table = () => {
                         keteranganCapaian: t.keterangan_capaian ?? "-",
                         faktorPenunjang: t.faktor_penunjang ?? "-",
                         faktorPenghambat: t.faktor_penghambat ?? "-",
+                        buktiPendukung: t.bukti_pendukung ?? null,
+                        keteranganBuktiPendukung: t.keterangan_bukti_pendukung ?? null,
                         idSasaran: null,
                         sasaran: null,
                         kodeOpd: data.kode_opd ?? user.kode_opd,
@@ -225,6 +229,42 @@ const Table = () => {
     const handleCloseFaktorPenghambat = () => {
         setIsFaktorPenghambatModalOpen(false);
         setSelectedFaktorRow(null);
+    };
+
+    const handleFaktorPenunjangSuccess = (value: string) => {
+        const rowId = selectedFaktorRow?.id;
+        setRows((current) =>
+            current.map((row) =>
+                row.id === rowId
+                    ? {
+                        ...row,
+                        targets: row.targets.map((t) => ({
+                            ...t,
+                            faktorPenunjang: value,
+                        })),
+                    }
+                    : row,
+            ),
+        );
+        handleCloseFaktorPenunjang();
+    };
+
+    const handleFaktorPenghambatSuccess = (value: string) => {
+        const rowId = selectedFaktorRow?.id;
+        setRows((current) =>
+            current.map((row) =>
+                row.id === rowId
+                    ? {
+                        ...row,
+                        targets: row.targets.map((t) => ({
+                            ...t,
+                            faktorPenghambat: value,
+                        })),
+                    }
+                    : row,
+            ),
+        );
+        handleCloseFaktorPenghambat();
     };
 
     const handleRealisasiSuccess = (updatedTargets: RekinTarget[]) => {
@@ -650,7 +690,7 @@ const Table = () => {
                         nip={selectedFaktorRow?.nip ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenunjang ?? ""}
                         onClose={handleCloseFaktorPenunjang}
-                        onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
+                        onSuccess={handleFaktorPenunjangSuccess}
                     />
                 </FormModal>
             )}
@@ -670,7 +710,7 @@ const Table = () => {
                         nip={selectedFaktorRow?.nip ?? ""}
                         currentValue={selectedFaktorRow?.targets[0]?.faktorPenghambat ?? ""}
                         onClose={handleCloseFaktorPenghambat}
-                        onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
+                        onSuccess={handleFaktorPenghambatSuccess}
                     />
                 </FormModal>
             )}
