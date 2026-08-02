@@ -10,7 +10,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { getHeaderColor, getHeaderFillColor } from "@/lib/userLevelStyle";
+import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
 } from "@/types";
@@ -56,9 +56,9 @@ const ProgramTable = () => {
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
     const canEditRealisasi = canEditIndividuRenjaRealisasi(user) && !isOpdScopedView;
 
-    const userLevel = user?.roles.find(r => r.startsWith('level_'));
-    const headerColor = getHeaderColor(userLevel);
-    const headerFillColor = getHeaderFillColor(userLevel);
+    const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
+    const headerColor = getHeaderColor(effectiveLevel);
+    const headerFillColor = getHeaderFillColor(effectiveLevel);
 
     const bulanKey = getMonthKey(activatedBulan);
     const bulanName = getMonthName(activatedBulan);
@@ -75,9 +75,9 @@ const ProgramTable = () => {
             } else {
                 apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
             }
-        } else if (user?.nip && userLevel) {
+        } else if (user?.nip) {
             const safeNip = user.nip.replace(/-$/, "");
-            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(userLevel)}/nip/${encodeURIComponent(safeNip)}`;
+            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
         }
     }
 
@@ -503,7 +503,7 @@ const ProgramTable = () => {
                                 <tr className={`text-xm ${headerColor}`}>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama/NIP</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">Program</td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Program</td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                                     <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Program ${activatedTahun} - ${bulanName}`}</th>
                                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>

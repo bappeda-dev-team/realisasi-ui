@@ -15,7 +15,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenaksiIndividuItem, RenaksiTarget } from "@/types";
-import { getHeaderColor } from "@/lib/userLevelStyle";
+import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
 import { TbRefresh } from "react-icons/tb";
@@ -52,7 +52,7 @@ const Table = () => {
   const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
   const canEditRealisasi = canEditIndividuRenaksiRealisasi(user) && !isOpdScopedView;
 
-  const userLevel = user?.roles.find(r => r.startsWith('level_'));
+  const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
 
   const getHeaderColor = (level: string | undefined) => {
     switch (level) {
@@ -83,8 +83,8 @@ const Table = () => {
     }
   };
 
-  const headerColor = getHeaderColor(userLevel);
-  const headerFillColor = getHeaderFillColor(userLevel);
+  const headerColor = getHeaderColor(effectiveLevel);
+  const headerFillColor = getHeaderFillColor(effectiveLevel);
 
   const yearLabel = activatedTahun;
   const monthKey = getMonthKey(activatedBulan);

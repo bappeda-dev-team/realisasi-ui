@@ -49,9 +49,12 @@ export const useFetchData = <T>({ url, trigger, retryCount = 3, retryDelay = 100
                     signal,
                 });
                 if (!response.ok) {
-                    if (response.status === 401 || response.status === 403) {
+                    if (response.status === 401) {
                         notifySessionExpired();
                         throw new Error("Session habis, silakan login kembali.");
+                    }
+                    if (response.status === 403) {
+                        throw new Error("Anda tidak memiliki akses (403).");
                     }
                     throw new Error(`HTTP ${response.status} - ${response.statusText}`);
                 }

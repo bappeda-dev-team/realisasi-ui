@@ -1,4 +1,5 @@
 import { ROLES } from "@/constants/roles";
+import { User } from "@/types";
 
 export const getHeaderColor = (level: string | undefined) => {
     switch (level) {
@@ -18,4 +19,24 @@ export const getHeaderFillColor = (level: string | undefined): [number, number, 
         case ROLES.LEVEL_4: return [234, 88, 12];
         default: return [16, 185, 129];
     }
+};
+
+/**
+ * Menentukan level efektif untuk pewarnaan header tabel.
+ * - Super admin / admin OPD yang memilih level role di TopFilter
+ *   akan memakai level yang dipilih (activatedLevelRole).
+ * - Selain itu, memakai role level_* milik user (perilaku lama).
+ */
+export const getEffectiveUserLevel = (
+    user: User | null | undefined,
+    activatedLevelRole: string | null | undefined,
+): string | undefined => {
+    if (user) {
+        const isSuperAdmin = user.roles.includes(ROLES.SUPER_ADMIN);
+        const isAdminOpd = user.roles.includes(ROLES.ADMIN_OPD);
+        if ((isSuperAdmin || isAdminOpd) && activatedLevelRole) {
+            return activatedLevelRole.toLowerCase();
+        }
+    }
+    return user?.roles.find((r) => r.startsWith("level_"));
 };
