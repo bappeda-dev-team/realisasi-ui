@@ -53,7 +53,10 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
 
       const needsOpdSelection =
         user.roles.includes(ROLES.SUPER_ADMIN) ||
-        user.roles.includes(ROLES.ADMIN_OPD);
+        user.roles.includes(ROLES.ADMIN_OPD) ||
+        user.roles.includes(ROLES.LEVEL_1) ||
+        user.roles.includes(ROLES.LEVEL_2) ||
+        user.roles.includes(ROLES.LEVEL_3);
 
       if (needsOpdSelection) {
         setOpdSelected(false);

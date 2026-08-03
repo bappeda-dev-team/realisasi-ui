@@ -10,6 +10,8 @@ import { ButtonSky, ButtonRed } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { clearSessionId } from "@/lib/session";
 import { logout as serverLogout } from "./logout";
+import { getDefaultPage } from "@/lib/rbac";
+import { ROLES } from "@/constants/roles";
 import Cookies from "js-cookie";
 
 interface DinasResponse {
@@ -37,11 +39,25 @@ interface SelectedCookie {
   namaPegawai?: LabelDropdown | null;
 }
 
+const LEVEL_ROLE_OPTIONS: LabelDropdown[] = [
+  { label: "Level 1", value: "LEVEL_1" },
+  { label: "Level 2", value: "LEVEL_2" },
+  { label: "Level 3", value: "LEVEL_3" },
+  { label: "Level 4", value: "LEVEL_4" },
+];
+
 export default function OpdSelectionModal() {
   const router = useRouter();
-  const { setOpdSelected, setOpdLocked, setUser, setError } = useUserContext();
-  const { setDinas, setActivatedDinas, setNamaDinas } = useFilterContext();
+  const { setOpdSelected, setOpdLocked, setUser, setError, user } = useUserContext();
+  const {
+    setDinas,
+    setActivatedDinas,
+    setNamaDinas,
+    setLevelRole,
+    setActivatedLevelRole,
+  } = useFilterContext();
   const [selectedOpd, setSelectedOpd] = useState<LabelDropdown | null>(null);
+  const [selectedLevelRole, setSelectedLevelRole] = useState<LabelDropdown | null>(null);
   const [loading, setLoading] = useState(false);
 
   const { data: dataDinas, loading: loadingDinas } = useFetchData<DinasResponse>({
@@ -54,6 +70,10 @@ export default function OpdSelectionModal() {
       label: d.nama_opd,
     })) ?? [];
 
+  // Semua user (super_admin, admin_opd, level_1 s/d level_4)
+  // bisa memilih role Level 1 sampai Level 4
+  const levelRoleOptions: LabelDropdown[] = user ? LEVEL_ROLE_OPTIONS : [];
+
   const handleSelectOpd = async () => {
     if (!selectedOpd) return;
     setLoading(true);
@@ -63,18 +83,25 @@ export default function OpdSelectionModal() {
     setActivatedDinas(selectedOpd.value);
     setNamaDinas(selectedOpd.label);
 
-    // Persist OPD ke cookie selectedCookie
+    // Set Level Role di FilterContext
+    if (selectedLevelRole) {
+      setLevelRole(selectedLevelRole.value);
+      setActivatedLevelRole(selectedLevelRole.value);
+    }
+
+    // Persist OPD & Level Role ke cookie selectedCookie
     const existingCookie = Cookies.get("selectedCookie");
     let cookieData: SelectedCookie = {
       dinas: selectedOpd,
       periode: null,
       tahun: null,
       bulan: null,
+      levelRole: selectedLevelRole ?? null,
     };
     if (existingCookie) {
       try {
         const parsed = JSON.parse(existingCookie) as SelectedCookie;
-        cookieData = { ...parsed, dinas: selectedOpd };
+        cookieData = { ...parsed, dinas: selectedOpd, levelRole: selectedLevelRole ?? null };
       } catch {
         // gunakan default
       }
@@ -86,7 +113,8 @@ export default function OpdSelectionModal() {
     setOpdLocked(true);
 
     setLoading(false);
-    router.push("/Pemda");
+    const defaultPage = getDefaultPage(user);
+    router.push(defaultPage);
   };
 
   const handleLogout = async () => {
@@ -119,6 +147,18 @@ export default function OpdSelectionModal() {
           isSearchable
         />
 
+        <div className="mt-3">
+          <Select
+            instanceId="opd-selection-level-role"
+            className="text-sm"
+            options={levelRoleOptions}
+            value={selectedLevelRole}
+            onChange={(opt) => setSelectedLevelRole(opt)}
+            placeholder="Pilih Level Role"
+            isSearchable
+          />
+        </div>
+
         <div className="flex gap-2 mt-5">
           <ButtonRed
             type="button"
@@ -130,7 +170,7 @@ export default function OpdSelectionModal() {
           <ButtonSky
             type="button"
             className="flex-1"
-            disabled={!selectedOpd || loading}
+            disabled={!selectedOpd || !selectedLevelRole || loading}
             onClick={handleSelectOpd}
           >
             {loading ? (

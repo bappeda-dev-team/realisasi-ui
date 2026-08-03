@@ -19,7 +19,11 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
     user &&
     !opdSelected &&
     (user.roles.includes(ROLES.SUPER_ADMIN) ||
-      user.roles.includes(ROLES.ADMIN_OPD));
+      user.roles.includes(ROLES.ADMIN_OPD) ||
+      user.roles.includes(ROLES.LEVEL_1) ||
+      user.roles.includes(ROLES.LEVEL_2) ||
+      user.roles.includes(ROLES.LEVEL_3) ||
+      user.roles.includes(ROLES.LEVEL_4));
 
   useEffect(() => {
     if (loading) return;
