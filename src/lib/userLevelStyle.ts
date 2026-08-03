@@ -31,12 +31,10 @@ export const getEffectiveUserLevel = (
     user: User | null | undefined,
     activatedLevelRole: string | null | undefined,
 ): string | undefined => {
-    if (user) {
-        const isSuperAdmin = user.roles.includes(ROLES.SUPER_ADMIN);
-        const isAdminOpd = user.roles.includes(ROLES.ADMIN_OPD);
-        if ((isSuperAdmin || isAdminOpd) && activatedLevelRole) {
-            return activatedLevelRole.toLowerCase();
-        }
+    // Semua user (super_admin, admin_opd, level_1 s/d level_4)
+    // memakai level role yang dipilih (activatedLevelRole).
+    if (user && activatedLevelRole) {
+        return activatedLevelRole.toLowerCase();
     }
     return user?.roles.find((r) => r.startsWith("level_"));
 };

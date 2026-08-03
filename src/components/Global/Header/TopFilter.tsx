@@ -87,6 +87,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     setBulan,
     setActivatedBulan,
     levelRole,
+    activatedLevelRole,
     setLevelRole,
     setActivatedLevelRole,
     namaPegawai,
@@ -453,9 +454,9 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
             isClearable
           />
 
-          {forceOpdLock && (isSuperAdmin || isAdminOpd) && (
+          {forceOpdLock && user && (
             <>
-              {/* PILIH LEVEL ROLE */}
+              {/* PILIH LEVEL ROLE (semua user bisa memilih level 1-4) */}
               <Select
                 instanceId="select-level-role"
                 className="text-sm w-full sm:w-44"
@@ -464,21 +465,24 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
                 onChange={(opt) => setLevelRole(opt?.value ?? null)}
                 placeholder="Level Role"
                 isSearchable
-                isClearable
+                isClearable={!activatedLevelRole}
+                isDisabled={Boolean(activatedLevelRole)}
               />
 
-              {/* PILIH NAMA PEGAWAI */}
-              <Select
-                instanceId="select-nama-pegawai"
-                className="text-sm w-full sm:w-44"
-                options={namaPegawaiOptions}
-                isLoading={loadingPegawai}
-                value={namaPegawaiOptions.find((x) => x.value === namaPegawai) ?? null}
-                onChange={(opt) => setNamaPegawai(opt?.value ?? null)}
-                placeholder={loadingPegawai ? "Memuat..." : "Nama Pegawai"}
-                isSearchable
-                isClearable
-              />
+              {/* PILIH NAMA PEGAWAI (khusus super_admin / admin_opd) */}
+              {(isSuperAdmin || isAdminOpd) && (
+                <Select
+                  instanceId="select-nama-pegawai"
+                  className="text-sm w-full sm:w-44"
+                  options={namaPegawaiOptions}
+                  isLoading={loadingPegawai}
+                  value={namaPegawaiOptions.find((x) => x.value === namaPegawai) ?? null}
+                  onChange={(opt) => setNamaPegawai(opt?.value ?? null)}
+                  placeholder={loadingPegawai ? "Memuat..." : "Nama Pegawai"}
+                  isSearchable
+                  isClearable
+                />
+              )}
             </>
           )}
 
