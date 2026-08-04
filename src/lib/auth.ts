@@ -21,5 +21,18 @@ export async function authenticate(sessionId: string): Promise<User> {
         throw new Error("Invalid auth response");
     }
 
-    return res.json();
+    const raw = (await res.json()) as Partial<User>;
+
+    // Normalisasi response user-info agar selalu memiliki field yang
+    // dibutuhkan aplikasi, terutama untuk user level 1-3 di production
+    // yang hanya mengirim username, firstName, kode_opd, nip, dan roles
+    // (role Keycloak default, tanpa level_*).
+    return {
+        ...raw,
+        id: raw.id || raw.username,
+        username: raw.username || "",
+        firstName: raw.firstName || raw.username || "",
+        lastName: raw.lastName || "",
+        roles: raw.roles || [],
+    } as User;
 }

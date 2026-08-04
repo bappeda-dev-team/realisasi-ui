@@ -54,7 +54,7 @@ const ProgramTable = () => {
     const { user } = useUserContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
-    const canEditRealisasi = canEditIndividuRenjaRealisasi(user) && !isOpdScopedView;
+    const canEditRealisasi = canEditIndividuRenjaRealisasi(user, activatedLevelRole) && !isOpdScopedView;
 
     const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
     const headerColor = getHeaderColor(effectiveLevel);

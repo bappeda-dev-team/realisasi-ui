@@ -34,7 +34,7 @@ const Table = () => {
     const { user } = useUserContext();
     const { tahun: selectedTahun, activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
-    const canEditRealisasi = canEditIndividuRekinRealisasi(user);
+    const canEditRealisasi = canEditIndividuRekinRealisasi(user, activatedLevelRole);
     const [rows, setRows] = useState<TableRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<TableRow | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);

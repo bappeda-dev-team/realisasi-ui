@@ -2,26 +2,14 @@ import { User } from "@/types";
 import { useUserContext } from "@/context/UserContext";
 import { useFilterContext } from "@/context/FilterContext";
 import { clearSessionId } from "@/lib/session";
+import { getResolvedLevel } from "@/lib/rbac";
 import { TbLogout } from "react-icons/tb";
 import { logout as serverLogout } from "./logout";
 
-// TODO: map this with user profile
-// const roleColors: Record<string, string> = {
-//   super_admin: "bg-amber-100 text-amber-700",
-//   admin_opd: "bg-sky-100 text-sky-700",
-//   admin_kecamatan: "bg-sky-100 text-sky-700",
-//   reviewer: "bg-teal-100 text-teal-700",
-//   level_1: "bg-red-100 text-red-700",
-//   level_2: "bg-blue-100 text-blue-700",
-//   level_3: "bg-green-100 text-green-700",
-//   level_4: "bg-stone-100 text-stone-700",
-//   staff: "bg-stone-100 text-stone-700",
-// };
-
 export default function UserProfile({ user, hideOpd }: { user: User, hideOpd?: boolean }) {
   const { setUser, setError } = useUserContext();
-  const { periode, activatedTahun, activatedBulan, namaDinas } = useFilterContext();
-  const level = user?.roles?.[0] ?? "unknown";
+  const { periode, activatedTahun, activatedBulan, namaDinas, activatedLevelRole } = useFilterContext();
+  const level = getResolvedLevel(user, activatedLevelRole) ?? user?.roles?.[0] ?? "unknown";
 
   const getMonthName = (monthValue: string | null) => {
     if (!monthValue) return "";

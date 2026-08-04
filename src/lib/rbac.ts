@@ -5,15 +5,40 @@ function hasRole(user: User | null, role: string): boolean {
   return Boolean(user?.roles.includes(role));
 }
 
+/**
+ * Mengidentifikasi user individu (level 1-4) di production.
+ * Response user-info untuk level 1-3 di production hanya berisi
+ * roles Keycloak default (tanpa level_*), namun tetap memiliki `nip`
+ * dan merupakan user individu. Fallback tetap memakai roles level_*
+ * untuk environment lama.
+ */
+export function isIndividuUser(user: User | null): boolean {
+  if (!user) return false;
+  return Boolean(
+    user.nip ||
+    user.roles.some((role) => INDIVIDU_ROLES.includes(role as any))
+  );
+}
+
+/**
+ * Mendapatkan level role user. Prioritas:
+ * 1. `activatedLevelRole` (pilihan Level Role di dropdown/modal) — dipakai
+ *    untuk semua user termasuk level 1-3 di production.
+ * 2. role level_* milik user (perilaku lama).
+ */
+export function getResolvedLevel(user: User | null, activatedLevelRole?: string | null): string | undefined {
+  if (activatedLevelRole) {
+    return activatedLevelRole.toLowerCase();
+  }
+  return user?.roles.find((r) => r.startsWith("level_"));
+}
+
 export function canSelectAllOpdFilters(user: User | null): boolean {
   if (!user) return false;
   return (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD) ||
-    hasRole(user, ROLES.LEVEL_1) ||
-    hasRole(user, ROLES.LEVEL_2) ||
-    hasRole(user, ROLES.LEVEL_3) ||
-    hasRole(user, ROLES.LEVEL_4)
+    isIndividuUser(user)
   );
 }
 
@@ -27,10 +52,7 @@ export function canAccessOpd(user: User | null): boolean {
   return (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD) ||
-    hasRole(user, ROLES.LEVEL_1) ||
-    hasRole(user, ROLES.LEVEL_2) ||
-    hasRole(user, ROLES.LEVEL_3) ||
-    hasRole(user, ROLES.LEVEL_4)
+    isIndividuUser(user)
   );
 }
 
@@ -39,7 +61,7 @@ export function canAccessIndividu(user: User | null): boolean {
   return (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD) ||
-    user.roles.some((role) => INDIVIDU_ROLES.includes(role as any))
+    isIndividuUser(user)
   );
 }
 
@@ -87,28 +109,52 @@ export function canEditOpdRealisasi(user: User | null): boolean {
   return hasRole(user, ROLES.SUPER_ADMIN) || hasRole(user, ROLES.ADMIN_OPD);
 }
 
-export function canEditIndividuRekinRealisasi(user: User | null): boolean {
+export function canEditIndividuRekinRealisasi(
+  user: User | null,
+  activatedLevelRole?: string | null,
+): boolean {
   if (!user) return false;
-  return user.roles.some((role) => INDIVIDU_ROLES.includes(role as any));
-}
-
-export function canEditIndividuRenaksiRealisasi(user: User | null): boolean {
-  if (!user) return false;
-  return user.roles.some((role) => INDIVIDU_ROLES.includes(role as any));
-}
-
-export function canEditIndividuRenjaRealisasi(user: User | null): boolean {
-  if (!user) return false;
-  if (hasRole(user, ROLES.LEVEL_1)) {
-    return false;
-  }
   if (
-    hasRole(user, ROLES.LEVEL_2) ||
-    hasRole(user, ROLES.LEVEL_3)
+    hasRole(user, ROLES.SUPER_ADMIN) ||
+    hasRole(user, ROLES.ADMIN_OPD)
   ) {
     return true;
   }
-  return false;
+  const level = getResolvedLevel(user, activatedLevelRole);
+  return Boolean(level && INDIVIDU_ROLES.includes(level as any));
+}
+
+export function canEditIndividuRenaksiRealisasi(
+  user: User | null,
+  activatedLevelRole?: string | null,
+): boolean {
+  if (!user) return false;
+  if (
+    hasRole(user, ROLES.SUPER_ADMIN) ||
+    hasRole(user, ROLES.ADMIN_OPD)
+  ) {
+    return true;
+  }
+  const level = getResolvedLevel(user, activatedLevelRole);
+  return Boolean(level && INDIVIDU_ROLES.includes(level as any));
+}
+
+export function canEditIndividuRenjaRealisasi(
+  user: User | null,
+  activatedLevelRole?: string | null,
+): boolean {
+  if (!user) return false;
+  if (
+    hasRole(user, ROLES.SUPER_ADMIN) ||
+    hasRole(user, ROLES.ADMIN_OPD)
+  ) {
+    return true;
+  }
+  const level = getResolvedLevel(user, activatedLevelRole);
+  if (level === ROLES.LEVEL_1) {
+    return false;
+  }
+  return level === ROLES.LEVEL_2 || level === ROLES.LEVEL_3;
 }
 
 export function getDefaultPage(user: User | null): string {
@@ -155,4 +201,19 @@ export function getAccessibleMenus(user: User | null): { name: string; href: str
   }
 
   return menus;
+}
+
+/**
+ * Apakah user wajib memilih OPD + Level Role setelah login?
+ * Berlaku untuk super_admin, admin_opd, dan seluruh user individu
+ * (termasuk level 1-3 di production yang roles-nya hanya memuat role
+ * Keycloak default namun memiliki `nip`).
+ */
+export function needsOpdSelection(user: User | null): boolean {
+  if (!user) return false;
+  return (
+    hasRole(user, ROLES.SUPER_ADMIN) ||
+    hasRole(user, ROLES.ADMIN_OPD) ||
+    isIndividuUser(user)
+  );
 }

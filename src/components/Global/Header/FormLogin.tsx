@@ -7,8 +7,7 @@ import { LoadingButtonClip } from "@/components/Global/Loading";
 import { useUserContext } from "@/context/UserContext";
 import { authenticate } from "@/lib/auth";
 import { setSessionId } from "@/lib/session";
-import { getDefaultPage } from "@/lib/rbac";
-import { ROLES } from "@/constants/roles";
+import { getDefaultPage, needsOpdSelection } from "@/lib/rbac";
 
 interface FormLoginProps {
   onClose: () => void;
@@ -51,14 +50,7 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
       setError(null);
       setLastLoginAt(Date.now());
 
-      const needsOpdSelection =
-        user.roles.includes(ROLES.SUPER_ADMIN) ||
-        user.roles.includes(ROLES.ADMIN_OPD) ||
-        user.roles.includes(ROLES.LEVEL_1) ||
-        user.roles.includes(ROLES.LEVEL_2) ||
-        user.roles.includes(ROLES.LEVEL_3);
-
-      if (needsOpdSelection) {
+      if (needsOpdSelection(user)) {
         setOpdSelected(false);
         setOpdLocked(false);
         // Jangan redirect — biarkan OpdSelectionModal tampil

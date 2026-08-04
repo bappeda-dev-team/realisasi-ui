@@ -112,15 +112,12 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
+  // Level 1-3 di production memilih OPD dari dropdown (bukan dari user-info),
+  // sehingga forceOpdLock hanya mengunci user yang memang tidak bisa memilih
+  // semua OPD (bukan super_admin / admin_opd / individu dengan nip).
   const effectivelyCanEditOpd = opdLocked
     ? false
-    : (forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd) ? false : canEditOpd;
-
-  // User level_1-4 di halaman Individu terkunci ke kode_opd sendiri.
-  // OPD-nya dikelola oleh auto-select, jadi cookie tidak boleh menimpanya.
-  const isOpdForceLocked = Boolean(
-    forceOpdLock && userKodeOpd && !isSuperAdmin && !isAdminOpd,
-  );
+    : (forceOpdLock && !canEditOpd) ? false : canEditOpd;
 
   const {
     data: dataDinas,
@@ -297,9 +294,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
       return;
     }
 
-    // OPD yang terkunci (level_1-4 di halaman Individu) selalu memakai
-    // kode_opd user sendiri via auto-select, jangan di-overwrite cookie.
-    if (!isOpdForceLocked && cookie.dinas?.value) {
+    // OPD yang dipilih di popup modal di-restore untuk semua user.
+    if (cookie.dinas?.value) {
       const adaDiOptions = dinasOptions.some(
         (opt) => opt.value === cookie.dinas?.value,
       );
@@ -328,7 +324,6 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     userKodeOpd,
     isSuperAdmin,
     isAdminOpd,
-    isOpdForceLocked,
     setDinas,
     setActivatedDinas,
     setNamaDinas,
@@ -347,7 +342,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   // AUTO SELECT OPD FOR NON-EDIT USERS (LEVEL 1-4)
   // ----------------------------
   useEffect(() => {
-    if (!effectivelyCanEditOpd && !disableOpdLock && userKodeOpd && dinasOptions.length > 0) {
+    if (!dinas && !effectivelyCanEditOpd && !disableOpdLock && userKodeOpd && dinasOptions.length > 0) {
       const userOpd = dinasOptions.find((opt) => opt.value === userKodeOpd);
       if (userOpd) {
         setDinas(userOpd.value);
@@ -355,7 +350,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
         setNamaDinas(userOpd.label);
       }
     }
-  }, [dinasOptions, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
+  }, [dinas, dinasOptions, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
 
   // ----------------------------
   // SIMPAN COOKIE
