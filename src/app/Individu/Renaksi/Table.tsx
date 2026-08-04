@@ -50,7 +50,7 @@ const Table = () => {
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
   const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
   const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
-  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user) && !isOpdScopedView;
+  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user, activatedLevelRole) && !isOpdScopedView;
 
   const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
 

@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useUserContext } from "@/context/UserContext";
-import { canAccessRoute, getDefaultPage } from "@/lib/rbac";
-import { ROLES } from "@/constants/roles";
+import { canAccessRoute, getDefaultPage, needsOpdSelection } from "@/lib/rbac";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -15,15 +14,10 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
   const pathname = usePathname();
   const { user, loading, opdSelected } = useUserContext();
 
-  const needsOpdSelection =
+  const needsOpdSel =
     user &&
     !opdSelected &&
-    (user.roles.includes(ROLES.SUPER_ADMIN) ||
-      user.roles.includes(ROLES.ADMIN_OPD) ||
-      user.roles.includes(ROLES.LEVEL_1) ||
-      user.roles.includes(ROLES.LEVEL_2) ||
-      user.roles.includes(ROLES.LEVEL_3) ||
-      user.roles.includes(ROLES.LEVEL_4));
+    needsOpdSelection(user);
 
   useEffect(() => {
     if (loading) return;
@@ -33,8 +27,8 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
       return;
     }
 
-    // Blokir akses jika super_admin/admin_opd belum pilih OPD
-    if (needsOpdSelection) {
+    // Blokir akses jika super_admin/admin_opd/level 1-4 belum pilih OPD
+    if (needsOpdSel) {
       router.push("/");
       return;
     }
@@ -46,7 +40,7 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
       router.push(defaultPage);
       return;
     }
-  }, [user, loading, pathname, router, needsOpdSelection]);
+  }, [user, loading, pathname, router, needsOpdSel]);
 
   if (loading) {
     return (
@@ -58,7 +52,7 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
     );
   }
 
-  if (needsOpdSelection) {
+  if (needsOpdSel) {
     return null;
   }
 

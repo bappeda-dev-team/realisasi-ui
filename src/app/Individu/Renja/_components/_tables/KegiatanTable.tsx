@@ -56,7 +56,7 @@ const KegiatanTable = () => {
     const { user } = useUserContext();
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
-    const canEditRealisasi = canEditIndividuRenjaRealisasi(user) && !isOpdScopedView;
+    const canEditRealisasi = canEditIndividuRenjaRealisasi(user, activatedLevelRole) && !isOpdScopedView;
 
     const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
     const headerColor = getHeaderColor(effectiveLevel);
@@ -66,7 +66,7 @@ const KegiatanTable = () => {
     const bulanName = getMonthName(activatedBulan);
 
     // Determine kodeOpd and nip for the kegiatan endpoint
-    const effectiveKodeOpd = isOpdScopedView && activatedDinas ? activatedDinas : (user?.kode_opd ?? null);
+    const effectiveKodeOpd = activatedDinas || user?.kode_opd || null;
     const effectiveNip = user?.nip ?? null;
 
     let apiUrl = null;

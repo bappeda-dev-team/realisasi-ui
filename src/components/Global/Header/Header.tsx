@@ -16,8 +16,7 @@ import { ToastSuccess, ToastError } from "@/components/Global/Alert";
 import Login from "@/components/Global/Header/Login";
 import FormLogin from "@/components/Global/Header/FormLogin";
 import OpdSelectionModal from "@/components/Global/Header/OpdSelectionModal";
-import { getAccessibleMenus } from "@/lib/rbac";
-import { ROLES } from "@/constants/roles";
+import { getAccessibleMenus, needsOpdSelection } from "@/lib/rbac";
 
 export const Header = () => {
   const { user, loading, error, lastLoginAt, opdSelected, opdLocked } = useUserContext();
@@ -59,15 +58,10 @@ export const Header = () => {
     }
   }, [error]);
 
-  const needsOpdSelection =
+  const showOpdSelectionModal =
     user &&
     !opdSelected &&
-    (user.roles.includes(ROLES.SUPER_ADMIN) ||
-      user.roles.includes(ROLES.ADMIN_OPD) ||
-      user.roles.includes(ROLES.LEVEL_1) ||
-      user.roles.includes(ROLES.LEVEL_2) ||
-      user.roles.includes(ROLES.LEVEL_3) ||
-      user.roles.includes(ROLES.LEVEL_4));
+    needsOpdSelection(user);
 
   return (
     <>
@@ -175,7 +169,7 @@ export const Header = () => {
           />
         )}
 
-        {needsOpdSelection && <OpdSelectionModal />}
+        {showOpdSelectionModal && <OpdSelectionModal />}
       </nav>
     </>
   );

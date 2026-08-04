@@ -1,8 +1,8 @@
 export type User = {
-  id: string;
+  id?: string;
   username: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   roles: string[];
   nip?: string;
   kode_opd?: string;
