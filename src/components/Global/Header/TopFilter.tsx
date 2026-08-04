@@ -175,24 +175,15 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
         options = options.filter((opt) => opt.value === userKodeOpd);
       }
 
+      // Pastikan OPD yang dipilih di popup modal selalu ada di daftar,
+      // sehingga dropdown header menampilkan nilai yang sama dengan popup.
+      if (dinas && namaDinas && !options.some((opt) => opt.value === dinas)) {
+        options = [{ value: dinas, label: namaDinas }, ...options];
+      }
+
       setDinasOptions(options);
     }
-  }, [dataDinas, effectivelyCanEditOpd, disableOpdLock, userKodeOpd]);
-
-  // ----------------------------
-  // PASTIKAN OPD YANG DIPILIH ADA DI OPTIONS SAAT LOCKED
-  // ----------------------------
-  useEffect(() => {
-    if (opdLocked && dinas && namaDinas) {
-      setDinasOptions((prev) => {
-        const exists = prev.some((opt) => opt.value === dinas);
-        if (!exists) {
-          return [{ value: dinas, label: namaDinas }, ...prev];
-        }
-        return prev;
-      });
-    }
-  }, [opdLocked, dinas, namaDinas]);
+  }, [dataDinas, effectivelyCanEditOpd, disableOpdLock, userKodeOpd, dinas, namaDinas]);
 
   // ----------------------------
   // DROPDOWN PERIODE
