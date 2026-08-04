@@ -109,6 +109,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
 
   const isSuperAdmin = user ? canAccessPemda(user) : false;
   const isAdminOpd = user ? user.roles.includes('admin_opd') : false;
+  const isAdminOrSuperAdmin = isSuperAdmin || isAdminOpd;
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
@@ -451,8 +452,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
                 onChange={(opt) => setLevelRole(opt?.value ?? null)}
                 placeholder="Level Role"
                 isSearchable
-                isClearable={!activatedLevelRole}
-                isDisabled={Boolean(activatedLevelRole)}
+                isClearable={!activatedLevelRole || isAdminOrSuperAdmin}
+                isDisabled={Boolean(activatedLevelRole) && !isAdminOrSuperAdmin}
               />
 
               {/* PILIH NAMA PEGAWAI (khusus super_admin / admin_opd) */}

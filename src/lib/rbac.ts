@@ -14,6 +14,10 @@ function hasRole(user: User | null, role: string): boolean {
  */
 export function isIndividuUser(user: User | null): boolean {
   if (!user) return false;
+  // Super admin / admin opd bukan user individu, walau punya nip
+  if (hasRole(user, ROLES.SUPER_ADMIN) || hasRole(user, ROLES.ADMIN_OPD)) {
+    return false;
+  }
   return Boolean(
     user.nip ||
     user.roles.some((role) => INDIVIDU_ROLES.includes(role as any))
@@ -114,11 +118,12 @@ export function canEditIndividuRekinRealisasi(
   activatedLevelRole?: string | null,
 ): boolean {
   if (!user) return false;
+  // Super admin / admin opd tidak bisa edit realisasi di halaman Individu
   if (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD)
   ) {
-    return true;
+    return false;
   }
   const level = getResolvedLevel(user, activatedLevelRole);
   return Boolean(level && INDIVIDU_ROLES.includes(level as any));
@@ -129,11 +134,12 @@ export function canEditIndividuRenaksiRealisasi(
   activatedLevelRole?: string | null,
 ): boolean {
   if (!user) return false;
+  // Super admin / admin opd tidak bisa edit realisasi di halaman Individu
   if (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD)
   ) {
-    return true;
+    return false;
   }
   const level = getResolvedLevel(user, activatedLevelRole);
   return Boolean(level && INDIVIDU_ROLES.includes(level as any));
@@ -144,11 +150,12 @@ export function canEditIndividuRenjaRealisasi(
   activatedLevelRole?: string | null,
 ): boolean {
   if (!user) return false;
+  // Super admin / admin opd tidak bisa edit realisasi di halaman Individu
   if (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD)
   ) {
-    return true;
+    return false;
   }
   const level = getResolvedLevel(user, activatedLevelRole);
   if (level === ROLES.LEVEL_1) {
