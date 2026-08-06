@@ -184,6 +184,8 @@ export default function OpdSelectionModal() {
                 <LoadingButtonClip color="white" />
                 Memproses...
               </span>
+            ) : isIndividu ? (
+              "Pilih OPD dan Role"
             ) : (
               "Pilih OPD"
             )}

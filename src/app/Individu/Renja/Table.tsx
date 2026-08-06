@@ -6,8 +6,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { ROLES } from "@/constants/roles";
 import SasaranOpdTable from "./_components/_tables/SasaranOpdTable";
 import ProgramTable from "./_components/_tables/ProgramTable";
-import KegiatanTable from "./_components/_tables/KegiatanTable";
-import SubKegiatanIndividuTable from "./_components/_tables/SubKegiatanTable";
+import KegiatanSubKegiatanTable from "./_components/_tables/KegiatanSubKegiatanTable";
 
 const Table = () => {
   const { user } = useUserContext();
@@ -29,14 +28,9 @@ const Table = () => {
         </>
       )}
       {!isLevel2 && !isLevel1 && (
-        <>
-          <div className="mt-6">
-            <KegiatanTable />
-          </div>
-          <div className="mt-6">
-            <SubKegiatanIndividuTable />
-          </div>
-        </>
+        <div className="mt-6">
+          <KegiatanSubKegiatanTable />
+        </div>
       )}
     </>
   );
