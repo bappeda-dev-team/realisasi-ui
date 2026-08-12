@@ -3,20 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
     "build-image": "docker build -t realisasi-ui:dev --build-arg NEXT_PUBLIC_APP_NAME='KERTASKERJA-REALISASI-DEV' --build-arg NEXT_PUBLIC_CLIENT_NAME='File City' --build-arg NEXT_PUBLIC_LOGO_URL='https://cdnkk.zeabur.app/api/cdn/download/images/universal.png' --build-arg NEXT_PUBLIC_API_URL='' ."
   },
   "dependencies": {
     "js-cookie": "^3.0.5",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
-    "next": "15.3.2",
+    "next": "16.3.0",
     "nextjs-toploader": "^3.8.16",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "react-select": "^5.10.2",
     "react-spinners": "^0.17.0"

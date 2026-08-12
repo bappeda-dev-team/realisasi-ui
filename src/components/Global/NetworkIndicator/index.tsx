@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import {
   TbSignal4G,
@@ -10,6 +11,11 @@ import {
 
 export const NetworkIndicator = () => {
   const { isOnline, effectiveType, isWeak } = useNetworkStatus();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
 
   if (isWeak) {
     return (
