@@ -253,7 +253,7 @@ const Table = () => {
       targets.forEach((target, targetIndex) => {
         const detailRow = [
           target?.target || "-",
-          target?.realisasi ?? "-",
+          target?.realisasi ?? 0,
           formatPercentageText(target?.capaian || "-").replace(/%$/, ""),
           formatPercentageText(target?.keteranganCapaian || "-"),
           target?.faktorPenunjang || "-",
@@ -536,7 +536,7 @@ const Table = () => {
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
-                      <span>{target?.realisasi ?? "-"}</span>
+                      <span>{target?.realisasi ?? 0}</span>
                       {canEditRealisasi && isTargetActive && (
                         <ButtonGreenBorder
                           className="w-full"
