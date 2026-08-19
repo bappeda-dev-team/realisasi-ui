@@ -47,6 +47,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 ...item,
                 tahun: selectedTahun ?? item.tahun,
                 bulan: monthKey ?? item.bulan,
+                realisasi: item.realisasi === 0 ? undefined : item.realisasi,
             }))
         );
     }, [requestValues, selectedTahun, monthKey]);
