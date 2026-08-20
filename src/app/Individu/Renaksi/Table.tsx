@@ -335,57 +335,6 @@ const Table = () => {
     previewDoc.save(pdfFileName);
   };
 
-  const handleSync = async () => {
-    const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-    if (!nipToSync || !kodeOpd || !yearLabel) return;
-
-    setIsSyncing(true);
-    try {
-      const sessionId = getSessionId();
-      const response = await fetch(`/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan`, {
-        method: "POST",
-        headers: {
-          "X-Session-Id": sessionId ?? "",
-        },
-      });
-      if (!response.ok) {
-        console.error("Failed to sync data");
-      }
-      if (refetch) {
-        await refetch();
-      }
-    } catch (error) {
-      console.error("Error during sync:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const renderSyncButton = () => {
-    if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
-
-    const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-    const canSync = nipToSync && kodeOpd && yearLabel;
-
-    return (
-      <div className="flex justify-end mb-2 mr-2 mt-2">
-        <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={!canSync || isSyncing || loading}>
-          {isSyncing ? (
-            <div className="flex items-center gap-2">
-              <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-              <span>Syncing...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <TbRefresh size={20} />
-              <span>Sinkronisasi</span>
-            </div>
-          )}
-        </ButtonSky>
-      </div>
-    );
-  };
-
   const infoMessage = !user || (!user?.nip && !canBypassNip)
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : canBypassNip && !activatedDinas
@@ -405,7 +354,6 @@ const Table = () => {
   if (loading) {
     return (
       <>
-        {renderSyncButton()}
         <div className="rounded border border-emerald-200 px-4 py-6 text-center">
           <LoadingBeat loading={true} />
           <p className="text-sm text-gray-600 mt-2">
@@ -419,7 +367,6 @@ const Table = () => {
   if (error) {
     return (
       <>
-        {renderSyncButton()}
         <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
           Gagal memuat data renaksi: {error}
         </div>
@@ -430,7 +377,6 @@ const Table = () => {
   if (!rows.length) {
     return (
       <>
-        {renderSyncButton()}
         <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
           Data renaksi individu tidak ada.
         </div>
@@ -440,7 +386,6 @@ const Table = () => {
 
   return (
     <>
-      {renderSyncButton()}
       <div className="overflow-auto m-2 rounded-t-xl">
         <table id="print-area-renaksi" className="w-full">
           <thead>
@@ -692,35 +637,6 @@ const Table = () => {
                 className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
               >
                 Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isSyncModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
-          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
-            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsSyncModalOpen(false)}
-                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Tidak
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSyncModalOpen(false);
-                  handleSync();
-                }}
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                Ya
               </button>
             </div>
           </div>
