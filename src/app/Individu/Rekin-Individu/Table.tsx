@@ -28,6 +28,7 @@ interface TableRow {
     nip: string;
     indikator: string;
     targets: RekinTarget[];
+    indikatorNull?: boolean;
 }
 
 const Table = () => {
@@ -153,13 +154,25 @@ const Table = () => {
         }
 
         setRows(
-            (data.rekins ?? []).flatMap((rekinItem: any) =>
-                rekinItem.indikator_pk.map((indikator: any) => {
-                    const backendNamaPegawai = data.nama?.trim();
-                    const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
-                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
-                    const nipPegawai = data.pegawai_id || user.nip || "-";
+            (data.rekins ?? []).flatMap((rekinItem: any) => {
+                const backendNamaPegawai = data.nama?.trim();
+                const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
+                const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
+                const nipPegawai = data.pegawai_id || user.nip || "-";
 
+                if (!rekinItem.indikator_pk || rekinItem.indikator_pk.length === 0) {
+                    return [{
+                        id: rekinItem.id ?? 0,
+                        rekin: rekinItem.rekin ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        indikator: "Data indikator tidak ada / belum di isi",
+                        targets: [],
+                        indikatorNull: true,
+                    }];
+                }
+
+                return rekinItem.indikator_pk.map((indikator: any) => {
                     const targets: RekinTarget[] = indikator.target_pk.map((t: any) => ({
                         targetRealisasiId: t.id ?? null,
                         rekinId: rekinItem.kode_pk,
@@ -193,8 +206,8 @@ const Table = () => {
                         indikator: indikator.nama_indikator_pk ?? "-",
                         targets,
                     };
-                }),
-            ),
+                });
+            }),
         );
     }, [data, user, yearLabel, monthLabel]);
 
@@ -534,7 +547,11 @@ const Table = () => {
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         <div className="flex gap-2 items-center">
-                                            <p>{item.indikator || "-"}</p>
+                                            {item.indikatorNull ? (
+                                                <p className="text-red-600 text-sm">{item.indikator}</p>
+                                            ) : (
+                                                <p>{item.indikator || "-"}</p>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -547,6 +564,7 @@ const Table = () => {
                                                 <ButtonGreenBorder
                                                     className="w-full"
                                                     onClick={() => handleOpenModal(item)}
+                                                    disabled={!!item.indikatorNull}
                                                 >
                                                     Realisasi
                                                 </ButtonGreenBorder>
@@ -565,8 +583,8 @@ const Table = () => {
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
                                                     className="w-full text-xs py-0.5"
-                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenunjang(item) : undefined}
-                                                    disabled={!isRealisasiFilled}
+                                                    onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenunjang(item) : undefined}
+                                                    disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >
                                                     Faktor
                                                 </ButtonGreenBorder>
@@ -579,8 +597,8 @@ const Table = () => {
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
                                                     className="w-full text-xs py-0.5"
-                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenghambat(item) : undefined}
-                                                    disabled={!isRealisasiFilled}
+                                                    onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenghambat(item) : undefined}
+                                                    disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >
                                                     Faktor
                                                 </ButtonGreenBorder>
