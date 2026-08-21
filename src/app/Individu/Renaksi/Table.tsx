@@ -92,7 +92,7 @@ const Table = () => {
   const nip = user?.nip;
   const kodeOpd = activatedDinas || user?.kode_opd;
   let apiUrl = null;
-  if (kodeOpd && yearLabel) {
+  if (kodeOpd && yearLabel && monthKey) {
       let safeNip = null;
       if (isOpdScopedView && activatedNamaPegawai) {
           safeNip = activatedNamaPegawai.replace(/-$/, "");
@@ -101,7 +101,7 @@ const Table = () => {
       }
 
       if (safeNip) {
-          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan`;
+          apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
       }
   }
 
@@ -339,9 +339,11 @@ const Table = () => {
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
     : canBypassNip && !activatedDinas
       ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi individu muncul."
-      : !activatedTahun || !monthLabel
-        ? "Pilih dan aktifkan tahun dan bulan agar data renaksi individu muncul."
-        : undefined;
+      : !activatedTahun
+        ? "Pilih dan aktifkan tahun agar data renaksi individu muncul."
+        : !monthKey
+          ? "Silakan pilih bulan terlebih dahulu melalui dropdown pilih bulan di header."
+          : undefined;
 
   if (infoMessage) {
     return (
