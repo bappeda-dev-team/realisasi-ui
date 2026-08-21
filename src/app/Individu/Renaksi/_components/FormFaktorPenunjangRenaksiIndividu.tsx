@@ -31,7 +31,7 @@ const FormFaktorPenunjangRenaksiIndividu: React.FC<FormFaktorPenunjangRenaksiInd
     onClose,
     onSuccess,
 }) => {
-    const [value, setValue] = useState(currentValue);
+    const [value, setValue] = useState(currentValue === '-' ? '' : currentValue);
     const [loading, setLoading] = useState(false);
 
     const normalizedBulan = getMonthKey(bulan);
