@@ -28,6 +28,7 @@ interface TableRow {
     nip: string;
     indikator: string;
     targets: RekinTarget[];
+    indikatorNull?: boolean;
 }
 
 const Table = () => {
@@ -94,7 +95,7 @@ const Table = () => {
         }
     }
 
-    const { data, loading, error, refetch } = useFetchData<any>({
+    const { data, loading, error } = useFetchData<any>({
         url: apiUrl,
     });
 
@@ -153,13 +154,25 @@ const Table = () => {
         }
 
         setRows(
-            (data.rekins ?? []).flatMap((rekinItem: any) =>
-                rekinItem.indikator_pk.map((indikator: any) => {
-                    const backendNamaPegawai = data.nama?.trim();
-                    const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
-                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
-                    const nipPegawai = data.pegawai_id || user.nip || "-";
+            (data.rekins ?? []).flatMap((rekinItem: any) => {
+                const backendNamaPegawai = data.nama?.trim();
+                const fallbackNamaPegawai = [user.firstName, user.lastName].filter(Boolean).join(" ").trim() || user.username;
+                const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
+                const nipPegawai = data.pegawai_id || user.nip || "-";
 
+                if (!rekinItem.indikator_pk || rekinItem.indikator_pk.length === 0) {
+                    return [{
+                        id: rekinItem.id ?? 0,
+                        rekin: rekinItem.rekin ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        indikator: "Data indikator tidak ada / belum di isi",
+                        targets: [],
+                        indikatorNull: true,
+                    }];
+                }
+
+                return rekinItem.indikator_pk.map((indikator: any) => {
                     const targets: RekinTarget[] = indikator.target_pk.map((t: any) => ({
                         targetRealisasiId: t.id ?? null,
                         rekinId: rekinItem.kode_pk,
@@ -193,8 +206,8 @@ const Table = () => {
                         indikator: indikator.nama_indikator_pk ?? "-",
                         targets,
                     };
-                }),
-            ),
+                });
+            }),
         );
     }, [data, user, yearLabel, monthLabel]);
 
@@ -414,59 +427,6 @@ const Table = () => {
                     ? "Pilih dan aktifkan Level Role dan Nama Pegawai agar data rekin individu muncul."
                     : undefined;
 
-    const [isSyncing, setIsSyncing] = useState(false);
-
-    const handleSync = async () => {
-        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-        if (!nipToSync || !kodeOpd || !yearLabel) return;
-
-        setIsSyncing(true);
-        try {
-            const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/rekin/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=1`, {
-                method: "POST",
-                headers: {
-                    "X-Session-Id": sessionId ?? "",
-                },
-            });
-            if (!response.ok) {
-                console.error("Failed to sync data");
-            }
-            if (refetch) {
-                await refetch();
-            }
-        } catch (error) {
-            console.error("Error during sync:", error);
-        } finally {
-            setIsSyncing(false);
-        }
-    };
-
-    const renderSyncButton = () => {
-        if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
-        
-        const nipToSync = (isAdmin ? activatedNamaPegawai : nip)?.replace(/-$/, "");
-        const canSync = nipToSync && kodeOpd && yearLabel;
-
-        return (
-            <div className="flex justify-end mb-2 mr-2 mt-2">
-                <ButtonSky className="px-5 py-2 text-base font-medium" onClick={() => setIsSyncModalOpen(true)} disabled={!canSync || isSyncing || loading}>
-                    {isSyncing ? (
-                        <div className="flex items-center gap-2">
-                            <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span>
-                            <span>Syncing...</span>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <TbRefresh size={20} />
-                            <span>Sinkronisasi</span>
-                        </div>
-                    )}
-                </ButtonSky>
-            </div>
-        );
-    };
-
     if (infoMessage) {
         return (
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
@@ -478,7 +438,6 @@ const Table = () => {
     if (loading) {
         return (
             <>
-                {renderSyncButton()}
                 <div className="rounded border border-emerald-200 px-4 py-6 text-center">
                     <LoadingBeat loading={true} />
                     <p className="text-sm text-gray-600 mt-2">
@@ -492,7 +451,6 @@ const Table = () => {
     if (error) {
         return (
             <>
-                {renderSyncButton()}
                 <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
                     Gagal memuat data rekin individu: {error}
                 </div>
@@ -503,7 +461,6 @@ const Table = () => {
     if (!rows.length) {
         return (
             <>
-                {renderSyncButton()}
                 <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
                     Data rekin individu tidak ada.
                 </div>
@@ -513,7 +470,6 @@ const Table = () => {
 
     return (
         <>
-            {renderSyncButton()}
             <div className="overflow-auto m-2 rounded-t-xl">
                 <table id="print-area-rekin" className="w-full">
                     <thead>
@@ -591,7 +547,11 @@ const Table = () => {
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         <div className="flex gap-2 items-center">
-                                            <p>{item.indikator || "-"}</p>
+                                            {item.indikatorNull ? (
+                                                <p className="text-red-600 text-sm">{item.indikator}</p>
+                                            ) : (
+                                                <p>{item.indikator || "-"}</p>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -604,6 +564,7 @@ const Table = () => {
                                                 <ButtonGreenBorder
                                                     className="w-full"
                                                     onClick={() => handleOpenModal(item)}
+                                                    disabled={!!item.indikatorNull}
                                                 >
                                                     Realisasi
                                                 </ButtonGreenBorder>
@@ -622,8 +583,8 @@ const Table = () => {
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
                                                     className="w-full text-xs py-0.5"
-                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenunjang(item) : undefined}
-                                                    disabled={!isRealisasiFilled}
+                                                    onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenunjang(item) : undefined}
+                                                    disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >
                                                     Faktor
                                                 </ButtonGreenBorder>
@@ -636,8 +597,8 @@ const Table = () => {
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
                                                     className="w-full text-xs py-0.5"
-                                                    onClick={isRealisasiFilled ? () => handleOpenFaktorPenghambat(item) : undefined}
-                                                    disabled={!isRealisasiFilled}
+                                                    onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenghambat(item) : undefined}
+                                                    disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >
                                                     Faktor
                                                 </ButtonGreenBorder>
@@ -755,35 +716,6 @@ const Table = () => {
                                 className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
                             >
                                 Download PDF
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {isSyncModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center">
-                    <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
-                    <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
-                        <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
-                        <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
-                        <div className="flex justify-center gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setIsSyncModalOpen(false)}
-                                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-                            >
-                                Tidak
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setIsSyncModalOpen(false);
-                                    handleSync();
-                                }}
-                                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
-                            >
-                                Ya
                             </button>
                         </div>
                     </div>

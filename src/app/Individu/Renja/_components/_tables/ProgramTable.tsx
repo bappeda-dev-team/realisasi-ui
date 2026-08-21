@@ -31,6 +31,7 @@ interface RenjaRow {
     kodeRenja: string;
     jenisRenja: string;
     indikator: string;
+    indikatorNull?: boolean;
     kodePk?: string;
     targets: RenjaTarget[];
 }
@@ -106,6 +107,7 @@ const ProgramTable = () => {
                     kodeRenja: item.kodeProgram ?? "-",
                     jenisRenja: "PROGRAM",
                     indikator: item.indikator ?? "-",
+                    indikatorNull: Array.isArray(item.indikator) ? item.indikator.length === 0 : !item.indikator,
                     targets: [{
                         targetRealisasiId: item.id ?? null,
                         renjaId: item.kodeProgram ?? "",
@@ -143,13 +145,61 @@ const ProgramTable = () => {
         }
 
         setRows(
-            (data.renjas ?? []).flatMap((renjaItem: any) =>
-                (renjaItem.indikator_programs ?? []).map((indikator: any, indIndex: number) => {
-                    const backendNamaPegawai = renjaItem.nama_pegawai?.trim() || data.nama?.trim();
-                    const fallbackNamaPegawai = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.username || "-";
-                    const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
-                    const nipPegawai = renjaItem.pegawai_id || data.pegawai_id || user?.nip || "-";
+            (data.renjas ?? []).flatMap((renjaItem: any) => {
+                const backendNamaPegawai = renjaItem.nama_pegawai?.trim() || data.nama?.trim();
+                const fallbackNamaPegawai = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.username || "-";
+                const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
+                const nipPegawai = renjaItem.pegawai_id || data.pegawai_id || user?.nip || "-";
 
+                const indikatorPrograms = renjaItem.indikator_programs ?? [];
+
+                if (indikatorPrograms.length === 0) {
+                    return [{
+                        id: renjaItem.kode_pk ? `${renjaItem.kode_pk}_empty` : `empty_${renjaItem.kode_program || Math.random()}`,
+                        renja: renjaItem.nama_program ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        kodeRenja: renjaItem.kode_program ?? "-",
+                        jenisRenja: "PROGRAM",
+                        indikator: "-",
+                        indikatorNull: true,
+                        kodePk: renjaItem.kode_pk || undefined,
+                        targets: [{
+                            targetRealisasiId: null,
+                            renjaId: renjaItem.kode_program ?? "",
+                            renja: renjaItem.nama_program ?? "-",
+                            kodeRenja: renjaItem.kode_program ?? "-",
+                            jenisRenja: "PROGRAM",
+                            nip: nipPegawai,
+                            idIndikator: "",
+                            indikator: "-",
+                            targetId: "",
+                            target: "-",
+                            realisasi: 0,
+                            satuan: "%",
+                            tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
+                            bulan: bulanName ?? undefined,
+                            jenisRealisasi: "NAIK",
+                            capaian: "-",
+                            keteranganCapaian: "-",
+                            pagu: renjaItem.pagu_program ?? null,
+                            realisasiPagu: null,
+                            satuanPagu: "Rupiah",
+                            capaianPagu: "-",
+                            keteranganCapaianPagu: "-",
+                            faktorPenunjang: null,
+                            faktorPenghambat: null,
+                            kodeOpd: data.kode_opd ?? kodeOpd ?? "",
+                            kodePagu: renjaItem.kode_pagu_program ?? "",
+                            targetRealisasi: 0,
+                            buktiPendukung: null,
+                            keteranganBuktiPendukung: null,
+                            kodePk: renjaItem.kode_pk || undefined,
+                        }],
+                    }];
+                }
+
+                return indikatorPrograms.map((indikator: any, indIndex: number) => {
                     let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
                         targetRealisasiId: t.id ?? null,
                         renjaId: renjaItem.kode_program ?? "",
@@ -229,8 +279,8 @@ const ProgramTable = () => {
                         kodePk: renjaItem.kode_pk || undefined,
                         targets,
                     };
-                })
-            )
+                });
+            })
         );
     }, [data, user, activatedTahun, bulanKey, bulanName, kodeOpd]);
 
@@ -539,7 +589,11 @@ const ProgramTable = () => {
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {row.indikator || "-"}
+                                                {row.indikatorNull ? (
+                                                    <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
+                                                ) : (
+                                                    row.indikator || "-"
+                                                )}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {target?.target || "-"}
@@ -550,6 +604,7 @@ const ProgramTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => openModal(row, 'target')}
                                                         >
                                                             Realisasi
@@ -572,6 +627,7 @@ const ProgramTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full text-xs py-0.5"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenunjang(row)}
                                                         >
                                                             Faktor
@@ -585,6 +641,7 @@ const ProgramTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full text-xs py-0.5"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenghambat(row)}
                                                         >
                                                             Faktor

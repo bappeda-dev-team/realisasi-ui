@@ -167,6 +167,7 @@ export function canEditIndividuRenjaRealisasi(
 export function getDefaultPage(user: User | null): string {
   if (!user) return '/';
   if (canAccessPemda(user)) return '/Pemda';
+  if (isIndividuUser(user)) return '/Individu';
   if (canAccessOpd(user)) return '/Opd';
   if (canAccessIndividuRekin(user)) return '/Individu';
   if (canAccessIndividu(user)) return '/Individu';

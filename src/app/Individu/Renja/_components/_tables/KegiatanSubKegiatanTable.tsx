@@ -35,6 +35,7 @@ interface RenjaRow {
     kodeRenja: string;
     jenisRenja: string;
     indikator: string;
+    indikatorNull?: boolean;
     kodePk?: string;
     kodeProgram?: string;
     targets: RenjaTarget[];
@@ -164,14 +165,63 @@ const KegiatanSubKegiatanTable = () => {
             }));
         }
 
-        return (data.renjas ?? []).flatMap((renjaItem: any) =>
-            (renjaItem.indikator_kegiatans ?? []).map((indikator: any, indIndex: number) => {
+        return (data.renjas ?? []).flatMap((renjaItem: any) => {
                 const backendNamaPegawai = renjaItem.nama_pegawai?.trim() || data.nama?.trim();
                 const fallbackNamaPegawai = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.username || "-";
                 const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
                 const nipPegawai = renjaItem.pegawai_id || data.pegawai_id || user?.nip || "-";
 
-                let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
+                const indikatorKegiatans = renjaItem.indikator_kegiatans ?? [];
+
+                if (indikatorKegiatans.length === 0) {
+                    return [{
+                        id: renjaItem.kode_pk ? `keg_${renjaItem.kode_pk}_empty` : `keg_empty_${renjaItem.kode_kegiatan || Math.random()}`,
+                        renja: renjaItem.nama_kegiatan ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        kodeRenja: renjaItem.kode_kegiatan ?? "-",
+                        jenisRenja: "KEGIATAN",
+                        indikator: "-",
+                        indikatorNull: true,
+                        kodePk: renjaItem.kode_pk || undefined,
+                        kodeProgram: renjaItem.kode_program ?? extractKodeProgram(renjaItem.kode_kegiatan ?? ""),
+                        targets: [{
+                            targetRealisasiId: null,
+                            renjaId: renjaItem.kode_kegiatan ?? "",
+                            renja: renjaItem.nama_kegiatan ?? "-",
+                            kodeRenja: renjaItem.kode_kegiatan ?? "-",
+                            jenisRenja: "KEGIATAN",
+                            nip: nipPegawai,
+                            idIndikator: "",
+                            indikator: "-",
+                            targetId: "",
+                            target: "-",
+                            realisasi: 0,
+                            satuan: "%",
+                            tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
+                            bulan: bulanName ?? undefined,
+                            jenisRealisasi: "NAIK",
+                            capaian: "-",
+                            keteranganCapaian: "-",
+                            pagu: renjaItem.pagu_kegiatan ?? null,
+                            realisasiPagu: null,
+                            satuanPagu: "Rupiah",
+                            capaianPagu: "-",
+                            keteranganCapaianPagu: "-",
+                            faktorPenunjang: null,
+                            faktorPenghambat: null,
+                            kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                            kodePagu: renjaItem.kode_pagu_kegiatan ?? "",
+                            targetRealisasi: 0,
+                            buktiPendukung: null,
+                            keteranganBuktiPendukung: null,
+                            kodePk: renjaItem.kode_pk || undefined,
+                        }],
+                    }];
+                }
+
+                return indikatorKegiatans.map((indikator: any, indIndex: number) => {
+                    let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
                     targetRealisasiId: t.id ?? null,
                     renjaId: renjaItem.kode_kegiatan ?? "",
                     renja: renjaItem.nama_kegiatan ?? "-",
@@ -251,8 +301,8 @@ const KegiatanSubKegiatanTable = () => {
                     kodeProgram: renjaItem.kode_program ?? extractKodeProgram(renjaItem.kode_kegiatan ?? ""),
                     targets,
                 };
-            })
-        );
+                });
+            });
     }, [user, activatedTahun, bulanName, effectiveKodeOpd]);
 
     // Parse subkegiatan data into rows
@@ -301,14 +351,63 @@ const KegiatanSubKegiatanTable = () => {
             }));
         }
 
-        return (data.renjas ?? []).flatMap((renjaItem: any) =>
-            (renjaItem.indikator_subkegiatans ?? []).map((indikator: any, indIndex: number) => {
+        return (data.renjas ?? []).flatMap((renjaItem: any) => {
                 const backendNamaPegawai = renjaItem.nama_pegawai?.trim() || data.nama?.trim();
                 const fallbackNamaPegawai = [user?.firstName, user?.lastName].filter(Boolean).join(" ").trim() || user?.username || "-";
                 const namaPegawai = backendNamaPegawai || fallbackNamaPegawai;
                 const nipPegawai = renjaItem.pegawai_id || data.pegawai_id || user?.nip || "-";
 
-                let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
+                const indikatorSubKegiatans = renjaItem.indikator_subkegiatans ?? [];
+
+                if (indikatorSubKegiatans.length === 0) {
+                    return [{
+                        id: renjaItem.kode_pk ? `sub_${renjaItem.kode_pk}_empty` : `sub_empty_${renjaItem.kode_subkegiatan || Math.random()}`,
+                        renja: renjaItem.nama_subkegiatan ?? "-",
+                        nama_pegawai: namaPegawai,
+                        nip: nipPegawai,
+                        kodeRenja: renjaItem.kode_subkegiatan ?? "-",
+                        jenisRenja: "SUB_KEGIATAN",
+                        indikator: "-",
+                        indikatorNull: true,
+                        kodePk: renjaItem.kode_pk || undefined,
+                        kodeProgram: renjaItem.kode_program ?? extractKodeProgram(renjaItem.kode_subkegiatan ?? ""),
+                        targets: [{
+                            targetRealisasiId: null,
+                            renjaId: renjaItem.kode_subkegiatan ?? "",
+                            renja: renjaItem.nama_subkegiatan ?? "-",
+                            kodeRenja: renjaItem.kode_subkegiatan ?? "-",
+                            jenisRenja: "SUB_KEGIATAN",
+                            nip: nipPegawai,
+                            idIndikator: "",
+                            indikator: "-",
+                            targetId: "",
+                            target: "-",
+                            realisasi: 0,
+                            satuan: "%",
+                            tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
+                            bulan: bulanName ?? undefined,
+                            jenisRealisasi: "NAIK",
+                            capaian: "-",
+                            keteranganCapaian: "-",
+                            pagu: renjaItem.pagu_subkegiatan ?? null,
+                            realisasiPagu: null,
+                            satuanPagu: "Rupiah",
+                            capaianPagu: "-",
+                            keteranganCapaianPagu: "-",
+                            faktorPenunjang: null,
+                            faktorPenghambat: null,
+                            kodeOpd: data.kode_opd ?? effectiveKodeOpd ?? "",
+                            kodePagu: renjaItem.kode_pagu_subkegiatan ?? "",
+                            targetRealisasi: 0,
+                            buktiPendukung: null,
+                            keteranganBuktiPendukung: null,
+                            kodePk: renjaItem.kode_pk || undefined,
+                        }],
+                    }];
+                }
+
+                return indikatorSubKegiatans.map((indikator: any, indIndex: number) => {
+                    let targets: RenjaTarget[] = (indikator.targets ?? []).map((t: any) => ({
                     targetRealisasiId: t.id ?? null,
                     renjaId: renjaItem.kode_subkegiatan ?? "",
                     renja: renjaItem.nama_subkegiatan ?? "-",
@@ -388,8 +487,8 @@ const KegiatanSubKegiatanTable = () => {
                     kodeProgram: renjaItem.kode_program ?? extractKodeProgram(renjaItem.kode_subkegiatan ?? ""),
                     targets,
                 };
-            })
-        );
+                });
+            });
     }, [user, activatedTahun, bulanName, effectiveKodeOpd]);
 
     // Merge and sort rows
@@ -778,7 +877,11 @@ const KegiatanSubKegiatanTable = () => {
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {row.indikator || "-"}
+                                                {row.indikatorNull ? (
+                                                    <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
+                                                ) : (
+                                                    row.indikator || "-"
+                                                )}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {target?.target || "-"}
@@ -789,6 +892,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => openModal(row, 'target')}
                                                         >
                                                             Realisasi
@@ -811,6 +915,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     {canEditRealisasi && row.jenisRenja === "SUB_KEGIATAN" && (
                                                         <ButtonGreenBorder
                                                             className="w-full"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => openModal(row, 'pagu')}
                                                         >
                                                             Realisasi
@@ -830,6 +935,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full text-xs py-0.5"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenunjang(row)}
                                                         >
                                                             Faktor
@@ -843,6 +949,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
                                                             className="w-full text-xs py-0.5"
+                                                            disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenghambat(row)}
                                                         >
                                                             Faktor
