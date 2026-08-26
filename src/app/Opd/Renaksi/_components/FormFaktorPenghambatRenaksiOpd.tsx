@@ -28,7 +28,7 @@ const FormFaktorPenghambatRenaksiOpd: React.FC<FormFaktorPenghambatRenaksiOpdPro
   currentValue,
   onSuccess,
 }) => {
-  const [value, setValue] = useState(currentValue);
+  const [value, setValue] = useState(currentValue ?? '');
   const [loading, setLoading] = useState(false);
 
   const normalizedBulan = getMonthKey(bulan);

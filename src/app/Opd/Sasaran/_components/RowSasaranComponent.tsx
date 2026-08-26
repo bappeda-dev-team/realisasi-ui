@@ -151,12 +151,39 @@ interface EmptyIndikatorSasaran {
 const EmptyIndikatorRow: React.FC<EmptyIndikatorSasaran> = ({ sasaranOpd, no, tahun, handleOpenPrintPreview }) => {
     return (
         <tr key={sasaranOpd.sasaranId}>
-            <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{sasaranOpd.sasaranOpd}</td>
-                <td colSpan={9} className="border border-red-400 px-6 py-4 text-center text-gray-500 italic bg-red-300">
-                    Tidak ada indikator dan target tahun {tahun}
-                </td>
-            <td className="border border-emerald-500 px-6 py-4 text-center">
+            <td className="border-x border-b border-emerald-500 px-6 py-4 text-center">{no}</td>
+            <td className="border-x border-b border-emerald-500 px-6 py-4 text-center">{sasaranOpd.sasaranOpd}</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center text-red-600 font-medium">Data indikator tidak ada / belum di isi</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">-</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">-</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">-</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">
+                <div className="flex flex-col items-center gap-2">
+                    <span>-</span>
+                    <ButtonGreenBorder className="w-full" disabled onClick={() => {}}>
+                        Realisasi
+                    </ButtonGreenBorder>
+                </div>
+            </td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">-</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">-</td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">
+                <div className="flex flex-col items-center gap-1">
+                    <span>-</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                        Faktor
+                    </ButtonGreenBorder>
+                </div>
+            </td>
+            <td className="border-r border-b border-emerald-500 px-6 py-4 text-center">
+                <div className="flex flex-col items-center gap-1">
+                    <span>-</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                        Faktor
+                    </ButtonGreenBorder>
+                </div>
+            </td>
+            <td className="border-l border-b border-emerald-500 px-6 py-4 text-center">
                 <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
                     Cetak
                 </ButtonGreenBorder>

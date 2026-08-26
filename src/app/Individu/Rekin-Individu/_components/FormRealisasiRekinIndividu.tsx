@@ -47,7 +47,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 ...item,
                 tahun: selectedTahun ?? item.tahun,
                 bulan: monthKey ?? item.bulan,
-                realisasi: item.realisasi === 0 ? undefined : item.realisasi,
+                realisasi: item.realisasi,
             }))
         );
     }, [requestValues, selectedTahun, monthKey]);
@@ -138,10 +138,10 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
             return;
         }
 
-        if (invalidRealisasiTargets.length > 0) {
-            setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
-            return;
-        }
+        // if (invalidRealisasiTargets.length > 0) {
+        //     setValidationError("Realisasi harus diisi dengan angka lebih dari 0 untuk semua target sebelum menyimpan.");
+        //     return;
+        // }
 
         if (!user) {
             setValidationError("Data user tidak tersedia.");

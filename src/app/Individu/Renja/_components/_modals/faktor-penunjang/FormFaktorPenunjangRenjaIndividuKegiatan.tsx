@@ -34,7 +34,7 @@ const FormFaktorPenunjangRenjaIndividuKegiatan: React.FC<FormFaktorPenunjangRenj
   onClose,
   onSuccess,
 }) => {
-  const [value, setValue] = useState(currentValue);
+  const [value, setValue] = useState(currentValue ?? '');
   const [loading, setLoading] = useState(false);
 
   const normalizedBulan = getMonthKey(bulan);

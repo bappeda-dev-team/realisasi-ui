@@ -46,7 +46,6 @@ const Table = () => {
     const [selectedFaktorRow, setSelectedFaktorRow] = useState<TableRow | null>(null);
     const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
     const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
-    const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
     const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
 

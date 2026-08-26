@@ -28,7 +28,7 @@ const FormFaktorPenunjang: React.FC<FormFaktorPenunjangProps> = ({
   onSuccess,
 }) => {
   const { submit, loading } = useSubmitData<TujuanOpdFaktorPenunjangResponse>({ url: '/api/v1/realisasi/tujuan_opd/faktor-penunjang' });
-  const [value, setValue] = useState(currentValue);
+  const [value, setValue] = useState(currentValue ?? '');
 
   const normalizedBulan = getMonthKey(bulan);
 
