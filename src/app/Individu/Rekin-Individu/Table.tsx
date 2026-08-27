@@ -81,15 +81,9 @@ const Table = () => {
 
     let apiUrl = null;
     if (yearLabel && monthKey && kodeOpd) {
-        if (isAdmin) {
-            if (activatedLevelRole && activatedNamaPegawai) {
-                const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
-            } else {
-                apiUrl = `/api/v1/realisasi/rekin/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/bulan/${encodeURIComponent(monthKey)}`;
-            }
-        } else if (nip) {
-            const safeNip = nip.replace(/-$/, "");
+        const effectiveNip = isAdmin ? activatedNamaPegawai : nip;
+        if (effectiveNip) {
+            const safeNip = effectiveNip.replace(/-$/, "");
             apiUrl = `/api/v1/realisasi/rekin/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
         }
     }

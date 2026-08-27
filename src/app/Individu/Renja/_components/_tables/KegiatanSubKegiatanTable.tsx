@@ -70,26 +70,15 @@ const KegiatanSubKegiatanTable = () => {
     const bulanName = getMonthName(activatedBulan);
 
     const effectiveKodeOpd = activatedDinas || user?.kode_opd || null;
-    const effectiveNip = user?.nip ?? null;
+    const effectiveNip = (isOpdScopedView ? activatedNamaPegawai : user?.nip) ?? null;
 
     let kegiatanApiUrl = null;
     let subKegiatanApiUrl = null;
 
-    if (effectiveKodeOpd && activatedTahun && bulanKey) {
-        if (isOpdScopedView) {
-            if (activatedLevelRole && activatedNamaPegawai) {
-                const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                kegiatanApiUrl = `/api/v1/realisasi/renja_individu/kegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
-                subKegiatanApiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
-            } else {
-                kegiatanApiUrl = `/api/v1/realisasi/renja_individu/kegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
-                subKegiatanApiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
-            }
-        } else if (effectiveNip) {
-            const safeNip = effectiveNip.replace(/-$/, "");
-            kegiatanApiUrl = `/api/v1/realisasi/renja_individu/kegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
-            subKegiatanApiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
-        }
+    if (effectiveKodeOpd && activatedTahun && bulanKey && effectiveNip) {
+        const safeNip = effectiveNip.replace(/-$/, "");
+        kegiatanApiUrl = `/api/v1/realisasi/renja_individu/kegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
+        subKegiatanApiUrl = `/api/v1/realisasi/renja_individu/subkegiatan/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
     }
 
     const { data: kegiatanData, loading: kegiatanLoading, error: kegiatanError, refetch: refetchKegiatan } = useFetchData<any>({
