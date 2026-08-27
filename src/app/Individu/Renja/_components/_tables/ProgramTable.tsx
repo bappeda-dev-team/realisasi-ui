@@ -69,15 +69,9 @@ const ProgramTable = () => {
 
     let apiUrl = null;
     if (kodeOpd && activatedTahun && bulanKey) {
-        if (isOpdScopedView) {
-            if (activatedLevelRole && activatedNamaPegawai) {
-                const safeNip = activatedNamaPegawai.replace(/-$/, "");
-                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}/levelRole/${encodeURIComponent(activatedLevelRole)}/nip/${encodeURIComponent(safeNip)}`;
-            } else {
-                apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/bulan/${encodeURIComponent(bulanKey)}`;
-            }
-        } else if (user?.nip) {
-            const safeNip = user.nip.replace(/-$/, "");
+        const effectiveNip = isOpdScopedView ? activatedNamaPegawai : user?.nip;
+        if (effectiveNip) {
+            const safeNip = effectiveNip.replace(/-$/, "");
             apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
         }
     }

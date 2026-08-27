@@ -86,6 +86,7 @@ interface FlattenedRenjaRow {
     namaRenja: string;
     jenisRenja: string;
     indikator: string;
+    indikatorEmpty: boolean;
     targets: Array<{
         targetRealisasiId: number | null;
         renjaId: string;
@@ -368,6 +369,7 @@ const Table = () => {
                     namaRenja: node.nama_renja?.trim() || "-",
                     jenisRenja: normalizeJenisRenja(node.jenis_renja),
                     indikator: indikatorText,
+                    indikatorEmpty: !node.indikator?.length,
                     targets: [{
                         targetRealisasiId: null,
                         renjaId: node.kode_renja ?? "",
@@ -525,17 +527,19 @@ const Table = () => {
             tableBody.push([
                 ...(isFirstRowInProgram ? [{ content: row.programNumber, rowSpan: programRowSpans.get(row.programKey) ?? 1 }] : []),
                 `${"    ".repeat(row.hierarchyLevel)}${row.jenisRenja}\n${row.namaRenja !== "-" ? `(${row.namaRenja})` : "-"}\n(${row.kodeRenja || "-"})`,
-                row.indikator || "-",
-                target?.target || "-",
-                target?.realisasi ?? "-",
-                formatPercentageText(target?.capaian || "-"),
-                formatPercentageText(target?.keteranganCapaian || "-"),
-                target?.pagu != null ? target.pagu.toLocaleString() : "-",
-                target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-",
-                formatPercentageText(target?.capaianPagu || "-"),
-                formatPercentageText(target?.keteranganCapaianPagu || "-"),
-                target?.faktorPenunjang || "-",
-                target?.faktorPenghambat || "-",
+                row.indikatorEmpty ? "Data indikator tidak ada / belum di isi" : (row.indikator || "-"),
+                ...(row.indikatorEmpty ? ["-", "-", "-", "-", "-", "-", "-", "-", "-", "-", "-"] : [
+                    target?.target || "-",
+                    target?.realisasi ?? "-",
+                    formatPercentageText(target?.capaian || "-"),
+                    formatPercentageText(target?.keteranganCapaian || "-"),
+                    target?.pagu != null ? target.pagu.toLocaleString() : "-",
+                    target?.realistasiPagu != null ? target.realistasiPagu.toLocaleString() : "-",
+                    formatPercentageText(target?.capaianPagu || "-"),
+                    formatPercentageText(target?.keteranganCapaianPagu || "-"),
+                    target?.faktorPenunjang || "-",
+                    target?.faktorPenghambat || "-",
+                ]),
             ]);
         });
 
@@ -779,7 +783,11 @@ const Table = () => {
                                                 </div>
                                             </td>
                                             <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line align-top">
-                                                {row.indikator || "-"}
+                                                {row.indikatorEmpty ? (
+                                                    <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
+                                                ) : (
+                                                    row.indikator || "-"
+                                                )}
                                             </td>
                                             {target ? (
                                                 <>
@@ -809,11 +817,20 @@ const Table = () => {
                                                     </td>
                                                 </>
                                             ) : (
-                                                <td className="border-r border-b border-sky-600 px-6 py-4 text-center italic text-gray-500" colSpan={10}>
-                                                    Tidak ada target di tahun {activatedTahun || "-"}
-                                                </td>
+                                                <>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 text-center">-</td>
+                                                </>
                                             )}
-                                            {target && (
+                                            {target && !row.indikatorEmpty && (
                                                 <>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <FaktorCell
@@ -828,6 +845,26 @@ const Table = () => {
                                                             isRealisasiFilled={isRealisasiFilled}
                                                             onEdit={() => setSelectedFaktorTarget({ target, jenis: "penghambat" })}
                                                         />
+                                                    </td>
+                                                </>
+                                            )}
+                                            {target && row.indikatorEmpty && (
+                                                <>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span>-</span>
+                                                            <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                                                                Faktor
+                                                            </ButtonGreenBorder>
+                                                        </div>
+                                                    </td>
+                                                    <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <span>-</span>
+                                                            <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                                                                Faktor
+                                                            </ButtonGreenBorder>
+                                                        </div>
                                                     </td>
                                                 </>
                                             )}

@@ -28,7 +28,7 @@ const FormFaktorPenghambatSasaranOpd: React.FC<FormFaktorPenghambatSasaranOpdPro
   onSuccess,
 }) => {
   const { submit, loading } = useSubmitData<SasaranOpdFaktorPenghambatResponse>({ url: '/api/v1/realisasi/sasaran_opd/faktor-penghambat' });
-  const [value, setValue] = useState(currentValue);
+  const [value, setValue] = useState(currentValue ?? '');
 
   const normalizedBulan = getMonthKey(bulan);
 

@@ -155,21 +155,33 @@ const Table = () => {
     const tableBody: any[] = [];
 
     triwulanRows.forEach((item, index) => {
+      const rekinEmpty = !item.rekin || item.rekin === '-';
       const tws = [item.tw1, item.tw2, item.tw3, item.tw4].map((tw) => normalizeTriwulanCell(tw ?? EMPTY_TRIWULAN_CELL));
-      const detailRow = tws.flatMap((tw) => [
-        tw?.target ?? "-",
-        tw?.realisasi ?? "-",
-        tw?.satuan ?? "-",
-        formatPercentageText(tw?.capaian ?? "-"),
-        formatPercentageText(tw?.keteranganCapaian ?? "-"),
-      ]);
 
-      tableBody.push([
-        index + 1,
-        item.renaksi || "-",
-        item.rekin || "-",
-        ...detailRow,
-      ]);
+      if (rekinEmpty) {
+        const emptyRow = Array(20).fill('-');
+        tableBody.push([
+          index + 1,
+          item.renaksi || "-",
+          "Data indikator tidak ada / belum di isi",
+          ...emptyRow,
+        ]);
+      } else {
+        const detailRow = tws.flatMap((tw) => [
+          tw?.target ?? "-",
+          tw?.realisasi ?? "-",
+          tw?.satuan ?? "-",
+          formatPercentageText(tw?.capaian ?? "-"),
+          formatPercentageText(tw?.keteranganCapaian ?? "-"),
+        ]);
+
+        tableBody.push([
+          index + 1,
+          item.renaksi || "-",
+          item.rekin || "-",
+          ...detailRow,
+        ]);
+      }
     });
 
     autoTable(doc, {
@@ -329,6 +341,7 @@ const Table = () => {
         </thead>
         <tbody>
           {rows.map((row, index) => {
+            const rekinEmpty = !row.rekin || row.rekin === '-';
             return (
               <tr key={row.id}>
                 <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
@@ -338,34 +351,38 @@ const Table = () => {
                   {row.renaksi || '-'}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-6 py-4">
-                  {row.rekin || '-'}
+                  {rekinEmpty ? (
+                    <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
+                  ) : (
+                    row.rekin || '-'
+                  )}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {row.target ?? '-'}
+                  {rekinEmpty ? '-' : (row.target ?? '-')}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                   <div className="flex flex-col items-center leading-tight">
-                    <span>{row.realisasi ?? '-'}</span>
+                    <span>{rekinEmpty ? '-' : (row.realisasi ?? '-')}</span>
                   </div>
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {formatPercentageText(row.capaian ?? '-').replace(/%$/, "")}
+                  {rekinEmpty ? '-' : formatPercentageText(row.capaian ?? '-').replace(/%$/, "")}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {formatPercentageText(row.keteranganCapaian ?? '-')}
+                  {rekinEmpty ? '-' : formatPercentageText(row.keteranganCapaian ?? '-')}
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                   <div className="flex flex-col items-center gap-2">
-                    <span>{row.faktorPenunjang ?? '-'}</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenunjang(row)}>
+                    <span>{rekinEmpty ? '-' : (row.faktorPenunjang ?? '-')}</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled={rekinEmpty} onClick={() => handleOpenFaktorPenunjang(row)}>
                       Faktor
                     </ButtonGreenBorder>
                   </div>
                 </td>
                 <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                   <div className="flex flex-col items-center gap-2">
-                    <span>{row.faktorPenghambat ?? '-'}</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={() => handleOpenFaktorPenghambat(row)}>
+                    <span>{rekinEmpty ? '-' : (row.faktorPenghambat ?? '-')}</span>
+                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled={rekinEmpty} onClick={() => handleOpenFaktorPenghambat(row)}>
                       Faktor
                     </ButtonGreenBorder>
                   </div>

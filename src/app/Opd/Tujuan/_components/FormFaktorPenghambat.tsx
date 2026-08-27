@@ -29,7 +29,7 @@ const FormFaktorPenghambat: React.FC<FormFaktorPenghambatProps> = ({
 }) => {
   const { submit, loading } = useSubmitData<TujuanOpdFaktorPenghambatResponse>({ url: '/api/v1/realisasi/tujuan_opd/faktor-penghambat' });
   
-  const [value, setValue] = useState(currentValue);
+  const [value, setValue] = useState(currentValue ?? '');
 
   const normalizedBulan = getMonthKey(bulan);
 

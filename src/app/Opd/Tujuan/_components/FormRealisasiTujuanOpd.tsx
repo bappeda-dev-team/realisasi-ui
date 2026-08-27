@@ -44,7 +44,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [realisasiValue, setRealisasiValue] = useState(() => {
-    if (requestValues && requestValues.realisasi) {
+    if (requestValues && requestValues.realisasi != null) {
       return String(requestValues.realisasi).replace('.', ',');
     }
     return '';
