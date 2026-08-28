@@ -352,8 +352,6 @@ const ProgramTable = () => {
     };
 
     const renderSyncButton = () => {
-        if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
-
         const nipToSync = user?.nip?.replace(/-$/, "");
         const canSync = nipToSync && kodeOpd && activatedTahun;
 

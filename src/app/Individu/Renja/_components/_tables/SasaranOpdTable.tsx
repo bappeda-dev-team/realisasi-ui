@@ -268,8 +268,6 @@ const SasaranOpdTable = () => {
     };
 
     const renderSyncButton = () => {
-        if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
-
         const canSync = kodeOpd && yearLabel;
 
         return (
