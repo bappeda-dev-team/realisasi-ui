@@ -10,7 +10,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan } from "@/types";
+import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan, RenjaPaguAnggaran } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getSessionId } from "@/lib/session";
@@ -200,12 +200,13 @@ const convertIndikatorsToNode = (
     return { targetArray, indikatorArray };
 };
 
-const makePaguNode = (paguAnggaran: number | null): RenjaNodePaguValue[] => {
-    if (paguAnggaran == null) return [];
+const makePaguNode = (paguAnggaran: RenjaPaguAnggaran[]): RenjaNodePaguValue[] => {
+    if (!paguAnggaran?.length) return [];
+    const totalPagu = paguAnggaran.reduce((sum, item) => sum + Number(item.pagu), 0);
     return [{
         paguRealisasiId: null,
         realisasi: null,
-        pagu: paguAnggaran,
+        pagu: totalPagu,
         status: null,
         createdBy: null,
         lastModifiedBy: null,
@@ -219,7 +220,7 @@ const buildHierarchyNode = (
     nama: string,
     jenis: string,
     indikators: RenjaPenetapanIndikator[],
-    paguAnggaran: number | null,
+    paguAnggaran: RenjaPaguAnggaran[],
 ): RenjaHierarchyNode => {
     const { targetArray, indikatorArray } = convertIndikatorsToNode(indikators);
 
