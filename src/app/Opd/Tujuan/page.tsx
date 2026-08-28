@@ -72,7 +72,7 @@ export default function TujuanPage() {
   const canEdit = canEditOpdRealisasi(user);
   const userLevel = user?.roles?.find((r: string) => r.startsWith('level_'));
   const isSuperAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN);
-  const hideSyncButton = isSuperAdmin || (userLevel && [ROLES.LEVEL_1, ROLES.LEVEL_2, ROLES.LEVEL_3, ROLES.LEVEL_4].includes(userLevel as any));
+  const hideSyncButton = !isSuperAdmin && (userLevel && [ROLES.LEVEL_1, ROLES.LEVEL_2, ROLES.LEVEL_3, ROLES.LEVEL_4].includes(userLevel as any));
 
   const {
     data: penetapanData,

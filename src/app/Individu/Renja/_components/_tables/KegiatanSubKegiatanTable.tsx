@@ -584,8 +584,6 @@ const KegiatanSubKegiatanTable = () => {
     };
 
     const renderSyncButton = () => {
-        if (user?.roles?.includes(ROLES.ADMIN_OPD) || user?.roles?.includes(ROLES.SUPER_ADMIN)) return null;
-
         const nipToSync = effectiveNip?.replace(/-$/, "");
         const canSync = nipToSync && effectiveKodeOpd && activatedTahun;
 

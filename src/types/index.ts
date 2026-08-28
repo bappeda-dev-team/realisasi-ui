@@ -1716,7 +1716,7 @@ export interface RenjaPenetapanProgram {
   program: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanKegiatan {
@@ -1725,7 +1725,7 @@ export interface RenjaPenetapanKegiatan {
   kegiatan: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanSubkegiatan {
@@ -1734,7 +1734,7 @@ export interface RenjaPenetapanSubkegiatan {
   subkegiatan: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanResponse {
@@ -1911,7 +1911,7 @@ export interface RenjaPenetapanProgram {
   program: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanKegiatan {
@@ -1920,7 +1920,7 @@ export interface RenjaPenetapanKegiatan {
   kegiatan: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanSubkegiatan {
@@ -1929,7 +1929,7 @@ export interface RenjaPenetapanSubkegiatan {
   subkegiatan: string;
   is_locked: boolean;
   indikators: RenjaPenetapanIndikator[];
-  pagu_anggaran: number | null;
+  pagu_anggaran: RenjaPaguAnggaran[];
 }
 
 export interface RenjaPenetapanResponse {
@@ -2011,4 +2011,11 @@ export interface SasaranPemdaPenetapanResponse {
   tahun_aktif: number;
   bulan: number;
   data: SasaranPemdaPenetapanItem[];
+}
+
+export interface RenjaPaguAnggaran {
+  id: number;
+  kode_pagu: string;
+  pagu: number;
+  jenis_pagu: string;
 }
