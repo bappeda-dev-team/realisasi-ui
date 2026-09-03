@@ -962,7 +962,7 @@ const KegiatanSubKegiatanTable = () => {
                     </div>
                 ) : (
                     <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                        Data renja kegiatan & sub kegiatan individu tidak ada.
+                        Data renja kegiatan & sub kegiatan individu belum di sinkronisasi atau dikunci.
                     </div>
                 )}
             </div>

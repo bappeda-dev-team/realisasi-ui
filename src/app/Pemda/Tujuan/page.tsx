@@ -171,7 +171,7 @@ export default function Tujuan() {
             <>
                 {renderSyncButton()}
                 <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                    Data tujuan pemda tidak ada.
+                    Data tujuan pemda belum di sinkronisasi atau dikunci.
                 </div>
             </>
         );
