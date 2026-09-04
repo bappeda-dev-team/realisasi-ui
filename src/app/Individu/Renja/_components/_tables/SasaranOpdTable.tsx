@@ -317,7 +317,7 @@ const SasaranOpdTable = () => {
                     </div>
                 ) : !rows.length ? (
                     <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                        Data sasaran opd individu tidak ada.
+                        Data sasaran opd individu belum disinkronisasi atau dikunci.
                     </div>
                 ) : (
                     <div className="overflow-auto">

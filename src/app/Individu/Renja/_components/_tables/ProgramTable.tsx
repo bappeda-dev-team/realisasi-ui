@@ -659,7 +659,7 @@ const ProgramTable = () => {
                     </div>
                 ) : (
                     <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                        Data renja program individu tidak ada.
+                        Data renja program individu belum di sinkronisasi atau dikunci.
                     </div>
                 )}
             </div>

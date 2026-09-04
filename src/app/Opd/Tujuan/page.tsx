@@ -246,7 +246,7 @@ export default function TujuanPage() {
       <>
         {renderSyncButton()}
         <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data tujuan OPD tidak ada.
+          Data tujuan OPD belum disinkronisasi atau dikunci.
         </div>
       </>
     );

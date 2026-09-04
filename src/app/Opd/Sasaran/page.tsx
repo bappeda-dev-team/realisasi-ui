@@ -223,7 +223,7 @@ export default function SasaranPage() {
       <>
         {renderSyncButton()}
         <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data sasaran OPD tidak ada.
+          Data sasaran OPD belum di sinkronisasi atau dikunci.
         </div>
       </>
     );

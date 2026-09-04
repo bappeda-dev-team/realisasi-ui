@@ -380,7 +380,7 @@ const Table = () => {
     return (
       <>
         <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data renaksi individu tidak ada.
+          Data renaksi individu belum dikunci.
         </div>
       </>
     );

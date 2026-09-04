@@ -166,7 +166,7 @@ const SasaranPage = () => {
       <>
         {renderSyncButton()}
         <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data sasaran pemda tidak ada.
+          Data sasaran pemda belum di sinkronisasi atau dikunci.
         </div>
       </>
     );

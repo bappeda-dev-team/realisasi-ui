@@ -301,7 +301,7 @@ const Table = () => {
   if (!rows.length) {
     return (
       <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-        Data renaksi OPD tidak ada.
+        Data renaksi OPD belum di sinkronisasi atau dikunci.
       </div>
     )
   }
