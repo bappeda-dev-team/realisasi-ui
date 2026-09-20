@@ -286,6 +286,7 @@ export interface IndikatorHierarchyData {
   id: number;
   renaksiId: number;
   kodeIndikator: string;
+  kode_indikator_sasaran_opd?: string;
   indikator: string;
   kodeOpd: string;
   nip: string;
@@ -300,6 +301,7 @@ export interface TargetHierarchyData {
   id: number;
   indikatorRenaksiId: number;
   kodeTarget: string;
+  kode_target_sasaran_opd?: string;
   kodeOpd: string;
   nip: string;
   tahun: string;
@@ -609,6 +611,7 @@ export interface RekinIndividuResponse {
 export interface RekinPenetapanTarget {
   id: number;
   kode_target_pk: string;
+  kode_target_sasaran_opd?: string
   tahun: number;
   target: number;
   satuan: string;
@@ -623,6 +626,7 @@ export interface RekinPenetapanTarget {
 export interface RekinPenetapanIndikator {
   id: number;
   kode_indikator_pk: string;
+  kode_indikator_sasaran_opd?: string;
   nama_indikator_pk: string;
   target_pk: RekinPenetapanTarget[];
 }
