@@ -41,6 +41,35 @@ interface RenjaRow {
     targets: RenjaTarget[];
 }
 
+// Membandingkan kode berjenjang (program/kegiatan/subkegiatan) segmen demi segmen secara numerik.
+// Kode yang lebih pendek (induk, mis. kegiatan 1.1) diletakkan sebelum kode turunannya (subkegiatan 1.1.1).
+const compareHierarchicalKode = (a: string, b: string): number => {
+    const kodeKegiatan = (a || "").split(".");
+    const kodeSubKegiatan = (b || "").split(".");
+    const maxSegments = Math.max(kodeKegiatan.length, kodeSubKegiatan.length);
+
+    for (let i = 0; i < maxSegments; i++) {
+        const kode1 = kodeKegiatan[i];
+        const kode2 = kodeSubKegiatan[i];
+
+        if (kode1 === undefined) return -1;
+        if (kode2 === undefined) return 1;
+
+        const nomer1 = Number.parseInt(kode1, 10);
+        const nomer2 = Number.parseInt(kode2, 10);
+
+        if (!Number.isNaN(nomer1) && !Number.isNaN(nomer2) && nomer1 !== nomer2) {
+            return nomer1 - nomer2;
+        }
+
+        if (kode1 !== kode2) {
+            return kode1.localeCompare(kode2);
+        }
+    }
+
+    return 0;
+};
+
 const KegiatanSubKegiatanTable = () => {
     const [rows, setRows] = useState<RenjaRow[]>([]);
     const [selectedRow, setSelectedRow] = useState<RenjaRow | null>(null);
@@ -492,21 +521,28 @@ const KegiatanSubKegiatanTable = () => {
 
         const mergedRows = [...kegiatanRows, ...subKegiatanRows];
 
-        // urutkan berdasarkan kodeProgram lalu jenis renja kegiatan
+        // urutkan berdasarkan kodeProgram lalu kode berjenjang kegiatan/subkegiatan,
+        // sehingga pada nomor yang sama tampil: kegiatan (1.1) -> subkegiatannya (1.1.1) -> kegiatan berikutnya (1.2) -> dst
         mergedRows.sort((a, b) => {
             const programA = a.kodeProgram || "";
             const programB = b.kodeProgram || "";
 
             if (programA !== programB) {
-                return programA.localeCompare(programB);
+                return compareHierarchicalKode(programA, programB);
             }
 
-            // urutkan berdasarkan kode kegiatan lalu kode subkegiatan
+            // pada nomor yang sama, urutkan kode secara berjenjang agar subkegiatan tepat di bawah kegiatan induknya
+            const kodeCompare = compareHierarchicalKode(a.kodeRenja || "", b.kodeRenja || "");
+            if (kodeCompare !== 0) {
+                return kodeCompare;
+            }
+
+            // jika kode sama, kegiatan ditampilkan sebelum subkegiatan
             if (a.jenisRenja !== b.jenisRenja) {
                 return a.jenisRenja === "KEGIATAN" ? -1 : 1;
             }
 
-            return (a.kodeRenja || "").localeCompare(b.kodeRenja || "");
+            return 0;
         });
 
         setRows(mergedRows);
