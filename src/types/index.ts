@@ -286,7 +286,6 @@ export interface IndikatorHierarchyData {
   id: number;
   renaksiId: number;
   kodeIndikator: string;
-  kode_indikator_sasaran_opd?: string;
   indikator: string;
   kodeOpd: string;
   nip: string;
@@ -301,7 +300,6 @@ export interface TargetHierarchyData {
   id: number;
   indikatorRenaksiId: number;
   kodeTarget: string;
-  kode_target_sasaran_opd?: string;
   kodeOpd: string;
   nip: string;
   tahun: string;
