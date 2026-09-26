@@ -110,12 +110,14 @@ const Table = () => {
   });
 
   useEffect(() => {
-    if (!data || !user || !data.rekins) {
+    const payload = data?.data ?? data;
+
+    if (!payload || !user || !Array.isArray(payload.rekins)) {
       setRows([]);
       return;
     }
 
-    const namaPegawai = data.nama || [user.firstName, user.lastName]
+    const namaPegawai = payload.nama || [user.firstName, user.lastName]
       .filter(Boolean)
       .join(" ")
       .trim() || user.username || "-";
@@ -123,21 +125,24 @@ const Table = () => {
     const flattened: RenaksiRow[] = [];
     let idCounter = 1;
 
-    data.rekins.forEach((rekin: any) => {
+    payload.rekins.forEach((rekin: any) => {
+      const firstIndikator = Array.isArray(rekin.indikator_pk) ? rekin.indikator_pk[0] : null;
+      const firstTargetPk = Array.isArray(firstIndikator?.target_pk) ? firstIndikator.target_pk[0] : null;
+
       rekin.renaksis?.forEach((renaksi: any) => {
         renaksi.pelaksanaans?.forEach((pelaksanaan: any) => {
           flattened.push({
             id: idCounter++,
             renaksi: renaksi.nama_renaksi ?? "-",
             nama_pegawai: namaPegawai,
-            nip: data.pegawai_id ?? user?.nip ?? "-",
+            nip: payload.pegawai_id ?? user?.nip ?? "-",
             rekin: rekin.rekin ?? "-",
             targets: [
               {
                 targetRealisasiId: pelaksanaan.id,
                 renaksiId: renaksi.kode_renaksi,
                 renaksi: renaksi.nama_renaksi ?? "-",
-                nip: data.pegawai_id ?? user?.nip ?? "-",
+                nip: payload.pegawai_id ?? user?.nip ?? "-",
                 namaPegawai,
                 rekinId: rekin.kode_pk,
                 rekin: rekin.rekin ?? "-",
@@ -155,9 +160,12 @@ const Table = () => {
                 buktiPendukung: pelaksanaan.bukti_pendukung || null,
                 keteranganBuktiPendukung: pelaksanaan.keterangan_bukti_pendukung || null,
                 rencanaKinerja: rekin.rekin ?? "-",
-                kodeOpd: data.kode_opd ?? "",
+                kodeOpd: payload.kode_opd ?? "",
                 anggaran: String(renaksi.anggaran_renaksi ?? "-"),
                 kodeRekin: rekin.kode_pk,
+                kodeSasaranOpd: rekin.kode_sasaran_opd ?? null,
+                kodeIndikatorSasaranOpd: firstIndikator?.kode_indikator_sasaran_opd ?? null,
+                kodeTargetSasaranOpd: firstTargetPk?.kode_target_sasaran_opd ?? null,
                 paguAnggaran: renaksi.anggaran_renaksi,
               },
             ],
