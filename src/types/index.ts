@@ -374,6 +374,9 @@ export interface RenaksiTarget {
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   kodeRekin?: string;
+  kodeSasaranOpd?: string | null;
+  kodeIndikatorSasaranOpd?: string | null;
+  kodeTargetSasaranOpd?: string | null;
   paguAnggaran?: number;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
