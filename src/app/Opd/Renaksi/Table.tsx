@@ -1,309 +1,130 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { LoadingBeat } from '@/components/Global/Loading'
-import { useFilterContext } from '@/context/FilterContext'
-import { useFetchData } from '@/hooks/useFetchData'
-import { getMonthKey, getMonthName } from '@/lib/months'
+import React, { useState } from 'react'
+import { ButtonGreenBorder } from '@/components/Global/Button/button'
+import { FormModal } from '@/components/Global/Modal'
 import { formatPercentageText } from '@/lib/formatPercentageText'
-import { ButtonGreenBorder } from "@/components/Global/Button/button";
-import { FormModal } from "@/components/Global/Modal";
-import { RenaksiOpdMonthlyResponse, RenaksiOpdTriwulanResponse, RenaksiTriwulanCell } from '@/types'
+import { RenaksiOpdPenetapanItem } from '@/types'
 import FormFaktorPenunjangRenaksiOpd from './_components/FormFaktorPenunjangRenaksiOpd'
 import FormFaktorPenghambatRenaksiOpd from './_components/FormFaktorPenghambatRenaksiOpd'
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
-interface RenaksiRow {
-  id: string | number
-  renaksiId: string
-  renaksi: string
-  rekinId: string
-  rekin: string
-  targetId: string
-  target: number | string
-  realisasi: number
-  satuan: string
-  capaian: string
+export interface RenaksiRow {
+  kodeRencanaAksiOpd: string
+  namaRenaksi: string
+  kodeSasaranOpd: string
+  kodeSubkegiatan: string
+  namaSubkegiatan: string
+  anggaran: number | null
+  target: number | null
+  realisasi: number | null
+  capaian: number | null
   keteranganCapaian: string | null
   faktorPenunjang: string
   faktorPenghambat: string
 }
 
-const EMPTY_TRIWULAN_CELL: RenaksiTriwulanCell = {
-  target: '-',
-  realisasi: 0,
-  satuan: '-',
-  capaian: '-',
-  keteranganCapaian: '-',
+interface TableProps {
+  rows: RenaksiRow[]
+  kodeOpd: string
+  tahun: string
+  bulanKey: string
+  bulanLabel: string
+  isLocked: boolean
+  onPrint: () => void
+  onFaktorSuccess: () => void
 }
 
-const normalizeTriwulanCell = (
-  cell: Partial<RenaksiTriwulanCell> | null | undefined,
-): RenaksiTriwulanCell => ({
-  target: cell?.target ?? '-',
-  realisasi: cell?.realisasi ?? 0,
-  satuan: cell?.satuan ?? '-',
-  capaian: cell?.capaian ?? '-',
-  keteranganCapaian: cell?.keteranganCapaian ?? '-',
-})
+export const mapPenetapanToRenaksiRows = (
+  items: RenaksiOpdPenetapanItem[] | null | undefined,
+): RenaksiRow[] =>
+  (items ?? []).map((item) => {
+    const realisasi = item.realisasi ?? null
 
-const Table = () => {
-  const [rows, setRows] = useState<RenaksiRow[]>([])
-  const [triwulanRows, setTriwulanRows] = useState<RenaksiOpdTriwulanResponse[]>([])
-  const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
-  const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
-  const [pdfFileName, setPdfFileName] = useState<string>("renaksi-OPD.pdf");
-  const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-  const [selectedFaktorRow, setSelectedFaktorRow] = useState<RenaksiRow | null>(null);
-  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
-  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
-
-  const { activatedDinas: kodeOpd, activatedTahun, activatedBulan, namaDinas } = useFilterContext()
-
-  const monthKey = getMonthKey(activatedBulan)
-  const monthLabel = getMonthName(activatedBulan)
-
-  const apiUrl =
-    kodeOpd && activatedTahun && monthKey
-      ? `/api/v1/realisasi/renaksi_opd/by-kode-opd/${encodeURIComponent(kodeOpd)}/by-tahun/${encodeURIComponent(activatedTahun)}/by-bulan/${encodeURIComponent(monthKey)}`
-      : null
-
-  const triwulanApiUrl =
-    kodeOpd && activatedTahun
-      ? `/api/v1/realisasi/renaksi_opd/by-kode-opd/${encodeURIComponent(kodeOpd)}/by-tahun/${encodeURIComponent(activatedTahun)}/rekap-triwulan`
-      : null
-
-  const { data, loading, error, refetch } = useFetchData<RenaksiOpdMonthlyResponse[]>({
-    url: apiUrl,
+    return {
+      kodeRencanaAksiOpd: item.kode_rencana_aksi_opd ?? '',
+      namaRenaksi: item.nama_renaksi?.trim() || '-',
+      kodeSasaranOpd: item.kode_sasaran_opd?.trim() || '-',
+      kodeSubkegiatan: item.kode_subkegiatan?.trim() || '-',
+      namaSubkegiatan: item.nama_subkegiatan?.trim() || '-',
+      anggaran: item.anggaran_renaksi ?? null,
+      target: realisasi?.target ?? null,
+      realisasi: realisasi?.realisasi ?? null,
+      capaian: realisasi?.capaian ?? null,
+      keteranganCapaian: realisasi?.keterangan_capaian ?? null,
+      faktorPenunjang: realisasi?.faktor_penunjang ?? '',
+      faktorPenghambat: realisasi?.faktor_penghambat ?? '',
+    }
   })
 
-  const { data: triwulanData } = useFetchData<RenaksiOpdTriwulanResponse[]>({
-    url: triwulanApiUrl,
-  })
+export const formatRupiah = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '-'
 
-  useEffect(() => {
-    if (!data) {
-      setRows([])
-      return
-    }
+  return new Intl.NumberFormat('id-ID', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Number(value))
+}
 
-    setRows(
-      data.map((item) => ({
-        id: item.id ?? `${item.renaksiId}-${item.targetId}`,
-        renaksiId: item.renaksiId,
-        renaksi: item.renaksi ?? '-',
-        rekinId: item.rekinId,
-        rekin: item.rekin ?? '-',
-        targetId: item.targetId,
-        target: item.target ?? '-',
-        realisasi: item.realisasi ?? 0,
-        satuan: item.satuan ?? '-',
-        capaian: item.capaian ?? '-',
-        keteranganCapaian: item.keteranganCapaian ?? '-',
-        faktorPenunjang: item.faktorPenunjang ?? '-',
-        faktorPenghambat: item.faktorPenghambat ?? '-',
-      }))
-    )
-  }, [data])
+const formatNumber = (value: number | null | undefined): string => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '-'
+  return String(value)
+}
 
-  useEffect(() => {
-    setTriwulanRows(triwulanData ?? [])
-  }, [triwulanData])
+const Table: React.FC<TableProps> = ({
+  rows,
+  kodeOpd,
+  tahun,
+  bulanKey,
+  bulanLabel,
+  isLocked,
+  onPrint,
+  onFaktorSuccess,
+}) => {
+  const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null)
+  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false)
+  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false)
 
-  const createPdfDocument = () => {
-    const doc = new jsPDF({
-      orientation: "landscape",
-      unit: "pt",
-      format: "a3",
-    });
+  const periodLabel = `${tahun || 'Tahun'} - ${bulanLabel || 'Bulan'}`
 
-    const periodLabel = `${activatedTahun || '-'}`;
-    const opdTitle = namaDinas ? ` - ${namaDinas}` : "";
+  const canEditFaktor = (row: RenaksiRow) =>
+    !isLocked && row.realisasi !== null && Number(row.realisasi) !== 0
 
-    doc.setFontSize(14);
-    doc.text(`Renaksi OPD${opdTitle}`, 40, 40);
-    doc.setFontSize(10);
-    doc.text(`Periode: ${periodLabel}`, 40, 58);
-
-    const tableHead = [[
-      "No",
-      "Rencana Aksi",
-      "Rencana Kinerja",
-      "TW1 Target",
-      "TW1 Realisasi",
-      "TW1 Satuan",
-      "TW1 Capaian",
-      "TW1 Ket. Capaian",
-      "TW2 Target",
-      "TW2 Realisasi",
-      "TW2 Satuan",
-      "TW2 Capaian",
-      "TW2 Ket. Capaian",
-      "TW3 Target",
-      "TW3 Realisasi",
-      "TW3 Satuan",
-      "TW3 Capaian",
-      "TW3 Ket. Capaian",
-      "TW4 Target",
-      "TW4 Realisasi",
-      "TW4 Satuan",
-      "TW4 Capaian",
-      "TW4 Ket. Capaian",
-    ]];
-
-    const tableBody: any[] = [];
-
-    triwulanRows.forEach((item, index) => {
-      const rekinEmpty = !item.rekin || item.rekin === '-';
-      const tws = [item.tw1, item.tw2, item.tw3, item.tw4].map((tw) => normalizeTriwulanCell(tw ?? EMPTY_TRIWULAN_CELL));
-
-      if (rekinEmpty) {
-        const emptyRow = Array(20).fill('-');
-        tableBody.push([
-          index + 1,
-          item.renaksi || "-",
-          "Data indikator tidak ada / belum di isi",
-          ...emptyRow,
-        ]);
-      } else {
-        const detailRow = tws.flatMap((tw) => [
-          tw?.target ?? "-",
-          tw?.realisasi ?? "-",
-          tw?.satuan ?? "-",
-          formatPercentageText(tw?.capaian ?? "-"),
-          formatPercentageText(tw?.keteranganCapaian ?? "-"),
-        ]);
-
-        tableBody.push([
-          index + 1,
-          item.renaksi || "-",
-          item.rekin || "-",
-          ...detailRow,
-        ]);
-      }
-    });
-
-    autoTable(doc, {
-      head: tableHead,
-      body: tableBody,
-      startY: 72,
-      styles: {
-        fontSize: 8,
-        cellPadding: 4,
-        lineColor: [16, 185, 129],
-        lineWidth: 0.5,
-        textColor: [31, 41, 55],
-        valign: "top",
-      },
-      headStyles: {
-        fillColor: [16, 185, 129],
-        textColor: [255, 255, 255],
-        fontStyle: "bold",
-        // Header uses green fill; make grid lines visible.
-        lineColor: [255, 255, 255],
-        lineWidth: 0.5,
-      },
-      tableWidth: "auto",
-      margin: { top: 72, right: 40, bottom: 40, left: 40 },
-      theme: "grid",
-    });
-
-    const safeYearLabel = String(activatedTahun || "tahun").replace(/\s+/g, "-").toLowerCase();
-    const fileName = `renaksi-opd-${safeYearLabel}-triwulan.pdf`;
-    return { doc, fileName };
-  };
-
-  const handleOpenPrintPreview = () => {
-    const { doc, fileName } = createPdfDocument();
-    const previewUrl = String(doc.output("bloburl"));
-
-    if (pdfPreviewUrl) {
-      URL.revokeObjectURL(pdfPreviewUrl);
-    }
-
-    setPreviewDoc(doc);
-    setPdfFileName(fileName);
-    setPdfPreviewUrl(previewUrl);
-    setIsPrintPreviewOpen(true);
-  };
-
-  const handleClosePrintPreview = () => {
-    if (pdfPreviewUrl) {
-      URL.revokeObjectURL(pdfPreviewUrl);
-    }
-
-    setIsPrintPreviewOpen(false);
-    setPdfPreviewUrl(null);
-    setPreviewDoc(null);
-  };
-
-  const handleDownloadPdf = () => {
-    if (!previewDoc) return;
-    previewDoc.save(pdfFileName);
-  };
+  const FaktorCell = ({ row, value, onEdit }: {
+    row: RenaksiRow
+    value: string
+    onEdit: () => void
+  }) => (
+    <div className="flex flex-col items-center gap-2">
+      <span className="whitespace-pre-line">{value || '-'}</span>
+      <ButtonGreenBorder
+        className="w-full text-xs py-0.5"
+        disabled={!canEditFaktor(row)}
+        onClick={onEdit}
+      >
+        Faktor
+      </ButtonGreenBorder>
+    </div>
+  )
 
   const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
-    setSelectedFaktorRow(row);
-    setIsFaktorPenunjangModalOpen(true);
-  };
+    setSelectedRow(row)
+    setIsFaktorPenunjangModalOpen(true)
+  }
 
   const handleCloseFaktorPenunjang = () => {
-    setIsFaktorPenunjangModalOpen(false);
-    setSelectedFaktorRow(null);
-  };
+    setIsFaktorPenunjangModalOpen(false)
+    setSelectedRow(null)
+  }
 
   const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
-    setSelectedFaktorRow(row);
-    setIsFaktorPenghambatModalOpen(true);
-  };
+    setSelectedRow(row)
+    setIsFaktorPenghambatModalOpen(true)
+  }
 
   const handleCloseFaktorPenghambat = () => {
-    setIsFaktorPenghambatModalOpen(false);
-    setSelectedFaktorRow(null);
-  };
-
-  const yearMonthColumnLabel = `${activatedTahun || 'Tahun'} - ${monthLabel || 'Bulan'}`
-
-  if (loading) {
-    return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-        <LoadingBeat loading={true} />
-        <p className="text-sm text-gray-600 mt-2">Memuat data renaksi OPD...</p>
-      </div>
-    )
-  }
-
-  if (error) {
-    const normalizedError = String(error).toLowerCase()
-    const isOpdNotFoundError =
-      normalizedError.includes('404') ||
-      normalizedError.includes('not found') ||
-      normalizedError.includes('tidak ditemukan')
-
-    return (
-      <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-        {isOpdNotFoundError
-          ? 'Data OPD yang anda pilih tidak ada'
-          : `Gagal memuat data renaksi: ${error}`}
-      </div>
-    )
-  }
-
-  if (!monthKey) {
-    return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-        Pilih dan aktifkan bulan agar data renaksi OPD muncul.
-      </div>
-    )
-  }
-
-  if (!rows.length) {
-    return (
-      <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-        Data renaksi OPD belum di sinkronisasi atau dikunci.
-      </div>
-    )
+    setIsFaktorPenghambatModalOpen(false)
+    setSelectedRow(null)
   }
 
   return (
@@ -314,19 +135,25 @@ const Table = () => {
             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">
               No
             </td>
-            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px] text-center">
+            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">
+              Kode Renaksi
+            </td>
+            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">
               Rencana Aksi
             </td>
-            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">
-              Rencana Kinerja
+            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">
+              Sasaran Kinerja
+            </td>
+            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">
+              Subkegiatan
+            </td>
+            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px] text-center whitespace-nowrap">
+              Anggaran (Rp)
             </td>
             <th colSpan={6} className="border-l border-b px-6 py-3 min-w-[100px] text-center uppercase">
-              {yearMonthColumnLabel}
+              {periodLabel}
             </th>
-            <td
-              rowSpan={2}
-              className="border-l border-b px-6 py-3 min-w-[120px] text-center"
-            >
+            <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">
               Aksi
             </td>
           </tr>
@@ -340,152 +167,110 @@ const Table = () => {
           </tr>
         </thead>
         <tbody>
-          {rows.map((row, index) => {
-            const rekinEmpty = !row.rekin || row.rekin === '-';
-            return (
-              <tr key={row.id}>
-                <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
-                  {index + 1}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                  {row.renaksi || '-'}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                  {rekinEmpty ? (
-                    <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
-                  ) : (
-                    row.rekin || '-'
-                  )}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {rekinEmpty ? '-' : (row.target ?? '-')}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  <div className="flex flex-col items-center leading-tight">
-                    <span>{rekinEmpty ? '-' : (row.realisasi ?? '-')}</span>
-                  </div>
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {rekinEmpty ? '-' : formatPercentageText(row.capaian ?? '-').replace(/%$/, "")}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  {rekinEmpty ? '-' : formatPercentageText(row.keteranganCapaian ?? '-')}
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  <div className="flex flex-col items-center gap-2">
-                    <span>{rekinEmpty ? '-' : (row.faktorPenunjang ?? '-')}</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled={rekinEmpty} onClick={() => handleOpenFaktorPenunjang(row)}>
-                      Faktor
-                    </ButtonGreenBorder>
-                  </div>
-                </td>
-                <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                  <div className="flex flex-col items-center gap-2">
-                    <span>{rekinEmpty ? '-' : (row.faktorPenghambat ?? '-')}</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled={rekinEmpty} onClick={() => handleOpenFaktorPenghambat(row)}>
-                      Faktor
-                    </ButtonGreenBorder>
-                  </div>
-                </td>
-                <td className="border-r border-b border-emerald-500 px-6 py-4">
-                  <div className="flex flex-col items-center gap-2">
-                    <ButtonGreenBorder
-                      className="w-full"
-                      onClick={handleOpenPrintPreview}
-                    >
+          {rows.map((row, index) => (
+            <tr key={row.kodeRencanaAksiOpd || index}>
+              <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
+                {index + 1}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4">
+                {row.kodeRencanaAksiOpd || '-'}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4">{row.namaRenaksi}</td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4">{row.kodeSasaranOpd}</td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4">
+                <div className="flex flex-col">
+                  <span>{row.namaSubkegiatan}</span>
+                  <span className="text-xs text-gray-500">({row.kodeSubkegiatan})</span>
+                </div>
+              </td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4 text-right whitespace-nowrap">
+                {formatRupiah(row.anggaran)}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                {formatNumber(row.target)}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                {formatNumber(row.realisasi)}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                {formatPercentageText(row.capaian ?? '-').replace(/%$/, '')}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                {formatPercentageText(row.keteranganCapaian ?? '-')}
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                <FaktorCell
+                  row={row}
+                  value={row.faktorPenunjang}
+                  onEdit={() => handleOpenFaktorPenunjang(row)}
+                />
+              </td>
+              <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
+                <FaktorCell
+                  row={row}
+                  value={row.faktorPenghambat}
+                  onEdit={() => handleOpenFaktorPenghambat(row)}
+                />
+              </td>
+              <td className="border-r border-b border-emerald-500 px-6 py-4">
+                <div className="flex flex-col items-center gap-2">
+                  {index === 0 ? (
+                    <ButtonGreenBorder className="w-full" onClick={onPrint}>
                       Cetak
                     </ButtonGreenBorder>
-                  </div>
-                </td>
-              </tr>
-            )
-          })}
+                  ) : (
+                    <span className="text-xs text-gray-400">-</span>
+                  )}
+                </div>
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
       <FormModal
         isOpen={isFaktorPenunjangModalOpen}
         onClose={handleCloseFaktorPenunjang}
-        title={`Faktor Penunjang - ${selectedFaktorRow?.renaksi ?? ''}`}
+        title="Faktor Penunjang"
+        maxWidthClass="max-w-lg"
       >
         <FormFaktorPenunjangRenaksiOpd
-          kodeOpd={kodeOpd ?? ''}
-          tahun={String(activatedTahun ?? '')}
-          bulan={String(activatedBulan ?? '')}
-          rekinId={selectedFaktorRow?.rekinId ?? ''}
-          renaksiId={selectedFaktorRow?.renaksiId ?? ''}
-          targetId={selectedFaktorRow?.targetId ?? ''}
-          currentValue={selectedFaktorRow?.faktorPenunjang ?? ''}
+          kodeOpd={kodeOpd}
+          tahun={tahun}
+          bulan={bulanKey}
+          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
+          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
+          currentValue={selectedRow?.faktorPenunjang ?? ''}
           onClose={handleCloseFaktorPenunjang}
-          onSuccess={() => { handleCloseFaktorPenunjang(); refetch(); }}
+          onSuccess={() => {
+            handleCloseFaktorPenunjang()
+            onFaktorSuccess()
+          }}
         />
       </FormModal>
 
       <FormModal
         isOpen={isFaktorPenghambatModalOpen}
         onClose={handleCloseFaktorPenghambat}
-        title={`Faktor Penghambat - ${selectedFaktorRow?.renaksi ?? ''}`}
+        title="Faktor Penghambat"
+        maxWidthClass="max-w-lg"
       >
         <FormFaktorPenghambatRenaksiOpd
-          kodeOpd={kodeOpd ?? ''}
-          tahun={String(activatedTahun ?? '')}
-          bulan={String(activatedBulan ?? '')}
-          rekinId={selectedFaktorRow?.rekinId ?? ''}
-          renaksiId={selectedFaktorRow?.renaksiId ?? ''}
-          targetId={selectedFaktorRow?.targetId ?? ''}
-          currentValue={selectedFaktorRow?.faktorPenghambat ?? ''}
+          kodeOpd={kodeOpd}
+          tahun={tahun}
+          bulan={bulanKey}
+          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
+          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
+          currentValue={selectedRow?.faktorPenghambat ?? ''}
           onClose={handleCloseFaktorPenghambat}
-          onSuccess={() => { handleCloseFaktorPenghambat(); refetch(); }}
+          onSuccess={() => {
+            handleCloseFaktorPenghambat()
+            onFaktorSuccess()
+          }}
         />
       </FormModal>
-
-      {isPrintPreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/40"
-            onClick={handleClosePrintPreview}
-          ></div>
-          <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
-            <div className="mb-3 border-b pb-2">
-              <h2 className="text-lg font-semibold uppercase">Preview Cetak Renaksi OPD</h2>
-              <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
-            </div>
-
-            <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
-              {pdfPreviewUrl ? (
-                <iframe
-                  title="Preview PDF Renaksi OPD"
-                  src={pdfPreviewUrl}
-                  className="h-full w-full"
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-500">
-                  Gagal memuat preview PDF.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={handleClosePrintPreview}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Tutup
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm text-white hover:bg-emerald-700"
-              >
-                Download PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+  )
 }
 
 export default Table

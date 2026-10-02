@@ -10,9 +10,8 @@ interface FormFaktorPenghambatRenaksiOpdProps {
   kodeOpd: string;
   tahun: string;
   bulan: string;
-  rekinId: string;
-  renaksiId: string;
-  targetId: string;
+  kodeRencanaAksiOpd: string;
+  namaRenaksi: string;
   currentValue: string;
   onClose: () => void;
   onSuccess: () => void;
@@ -22,10 +21,10 @@ const FormFaktorPenghambatRenaksiOpd: React.FC<FormFaktorPenghambatRenaksiOpdPro
   kodeOpd,
   tahun,
   bulan,
-  rekinId,
-  renaksiId,
-  targetId,
+  kodeRencanaAksiOpd,
+  namaRenaksi,
   currentValue,
+  onClose,
   onSuccess,
 }) => {
   const [value, setValue] = useState(currentValue ?? '');
@@ -57,9 +56,7 @@ const FormFaktorPenghambatRenaksiOpd: React.FC<FormFaktorPenghambatRenaksiOpdPro
           kodeOpd,
           tahun,
           bulan: normalizedBulan,
-          rekinId,
-          renaksiId,
-          targetId,
+          kodeRencanaAksiOpd,
           faktorPenghambat: value,
         }),
       });
@@ -80,7 +77,7 @@ const FormFaktorPenghambatRenaksiOpd: React.FC<FormFaktorPenghambatRenaksiOpdPro
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <label className="uppercase text-xs font-bold text-gray-700">
-        Faktor Penghambat
+        Faktor Penghambat - {namaRenaksi || '-'}
       </label>
       <textarea
         className="w-full border rounded px-2 py-1 text-sm min-h-[100px]"
