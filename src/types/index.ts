@@ -438,7 +438,7 @@ export interface RekinRealisasiRequest {
   kodeOpd: string;
   nip: string;
   kodePkRekin: string;
-  kodeSasaranOpd: string;
+  kodeSasaranOpd?: string;
   kodeIndikatorPKrekin: string;
   kodeTargetPKrekin: string;
   realisasi: number;

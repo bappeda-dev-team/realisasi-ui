@@ -186,7 +186,7 @@ const Table = () => {
                         faktorPenghambat: t.faktor_penghambat ?? "-",
                         buktiPendukung: t.bukti_pendukung ?? null,
                         keteranganBuktiPendukung: t.keterangan_bukti_pendukung ?? null,
-                        idSasaran: null,
+                        idSasaran: rekinItem.kode_sasaran_opd ?? null,
                         sasaran: null,
                         kodeOpd: data.kode_opd ?? user.kode_opd,
                     }));
