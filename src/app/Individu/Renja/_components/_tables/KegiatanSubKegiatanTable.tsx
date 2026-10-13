@@ -13,6 +13,7 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
+    JenisRealisasiValue,
 } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -166,7 +167,7 @@ const KegiatanSubKegiatanTable = () => {
                     satuan: "%",
                     tahun: item.tahun ?? activatedTahun ?? "",
                     bulan: item.bulan ?? bulanName ?? undefined,
-                    jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
+                    jenisRealisasi: (item.jenisRealisasi as JenisRealisasiValue) ?? null,
                     capaian: String(item.capaian ?? "-"),
                     keteranganCapaian: item.keteranganCapaian ?? "-",
                     pagu: item.pagu ?? null,
@@ -254,7 +255,7 @@ const KegiatanSubKegiatanTable = () => {
                     satuan: t.satuan ?? "%",
                     tahun: String(t.tahun ?? data.tahun_aktif ?? activatedTahun ?? ""),
                     bulan: bulanName ?? undefined,
-                    jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                    jenisRealisasi: (t.jenis_realisasi as JenisRealisasiValue) ?? null,
                     capaian: t.capaian_target != null ? String(t.capaian_target) : "-",
                     keteranganCapaian: t.keterangan_capaian_target ?? "-",
                     pagu: renjaItem.pagu_kegiatan ?? null,
@@ -352,7 +353,7 @@ const KegiatanSubKegiatanTable = () => {
                     satuan: "%",
                     tahun: item.tahun ?? activatedTahun ?? "",
                     bulan: item.bulan ?? bulanName ?? undefined,
-                    jenisRealisasi: item.jenisRealisasi as "NAIK" | "TURUN",
+                    jenisRealisasi: item.jenisRealisasi as JenisRealisasiValue,
                     capaian: String(item.capaian ?? "-"),
                     keteranganCapaian: item.keteranganCapaian ?? "-",
                     pagu: item.pagu ?? null,
@@ -440,7 +441,7 @@ const KegiatanSubKegiatanTable = () => {
                     satuan: t.satuan ?? "%",
                     tahun: String(t.tahun ?? data.tahun_aktif ?? activatedTahun ?? ""),
                     bulan: bulanName ?? undefined,
-                    jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                    jenisRealisasi: (t.jenis_realisasi as JenisRealisasiValue) ?? null,
                     capaian: t.capaian_target != null ? String(t.capaian_target) : "-",
                     keteranganCapaian: t.keterangan_capaian_target ?? "-",
                     pagu: renjaItem.pagu_subkegiatan ?? null,
@@ -597,12 +598,12 @@ const KegiatanSubKegiatanTable = () => {
 
     const handleSync = async () => {
         const nipToSync = effectiveNip?.replace(/-$/, "");
-        if (!nipToSync || !effectiveKodeOpd || !activatedTahun) return;
+        if (!nipToSync || !effectiveKodeOpd || !activatedTahun || !bulanKey) return;
 
         setIsSyncing(true);
         try {
             const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan`, {
+            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(effectiveKodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan?bulan=${encodeURIComponent(bulanKey)}`, {
                 method: "POST",
                 headers: {
                     "X-Session-Id": sessionId ?? "",
@@ -621,7 +622,7 @@ const KegiatanSubKegiatanTable = () => {
 
     const renderSyncButton = () => {
         const nipToSync = effectiveNip?.replace(/-$/, "");
-        const canSync = nipToSync && effectiveKodeOpd && activatedTahun;
+        const canSync = nipToSync && effectiveKodeOpd && activatedTahun && bulanKey;
 
         return (
             <div className="flex justify-end mb-2 mr-2 mt-2">

@@ -115,11 +115,13 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                             </td>
                         )}
 
-                        <td className="border border-red-400 px-6 py-4 text-center">
-                            <ButtonGreenBorder className="w-full text-xs" onClick={handleOpenPrintPreview}>
-                                Cetak
-                            </ButtonGreenBorder>
-                        </td>
+                        {indikatorIndex === 0 && targetIndex === 0 && (
+                            <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">
+                                <ButtonGreenBorder className="w-full text-xs" onClick={handleOpenPrintPreview}>
+                                    Cetak
+                                </ButtonGreenBorder>
+                            </td>
+                        )}
                     </tr>
                 ));
             })}
@@ -243,15 +245,20 @@ type TargetColProps = {
     onEditFaktorPenghambat?: () => void;
 };
 
+const convertToDisplayString = (value: string | number | null | undefined): string => {
+    if (value === null || value === undefined) return '';
+    return value.toString().replace(/\./g, ',');
+};
+
 const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEditRealisasi, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
     const isRealisasiFilled = realisasi != null && realisasi !== 0;
 
     return (
         <>
-            <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
+            <td className="border border-red-400 px-6 py-4 text-center">{convertToDisplayString(target)}</td>
             <td className="border border-red-400 px-6 py-4 text-center">
                 <div className="flex flex-col items-center gap-2">
-                    <span>{realisasi ?? 0}</span>
+                    <span>{convertToDisplayString(realisasi ?? 0)}</span>
                     {canEditRealisasi && handleClick && (
                         <ButtonGreenBorder
                             className="w-full"

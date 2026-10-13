@@ -14,7 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RekinIndividuPenetapanResponse, RekinTarget } from "@/types";
+import { RekinIndividuPenetapanResponse, RekinTarget, JenisRealisasiValue } from "@/types";
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRekinRealisasi } from "@/lib/rbac";
@@ -121,7 +121,7 @@ const Table = () => {
                         satuan: "-",
                         tahun: String(item.tahun ?? yearLabel),
                         bulan: monthLabel ?? undefined,
-                        jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        jenisRealisasi: (item.jenisRealisasi as JenisRealisasiValue) ?? null,
                         capaian: "-",
                         keteranganCapaian: "-",
                         faktorPenunjang: item.faktorPenunjang ?? "-",
@@ -179,7 +179,7 @@ const Table = () => {
                         satuan: t.satuan ?? "-",
                         tahun: String(t.tahun ?? data.tahun_aktif ?? yearLabel),
                         bulan: monthLabel ?? undefined,
-                        jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        jenisRealisasi: (t.jenis_realisasi as JenisRealisasiValue) ?? null,
                         capaian: t.capaian != null ? String(t.capaian) : "-",
                         keteranganCapaian: t.keterangan_capaian ?? "-",
                         faktorPenunjang: t.faktor_penunjang ?? "-",

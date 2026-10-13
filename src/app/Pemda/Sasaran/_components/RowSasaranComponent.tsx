@@ -38,57 +38,63 @@ export default function RowSasaranComponent({
     return <EmptyIndikatorRow no={no} sasaran={sasaran} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />;
   }
 
-  const detailRows = indikatorList.flatMap((indikator) => {
-    if (!indikator.targets.length) {
-      return [{ indikator, target: null as TargetRealisasiCapaianSasaran | null }];
-    }
-
-    return indikator.targets.map((target) => ({ indikator, target }));
-  });
+  const totalRows = indikatorList.reduce((sum, ind) => {
+    const targetCount = ind.targets?.length ?? 0;
+    return sum + (targetCount > 0 ? targetCount : 1);
+  }, 0);
 
   return (
     <>
-      {detailRows.map(({ indikator, target }, index) => (
-        <tr key={`${sasaran.sasaranId}-${indikator.id}-${target?.targetId ?? index}`}>
-          {index === 0 && (
-            <>
-              <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">{no}</td>
-              <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaranPemda}</td>
-            </>
-          )}
-          <td className="border border-red-400 px-6 py-4 text-center">{indikator.indikator ?? "-"}</td>
-          <td className="border border-red-400 px-6 py-4 text-center">{indikator.rumusPerhitungan || "-"}</td>
-          <td className="border border-red-400 px-6 py-4 text-center">{indikator.sumberData || "-"}</td>
-          {target ? (
-            <ColTargetSasaran
-              target={target.target}
-              realisasi={target.realisasi}
-              capaian={target.capaian}
-              keteranganCapaian={target.keteranganCapaian}
-              faktorPenunjang={target.faktorPenunjang}
-              faktorPenghambat={target.faktorPenghambat}
-              canEdit={canEdit}
-              handleClick={canEdit && index === 0 ? () => handleOpenModal(indikatorList.flatMap((row) => row.targets)) : undefined}
-              onEditFaktorPenunjang={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penunjang' }) : undefined}
-              onEditFaktorPenghambat={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penghambat' }) : undefined}
-            />
-          ) : (
-            <td
-              colSpan={6}
-              className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
-            >
-              Tidak ada target
-            </td>
-          )}
-          {index === 0 && (
-            <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">
-              <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
-                Cetak
-              </ButtonGreenBorder>
-            </td>
-          )}
-        </tr>
-      ))}
+      {indikatorList.map((indikator, indikatorIndex) => {
+        const targetsForRows = (indikator.targets && indikator.targets.length > 0) ? indikator.targets : [null];
+        const rowSpan = targetsForRows.length;
+
+        return targetsForRows.map((target, targetIndex) => (
+          <tr key={`${sasaran.sasaranId}-${indikator.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
+            {indikatorIndex === 0 && targetIndex === 0 && (
+              <>
+                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{no}</td>
+                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{sasaran.sasaranPemda}</td>
+              </>
+            )}
+            {targetIndex === 0 && (
+              <>
+                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.indikator ?? "-"}</td>
+                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.rumusPerhitungan || "-"}</td>
+                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.sumberData || "-"}</td>
+              </>
+            )}
+            {target ? (
+              <ColTargetSasaran
+                target={target.target}
+                realisasi={target.realisasi}
+                capaian={target.capaian}
+                keteranganCapaian={target.keteranganCapaian}
+                faktorPenunjang={target.faktorPenunjang}
+                faktorPenghambat={target.faktorPenghambat}
+                canEdit={canEdit}
+                handleClick={canEdit ? () => handleOpenModal([target]) : undefined}
+                onEditFaktorPenunjang={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penunjang' }) : undefined}
+                onEditFaktorPenghambat={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penghambat' }) : undefined}
+              />
+            ) : (
+              <td
+                colSpan={6}
+                className="border border-red-400 px-6 py-4 text-center text-gray-400 italic"
+              >
+                Tidak ada target
+              </td>
+            )}
+            {indikatorIndex === 0 && targetIndex === 0 && (
+              <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">
+                <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                  Cetak
+                </ButtonGreenBorder>
+              </td>
+            )}
+          </tr>
+        ));
+      })}
 
       {faktorTarget?.jenis === 'penunjang' && (
         <FormModal
@@ -186,6 +192,11 @@ const EmptyIndikatorRow: React.FC<{
   );
 };
 
+const convertToDisplayString = (value: string | number | null | undefined): string => {
+  if (value === null || value === undefined) return '';
+  return value.toString().replace(/\./g, ',');
+};
+
 const ColTargetSasaran: React.FC<{
   target: string;
   realisasi: number;
@@ -200,10 +211,10 @@ const ColTargetSasaran: React.FC<{
 }> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
   return (
     <>
-      <td className="border border-red-400 px-6 py-4 text-center">{target}</td>
+      <td className="border border-red-400 px-6 py-4 text-center">{convertToDisplayString(target)}</td>
       <td className="border border-red-400 px-6 py-4 text-center">
         <div className="flex flex-col items-center gap-2">
-          <span>{realisasi}</span>
+          <span>{convertToDisplayString(realisasi ?? 0)}</span>
           {handleClick && (
             <ButtonGreenBorder
               className="w-full"

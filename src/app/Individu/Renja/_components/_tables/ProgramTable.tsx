@@ -13,6 +13,7 @@ import { formatPercentageText } from "@/lib/formatPercentageText";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
+    JenisRealisasiValue,
 } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -66,14 +67,12 @@ const ProgramTable = () => {
 
     // Determine kodeOpd for the program endpoint
     const kodeOpd = activatedDinas || user?.kode_opd || null;
+    const effectiveNip = (isOpdScopedView ? activatedNamaPegawai : user?.nip) ?? null;
 
     let apiUrl = null;
-    if (kodeOpd && activatedTahun && bulanKey) {
-        const effectiveNip = isOpdScopedView ? activatedNamaPegawai : user?.nip;
-        if (effectiveNip) {
-            const safeNip = effectiveNip.replace(/-$/, "");
-            apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
-        }
+    if (kodeOpd && activatedTahun && bulanKey && effectiveNip) {
+        const safeNip = effectiveNip.replace(/-$/, "");
+        apiUrl = `/api/v1/realisasi/renja_individu/program/kodeOpd/${encodeURIComponent(kodeOpd)}/nip/${encodeURIComponent(safeNip)}/tahun/${encodeURIComponent(activatedTahun)}/penetapan?bulan=${encodeURIComponent(bulanKey)}`;
     }
 
     const { data, loading, error, refetch } = useFetchData<any>({
@@ -117,7 +116,7 @@ const ProgramTable = () => {
                         satuan: "%",
                         tahun: String(item.tahun ?? activatedTahun ?? ""),
                         bulan: item.bulan ?? bulanName ?? undefined,
-                        jenisRealisasi: (item.jenisRealisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        jenisRealisasi: (item.jenisRealisasi as JenisRealisasiValue) ?? null,
                         capaian: item.capaian != null ? String(item.capaian) : "-",
                         keteranganCapaian: item.keteranganCapaian ?? "-",
                         pagu: item.pagu ?? null,
@@ -209,7 +208,7 @@ const ProgramTable = () => {
                         satuan: t.satuan ?? "%",
                         tahun: String(t.tahun ?? data.tahun_aktif ?? activatedTahun ?? ""),
                         bulan: bulanName ?? undefined,
-                        jenisRealisasi: (t.jenis_realisasi as "NAIK" | "TURUN") ?? "NAIK",
+                        jenisRealisasi: (t.jenis_realisasi as JenisRealisasiValue) ?? null,
                         capaian: t.capaian_target != null ? String(t.capaian_target) : "-",
                         keteranganCapaian: t.keterangan_capaian_target ?? "-",
                         pagu: renjaItem.pagu_program ?? null,
@@ -326,13 +325,13 @@ const ProgramTable = () => {
     };
 
     const handleSync = async () => {
-        const nipToSync = user?.nip?.replace(/-$/, "");
-        if (!nipToSync || !kodeOpd || !activatedTahun) return;
+        const nipToSync = effectiveNip?.replace(/-$/, "");
+        if (!nipToSync || !kodeOpd || !activatedTahun || !bulanKey) return;
 
         setIsSyncing(true);
         try {
             const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan`, {
+            const response = await fetch(`/api/v1/realisasi/renja_individu/nip/${encodeURIComponent(nipToSync)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(activatedTahun)}/sync/penetapan?bulan=${encodeURIComponent(bulanKey)}`, {
                 method: "POST",
                 headers: {
                     "X-Session-Id": sessionId ?? "",
@@ -352,8 +351,8 @@ const ProgramTable = () => {
     };
 
     const renderSyncButton = () => {
-        const nipToSync = user?.nip?.replace(/-$/, "");
-        const canSync = nipToSync && kodeOpd && activatedTahun;
+        const nipToSync = effectiveNip?.replace(/-$/, "");
+        const canSync = nipToSync && kodeOpd && activatedTahun && bulanKey;
 
         return (
             <div className="flex justify-end mb-2 mr-2 mt-2">

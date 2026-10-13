@@ -99,7 +99,7 @@ const SasaranPage = () => {
     try {
       const sessionId = getSessionId();
       const response = await fetch(
-        `/api/v1/realisasi/sasarans/pemda/sasaran/sync`,
+        `/api/v1/realisasi/sasarans/pemda/sasaran/sync?tahun=${selectedTahunNum}&bulan=${encodeURIComponent(bulanKey ?? "")}`,
         {
           method: "POST",
           headers: {

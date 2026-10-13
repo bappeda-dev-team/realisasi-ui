@@ -243,12 +243,12 @@ const SasaranOpdTable = () => {
     const [isSyncing, setIsSyncing] = useState(false);
 
     const handleSync = async () => {
-        if (!kodeOpd || !yearLabel) return;
+        if (!kodeOpd || !yearLabel || !monthKey) return;
 
         setIsSyncing(true);
         try {
             const sessionId = getSessionId();
-            const response = await fetch(`/api/v1/realisasi/sasaran_opd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=1`, {
+            const response = await fetch(`/api/v1/realisasi/sasaran_opd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/sync/penetapan?bulan=${encodeURIComponent(monthKey)}`, {
                 method: "POST",
                 headers: {
                     "X-Session-Id": sessionId ?? "",
@@ -268,7 +268,7 @@ const SasaranOpdTable = () => {
     };
 
     const renderSyncButton = () => {
-        const canSync = kodeOpd && yearLabel;
+        const canSync = kodeOpd && yearLabel && monthKey;
 
         return (
             <div className="flex justify-end mb-2 mr-2 mt-2">
