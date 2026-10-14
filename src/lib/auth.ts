@@ -2,7 +2,7 @@ import { User } from '@/types';
 
 // digunakan di UserContext untuk sign in dan mendapatkan user info
 export async function authenticate(sessionId: string): Promise<User> {
-    const res = await fetch(`/auth-api/user-info`, {
+    const res = await fetch(`/auth-api/user/user-info`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
