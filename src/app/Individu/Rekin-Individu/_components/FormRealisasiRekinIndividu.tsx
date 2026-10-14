@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RekinTarget, RekinRealisasiRequest, RekinIndividuResponse } from "@/types";
+import { FormProps, RekinTarget, RekinRealisasiRequest, RekinIndividuResponse, JenisRealisasiValue } from "@/types";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
@@ -159,7 +159,7 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                 kodeOpd,
                 nip: item.nip,
                 kodePkRekin: item.rekinId,
-                kodeSasaranOpd: "OPD-Dummy",
+                kodeSasaranOpd: item.idSasaran ?? "",
                 kodeIndikatorPKrekin: item.indikatorId,
                 kodeTargetPKrekin: item.targetId,
                 realisasi: item.realisasi ?? 0,
@@ -195,10 +195,10 @@ const FormRealisasiRekinIndividu: React.FC<FormRealisasiRekinIndividuProps> = ({
                     satuan: item?.satuan ?? "",
                     tahun: result.tahun,
                     bulan: result.bulan,
-                    jenisRealisasi: result.jenis_realisasi as "NAIK" | "TURUN",
+                    jenisRealisasi: (result.jenis_realisasi as JenisRealisasiValue) ?? null,
                     capaian: result.capaian?.toString() ?? null,
                     keteranganCapaian: result.keterangan_capaian,
-                    idSasaran: item?.idSasaran ?? null,
+                    idSasaran: result.kode_sasaran_opd ?? item?.idSasaran ?? null,
                     sasaran: null,
                     faktorPenunjang: result.faktor_penunjang ?? null,
                     faktorPenghambat: result.faktor_penghambat ?? null,

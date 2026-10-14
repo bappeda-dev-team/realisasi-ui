@@ -5,7 +5,6 @@ import ColTargetTujuanComponent from "./ColTargetTujuanComponent";
 import { TargetRealisasiCapaian, TujuanPemdaRealisasiGrouped } from "@/types";
 import FormFaktorPenunjang from "./FormFaktorPenunjang";
 import FormFaktorPenghambat from "./FormFaktorPenghambat";
-import { getMonthKey } from "@/lib/months";
 
 interface RowTujuanComponentProps {
     no: number;
@@ -39,56 +38,62 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
         return <EmptyIndikatorRow no={no} tujuan={tujuan} tahun={tahun} handleOpenPrintPreview={handleOpenPrintPreview} />;
     }
 
-    const detailRows = indikatorList.flatMap((indikator) => {
-        if (!indikator.targets.length) {
-            return [{ indikator, target: null as TargetRealisasiCapaian | null }];
-        }
-
-        return indikator.targets.map((target) => ({ indikator, target }));
-    });
+    const totalRows = indikatorList.reduce((sum, ind) => {
+        const targetCount = ind.targets?.length ?? 0;
+        return sum + (targetCount > 0 ? targetCount : 1);
+    }, 0);
 
     return (
         <>
-            {detailRows.map(({ indikator, target }, index) => (
-                <tr key={`${tujuan.tujuanId}-${indikator.id}-${target?.targetId ?? index}`}>
-                    {index === 0 && (
-                        <>
-                            <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">{no}</td>
-                            <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanPemda}</td>
-                            <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">{tujuan.visiMisi || "-"}</td>
-                        </>
-                    )}
-                    <td className="border border-red-400 px-6 py-4 text-center">{indikator.indikator ?? "-"}</td>
-                    <td className="border border-red-400 px-6 py-4 text-center">{indikator.rumusPerhitungan || "-"}</td>
-                    <td className="border border-red-400 px-6 py-4 text-center">{indikator.sumberData || "-"}</td>
-                    {target ? (
-                        <ColTargetTujuanComponent
-                            target={target.target}
-                            satuan={target.satuan}
-                            realisasi={String(target.realisasi ?? 0)}
-                            capaian={target.capaian}
-                            keteranganCapaian={target.keteranganCapaian}
-                            faktorPenunjang={target.faktorPenunjang}
-                            faktorPenghambat={target.faktorPenghambat}
-                            canEdit={canEdit}
-                            handleClick={canEdit ? () => handleOpenModal([target]) : undefined}
-                            onEditFaktorPenunjang={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penunjang' }) : undefined}
-                            onEditFaktorPenghambat={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penghambat' }) : undefined}
-                        />
-                    ) : (
-                        <td className="border border-red-400 px-6 py-4 text-center" colSpan={6}>
-                            Tidak ada target
-                        </td>
-                    )}
-                    {index === 0 && (
-                        <td rowSpan={detailRows.length} className="border border-red-400 px-6 py-4 text-center">
-                            <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
-                                Cetak
-                            </ButtonGreenBorder>
-                        </td>
-                    )}
-                </tr>
-            ))}
+            {indikatorList.map((indikator, indikatorIndex) => {
+                const targetsForRows = (indikator.targets && indikator.targets.length > 0) ? indikator.targets : [null];
+                const rowSpan = targetsForRows.length;
+
+                return targetsForRows.map((target, targetIndex) => (
+                    <tr key={`${tujuan.tujuanId}-${indikator.id || indikatorIndex}-${target?.targetId ?? `empty-${targetIndex}`}-${tahun}`}>
+                        {indikatorIndex === 0 && targetIndex === 0 && (
+                            <>
+                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{no}</td>
+                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanPemda}</td>
+                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{tujuan.visiMisi || "-"}</td>
+                            </>
+                        )}
+                        {targetIndex === 0 && (
+                            <>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.indikator ?? "-"}</td>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.rumusPerhitungan || "-"}</td>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.sumberData || "-"}</td>
+                            </>
+                        )}
+                        {target ? (
+                            <ColTargetTujuanComponent
+                                target={target.target}
+                                satuan={target.satuan}
+                                realisasi={String(target.realisasi ?? 0)}
+                                capaian={target.capaian}
+                                keteranganCapaian={target.keteranganCapaian}
+                                faktorPenunjang={target.faktorPenunjang}
+                                faktorPenghambat={target.faktorPenghambat}
+                                canEdit={canEdit}
+                                handleClick={canEdit ? () => handleOpenModal([target]) : undefined}
+                                onEditFaktorPenunjang={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penunjang' }) : undefined}
+                                onEditFaktorPenghambat={canEdit ? () => setFaktorTarget({ target, indikatorId: indikator.id, jenis: 'penghambat' }) : undefined}
+                            />
+                        ) : (
+                            <td className="border border-red-400 px-6 py-4 text-center" colSpan={6}>
+                                Tidak ada target
+                            </td>
+                        )}
+                        {indikatorIndex === 0 && targetIndex === 0 && (
+                            <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">
+                                <ButtonGreenBorder className="w-full" onClick={handleOpenPrintPreview}>
+                                    Cetak
+                                </ButtonGreenBorder>
+                            </td>
+                        )}
+                    </tr>
+                ));
+            })}
 
             {faktorTarget?.jenis === 'penunjang' && (
                 <FormModal

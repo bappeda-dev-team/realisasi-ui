@@ -1,3 +1,6 @@
+export type JenisRealisasi = "NAIK" | "TURUN" | "IDEAL";
+export type JenisRealisasiValue = JenisRealisasi | null;
+
 export type User = {
   id?: string;
   username: string;
@@ -208,7 +211,7 @@ export interface RealisasiSasaran {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   status: "UNCHECKED" | "CHECKED";
   createdDate: string;
   lastModifiedDate: string;
@@ -275,7 +278,7 @@ export interface TargetHierarchyData {
   paguAnggaran: number;
   target: number;
   realisasi: number;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   faktorPenunjang: string;
   faktorPenghambat: string;
   createdBy: string;
@@ -310,7 +313,7 @@ export interface RenaksiIndividuItem {
   bulan: string;
   satuan: string;
   status: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   faktorPenunjang: string;
   faktorPenghambat: string;
   createdBy: string;
@@ -333,7 +336,7 @@ export interface RenaksiTarget {
   satuan: string;
   bulan?: string | null;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   capaian?: string;
   keteranganCapaian?: string | null;
   rencanaKinerja?: string;
@@ -360,7 +363,7 @@ export interface RenaksiRealisasiRequest {
   kodeTarget: string;
   target: number;
   realisasi: number;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   paguAnggaran: number;
   tahun: string;
   bulan: string;
@@ -377,7 +380,7 @@ export interface RenaksiIndividuRealisasiRequest {
   tahun: string;
   bulan: string;
   satuan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
@@ -397,7 +400,7 @@ export interface RenaksiIndividuRealisasiResponse {
   bulan: string;
   satuan: string;
   status: string;
-  jenis_realisasi: "NAIK" | "TURUN";
+  jenis_realisasi: JenisRealisasiValue;
   faktor_penunjang: string;
   faktor_penghambat: string;
   bukti_pendukung?: string | null;
@@ -419,7 +422,7 @@ export interface RekinTarget {
   satuan: string;
   tahun: string;
   bulan?: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   capaian?: string | null;
   keteranganCapaian?: string | null;
   idSasaran?: string | null;
@@ -435,7 +438,7 @@ export interface RekinRealisasiRequest {
   kodeOpd: string;
   nip: string;
   kodePkRekin: string;
-  kodeSasaranOpd: string;
+  kodeSasaranOpd?: string;
   kodeIndikatorPKrekin: string;
   kodeTargetPKrekin: string;
   realisasi: number;
@@ -597,7 +600,7 @@ export interface IkuPemdaTargetRealisasiCapaian {
   capaian: string;
   satuan: string;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisRealisasi: JenisRealisasiValue;
   jenisIku: "TUJUAN" | "SASARAN" | null;
 }
 
@@ -611,7 +614,7 @@ export interface IkuPemdaRealisasi {
   realisasi: number;
   satuan: string;
   capaian: string;
-  jenisRealisasi: "NAIK" | "TURUN" | null;
+  jenisRealisasi: JenisRealisasiValue;
   jenisIku: "TUJUAN" | "SASARAN" | null;
   keteranganCapaian?: string | null;
   faktorPenunjang?: string | null;
@@ -749,7 +752,7 @@ export interface TujuanOpdRealisasi {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   status: "UNCHECKED" | "CHECKED";
   createdDate: string;
@@ -1083,7 +1086,7 @@ export interface SasaranOpdRealisasi {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   rumusPerhitungan?: string | null;
   sumberData?: string | null;
@@ -1273,7 +1276,7 @@ export interface RenjaTargetIndividuResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   status: "CHECKED" | "UNCHECKED";
   createdBy: string;
   lastModifiedBy: string;
@@ -1302,7 +1305,7 @@ export interface RenjaTarget {
   satuan: string;
   tahun: string;
   bulan?: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   capaian?: string;
   keteranganCapaian?: string;
   pagu?: number | null;
@@ -1351,7 +1354,7 @@ export interface RenjaPaguIndividuResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   status: "CHECKED" | "UNCHECKED";
   createdBy: string;
   lastModifiedBy: string;
@@ -1550,7 +1553,7 @@ export interface RenjaPaguTarget {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   capaian?: string;
   keteranganCapaian?: string;
 }
@@ -1582,7 +1585,7 @@ export interface RenjaTargetOpdResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   kodeRenja: string;
   status: string;
@@ -1621,7 +1624,7 @@ export interface RenjaPaguOpdResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   kodeRenja: string;
   status: "CHECKED" | "UNCHECKED";
@@ -1745,7 +1748,7 @@ export interface TujuanPemdaPenetapanItem {
   realisasi: number;
   satuan: string;
   tahun: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   capaian?: string;
   keteranganCapaian?: string;
 }
@@ -1777,7 +1780,7 @@ export interface RenjaTargetOpdResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   kodeRenja: string;
   status: string;
@@ -1816,7 +1819,7 @@ export interface RenjaPaguOpdResponse {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: "NAIK" | "TURUN";
+  jenisRealisasi: JenisRealisasiValue;
   kodeOpd: string;
   kodeRenja: string;
   status: "CHECKED" | "UNCHECKED";

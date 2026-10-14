@@ -236,18 +236,10 @@ export default function RenaksiOpdPage() {
     )
   }
 
-  if (!activatedTahun) {
+  if (!activatedTahun || !bulanKey) {
     return (
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-        Pilih dan aktifkan tahun agar data renaksi OPD muncul.
-      </div>
-    )
-  }
-
-  if (!bulanKey) {
-    return (
-      <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
-        Pilih dan aktifkan bulan agar data renaksi OPD muncul.
+        Pilih dan aktifkan tahun dan bulan agar data renaksi OPD muncul.
       </div>
     )
   }
@@ -281,33 +273,37 @@ export default function RenaksiOpdPage() {
     )
   }
 
+  if (!rows.length) {
+    return (
+      <>
+        {renderSyncButton()}
+        <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+          Data renaksi OPD belum di sinkronisasi atau dikunci.
+        </div>
+      </>
+    )
+  }
+
   return (
     <>
       {renderSyncButton()}
-      <div className="transition-all ease-in-out duration-500">
+      <div className="overflow-auto grid gap-2">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold">Renaksi OPD{namaDinas ? ` - ${namaDinas}` : ''}</h2>
+          <h2 className="text-lg font-semibold">Realisasi Renaksi OPD - {namaDinas ?? '-'}</h2>
         </div>
 
-        {rows.length ? (
-          <Table
-            rows={rows}
-            kodeOpd={kodeOpd}
-            tahun={tahunValue ?? ''}
-            bulanKey={bulanKey}
-            bulanLabel={bulanName}
-            isLocked={isLocked}
-            onPrint={handleOpenPrintPreview}
-            onFaktorSuccess={refetch}
-          />
-        ) : (
-          <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-            Data renaksi OPD belum di sinkronisasi atau dikunci.
-          </div>
-        )}
-      </div>
+        <Table
+          rows={rows}
+          kodeOpd={kodeOpd}
+          tahun={tahunValue ?? ''}
+          bulanKey={bulanKey}
+          bulanLabel={bulanName}
+          isLocked={isLocked}
+          onPrint={handleOpenPrintPreview}
+          onFaktorSuccess={refetch}
+        />
 
-      {isPrintPreviewOpen && (
+        {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>
           <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
@@ -374,6 +370,7 @@ export default function RenaksiOpdPage() {
           </div>
         </div>
       )}
+      </div>
     </>
   )
 }

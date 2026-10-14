@@ -44,6 +44,7 @@ type TargetInfo = {
   kodeIndikator: string;
   kodeTarget: string;
   tujuanOpd: string;
+  indikator: string;
   target: string;
   realisasi: number | null;
   satuan: string;

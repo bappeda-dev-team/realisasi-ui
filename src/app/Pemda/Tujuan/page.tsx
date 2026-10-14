@@ -107,7 +107,7 @@ export default function Tujuan() {
         try {
             const sessionId = getSessionId();
             const response = await fetch(
-                `/api/v1/realisasi/pemda/tujuan/sync`,
+                `/api/v1/realisasi/pemda/tujuan/sync?tahun=${selectedTahunValue}&bulan=${encodeURIComponent(bulanKey ?? "")}`,
                 {
                     method: "POST",
                     headers: {

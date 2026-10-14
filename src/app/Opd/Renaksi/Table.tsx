@@ -128,7 +128,7 @@ const Table: React.FC<TableProps> = ({
   }
 
   return (
-    <div className="overflow-auto m-2 rounded-t-xl">
+    <>
       <table id="print-area-renaksi" className="w-full">
         <thead>
           <tr className="text-xm bg-emerald-500 text-white">
@@ -269,7 +269,7 @@ const Table: React.FC<TableProps> = ({
           }}
         />
       </FormModal>
-    </div>
+    </>
   )
 }
 

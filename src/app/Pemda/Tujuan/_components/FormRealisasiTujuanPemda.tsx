@@ -25,8 +25,8 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
         [requestValues, tahun]
     );
 
-// fill data awal
-useEffect(() => {
+    // fill data awal
+    useEffect(() => {
         const generatedFormData: TujuanRequest[] = filteredRequestValues.map((indikator) => {
             return ({
                 targetRealisasiId: indikator.targetRealisasiId,
@@ -55,9 +55,9 @@ useEffect(() => {
         [formData],
     );
 
-    const convertToDisplayString = (value: number | '' | null | undefined): string => {
+    const convertToDisplayString = (value: number | string | '' | null | undefined): string => {
         if (value === '' || value === null || value === undefined) return '';
-        return value.toString().replace('.', ',');
+        return value.toString().replace(/\./g, ',');
     };
 
     // handle saat berubah ?
@@ -165,39 +165,51 @@ useEffect(() => {
         setProses(false);
     };
 
-    // ambil indikator pertama (soalnya sama) untuk petunjuk ini indikator apa
-    const indikator = filteredRequestValues && filteredRequestValues.length > 0 ? filteredRequestValues[0].indikator : ''
-
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
-            <div className="mb-4">
-                <h3 className="font-bold">Indikator: {indikator}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2 text-sm">
-                    {filteredRequestValues?.map((ind) => (
-                        <div key={ind.targetRealisasiId ?? ind.targetId} className="border p-2 rounded bg-gray-50 shadow-sm flex flex-col col-span-2">
-                            <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-                                {tahun} - {bulanLabel}
-                            </div>
-                            <p className="uppercase text-xs font-bold text-gray-700 mb-2">
+            <div className="flex flex-col gap-3">
+                {filteredRequestValues?.map((ind, index) => (
+                    <div key={`${ind.indikatorId}-${ind.targetId}-${ind.tahun}-${index}`} className="border p-3 rounded-lg bg-gray-50 shadow-sm flex flex-col gap-2">
+                        <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
+                            {tahun} - {bulanLabel}
+                        </div>
+                        <div className="border-b pb-2">
+                            <p className="text-xs font-semibold uppercase text-gray-500">Indikator:</p>
+                            <p className="text-sm font-bold text-gray-800">{ind.indikator || '-'}</p>
+                        </div>
+                        <div>
+                            <p className="uppercase text-xs font-bold text-gray-700 mb-1">
                                 Target:
                             </p>
-                            <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">{ind.target ?? ''}</p>
-                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi" >
+                            <p className="w-full bg-gray-200 border rounded px-2 py-1 text-sm font-medium text-gray-800">
+                                {convertToDisplayString(ind.target ?? '')} {ind.satuan ?? ''}
+                            </p>
+                        </div>
+                        <div>
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor={`realisasi-${ind.indikatorId}-${ind.targetId}`}>
                                 Realisasi:
                             </label>
                             <input
+                                id={`realisasi-${ind.indikatorId}-${ind.targetId}`}
                                 type="text"
-                                className="w-full border rounded px-2 py-1 text-sm mb-1"
-                                name={`realisasi[${ind.targetRealisasiId}][${ind.tahun}]`}
+                                className="w-full border rounded px-2 py-1 text-sm"
+                                name={`realisasi[${ind.targetRealisasiId ?? ind.targetId}][${ind.tahun}]`}
                                 value={convertToDisplayString(formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.realisasi ?? null)}
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
+                                placeholder="Masukkan nilai realisasi..."
                             />
-                            <p className="uppercase text-xs font-bold text-gray-700 mb-2">
+                        </div>
+                        <div>
+                            <p className="uppercase text-xs font-bold text-gray-700 mb-1">
                                 Satuan:
                             </p>
-                            <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">{ind.satuan ?? ''}</p>
-                            
-                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="fileUpload">
+                            <p className="w-full bg-gray-200 border rounded px-2 py-1 text-sm font-medium text-gray-800">
+                                {ind.satuan || '-'}
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor={`fileUpload-${ind.indikatorId}-${ind.targetId}`}>
                                 Upload Bukti Pendukung:
                             </label>
                             <div className="flex items-center gap-2 mb-2 px-2 py-1 w-full border rounded bg-white">
@@ -206,6 +218,7 @@ useEffect(() => {
                                         Pilih File
                                     </span>
                                     <input
+                                        id={`fileUpload-${ind.indikatorId}-${ind.targetId}`}
                                         type="file"
                                         className="hidden"
                                         onChange={(e) => {
@@ -233,19 +246,23 @@ useEffect(() => {
                                     );
                                 })()}
                             </div>
+                        </div>
 
-                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="keteranganUpload">
+                        <div>
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor={`keteranganUpload-${ind.indikatorId}-${ind.targetId}`}>
                                 Keterangan Bukti Pendukung:
                             </label>
                             <textarea
-                                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                                id={`keteranganUpload-${ind.indikatorId}-${ind.targetId}`}
+                                className="w-full border rounded px-2 py-1 text-sm"
                                 rows={2}
                                 value={formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.keteranganBuktiPendukung ?? ''}
                                 onChange={(e) => handleKeteranganChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
+                                placeholder="Keterangan bukti pendukung (opsional)..."
                             />
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
             </div>
             {validationError ? (
                 <div className="rounded border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">

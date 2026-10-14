@@ -14,7 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenaksiIndividuItem, RenaksiTarget } from "@/types";
+import { RenaksiIndividuItem, RenaksiTarget, JenisRealisasiValue } from "@/types";
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
@@ -152,7 +152,7 @@ const Table = () => {
                 satuan: "%",
                 tahun: yearLabel ?? "",
                 bulan: pelaksanaan.bulan_pelaksanaan.toString(),
-                jenisRealisasi: pelaksanaan.jenis_realisasi || "NAIK",
+                jenisRealisasi: (pelaksanaan.jenis_realisasi as JenisRealisasiValue) ?? null,
                 capaian: pelaksanaan.capaian ?? "-",
                 keteranganCapaian: pelaksanaan.keterangan_capaian ?? "-",
                 faktorPenunjang: pelaksanaan.faktor_penunjang || "-",

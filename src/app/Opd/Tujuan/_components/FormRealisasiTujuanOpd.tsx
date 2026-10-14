@@ -15,6 +15,7 @@ interface FormRealisasiTujuanOpdProps {
     kodeIndikator: string;
     kodeTarget: string;
     tujuanOpd: string;
+    indikator?: string;
     target: string;
     realisasi: number | null;
     satuan: string;
@@ -27,6 +28,11 @@ interface FormRealisasiTujuanOpdProps {
   bulan: string;
   bulanLabel?: string;
 }
+
+const convertToDisplayString = (value: number | string | '' | null | undefined): string => {
+  if (value === '' || value === null || value === undefined) return '';
+  return value.toString().replace(/\./g, ',');
+};
 
 const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
   requestValues,
@@ -45,7 +51,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [realisasiValue, setRealisasiValue] = useState(() => {
     if (requestValues && requestValues.realisasi != null) {
-      return String(requestValues.realisasi).replace('.', ',');
+      return convertToDisplayString(requestValues.realisasi);
     }
     return '';
   });
@@ -90,7 +96,6 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
         alert("Terjadi kesalahan saat mengunggah file");
     }
   };
-
 
   if (!requestValues) return null;
 
@@ -149,39 +154,47 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto">
-      <div className="mb-4">
-        <div className="mt-2 text-sm">
-          <div className="border p-3 rounded bg-gray-50 shadow-sm flex flex-col">
-            <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
-              {tahun} - {bulanLabel}
-            </div>
+      <div className="flex flex-col gap-3">
+        <div className="border p-3 rounded-lg bg-gray-50 shadow-sm flex flex-col gap-2">
+          <div className="text-center text-xs font-semibold bg-red-500 text-white rounded py-0.5 mb-1">
+            {tahun} - {bulanLabel}
+          </div>
+          <div className="border-b pb-2">
+            <p className="text-xs font-semibold uppercase text-gray-500">Indikator:</p>
+            <p className="text-sm font-bold text-gray-800">{requestValues.indikator || '-'}</p>
+          </div>
+          <div>
             <p className="uppercase text-xs font-bold text-gray-700 mb-1">
               Target:
             </p>
-            <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-2">
-              {requestValues.target} {requestValues.satuan}
+            <p className="w-full bg-gray-200 border rounded px-2 py-1 text-sm font-medium text-gray-800">
+              {convertToDisplayString(requestValues.target)} {requestValues.satuan}
             </p>
-            <label className="uppercase text-xs font-bold text-gray-700 mb-1" htmlFor="realisasi">
+          </div>
+          <div>
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor="realisasi">
               Realisasi:
             </label>
-            <div className="flex gap-2 items-center mb-2">
-              <input
-                id="realisasi"
-                type="text"
-                className="w-full border rounded px-2 py-1 text-sm"
-                value={realisasiValue}
-                onChange={(e) => setRealisasiValue(e.target.value)}
-              />
-              <span className="text-xs text-gray-500">{requestValues.satuan}</span>
-            </div>
+            <input
+              id="realisasi"
+              type="text"
+              className="w-full border rounded px-2 py-1 text-sm"
+              value={realisasiValue}
+              onChange={(e) => setRealisasiValue(e.target.value)}
+              placeholder="Masukkan nilai realisasi..."
+            />
+          </div>
+          <div>
             <p className="uppercase text-xs font-bold text-gray-700 mb-1">
               Satuan:
             </p>
-            <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm">
-              {requestValues.satuan}
+            <p className="w-full bg-gray-200 border rounded px-2 py-1 text-sm font-medium text-gray-800">
+              {requestValues.satuan || '-'}
             </p>
-            
-            <label className="uppercase text-xs font-bold text-gray-700 mb-1 mt-2" htmlFor="fileUpload">
+          </div>
+          
+          <div>
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor="fileUpload">
                 Upload Bukti Pendukung:
             </label>
             <div className="flex items-center gap-2 mb-2 px-2 py-1 w-full border rounded bg-white">
@@ -190,6 +203,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
                         Pilih File
                     </span>
                     <input
+                        id="fileUpload"
                         type="file"
                         className="hidden"
                         onChange={handleUploadFile}
@@ -212,15 +226,19 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
                     );
                 })()}
             </div>
+          </div>
 
-            <label className="uppercase text-xs font-bold text-gray-700 mb-1" htmlFor="keteranganUpload">
+          <div>
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor="keteranganUpload">
                 Keterangan Bukti Pendukung:
             </label>
             <textarea
-                className="w-full border rounded px-2 py-1 text-sm mb-1"
+                id="keteranganUpload"
+                className="w-full border rounded px-2 py-1 text-sm"
                 rows={2}
                 value={keteranganBuktiPendukung}
                 onChange={(e) => setKeteranganBuktiPendukung(e.target.value)}
+                placeholder="Keterangan bukti pendukung (opsional)..."
             />
           </div>
         </div>
