@@ -148,10 +148,13 @@ export default function SasaranPage() {
     );
   }
 
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   const handleSync = async () => {
     if (!kodeOpd || !selectedTahunValue || !bulanKey) return;
     
     setIsSyncing(true);
+    setSyncError(null);
     try {
       const sessionId = getSessionId();
       const response = await fetch(
@@ -164,11 +167,13 @@ export default function SasaranPage() {
         }
       );
       if (!response.ok) {
-        console.error("Failed to sync data");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || errorData?.error || "Gagal melakukan sinkronisasi data.");
       }
       refetchPenetapan();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during sync:", error);
+      setSyncError(error?.message || "Terjadi kesalahan saat sinkronisasi data.");
     } finally {
       setIsSyncing(false);
     }
@@ -194,40 +199,6 @@ export default function SasaranPage() {
     </div>
   );
   };
-
-  if (penetapanLoading) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-          <LoadingBeat loading={true} />
-          <p className="text-sm text-gray-600 mt-2">Memuat data sasaran OPD...</p>
-        </div>
-      </>
-    );
-  }
-
-  if (penetapanError) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-          Error: {penetapanError}
-        </div>
-      </>
-    );
-  }
-
-  if (!groupedSasaranOpd.length) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data sasaran OPD belum di sinkronisasi atau dikunci.
-        </div>
-      </>
-    );
-  }
 
   const createPdfDocument = () => {
     const doc = new jsPDF({
@@ -391,85 +362,126 @@ export default function SasaranPage() {
       {renderSyncButton()}
       <div className="overflow-auto grid gap-2">
         <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
+          <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
+        </div>
+
+        {penetapanLoading ? (
+          <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+            <LoadingBeat loading={true} />
+            <p className="text-sm text-gray-600 mt-2">Memuat data sasaran OPD...</p>
+          </div>
+        ) : penetapanError ? (
+          <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+            Error: {penetapanError}
+          </div>
+        ) : !groupedSasaranOpd.length ? (
+          <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+            Data sasaran OPD belum di sinkronisasi atau dikunci.
+          </div>
+        ) : (
+          <TableSasaranOpd
+            tahun={selectedTahunValue}
+            bulanLabel={bulanName}
+            sasaranOpd={groupedSasaranOpd}
+            handleOpenPrintPreview={handleOpenPrintPreview}
+            kodeOpd={kodeOpd}
+            bulanKey={bulanKey}
+            onFaktorSuccess={refetchPenetapan}
+          />
+        )}
+
+        {isPrintPreviewOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>
+            <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
+              <div className="mb-3 border-b pb-2">
+                <h2 className="text-lg font-semibold uppercase">Preview Cetak Sasaran OPD</h2>
+                <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
+              </div>
+
+              <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
+                {pdfPreviewUrl ? (
+                  <iframe title="Preview PDF Sasaran OPD" src={pdfPreviewUrl} className="h-full w-full" />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-sm text-gray-500">
+                    Gagal memuat preview PDF.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={handleClosePrintPreview}
+                  className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                >
+                  Tutup
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadPdf}
+                  className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                >
+                  Unduh PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isSyncModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
+            <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+              <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
+              <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
+              <div className="flex justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsSyncModalOpen(false)}
+                  className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  Tidak
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSyncModalOpen(false);
+                    handleSync();
+                  }}
+                  className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  Ya
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {syncError && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40" onClick={() => setSyncError(null)}></div>
+            <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Gagal Sinkronisasi</h2>
+              <p className="text-gray-600 mb-6">{syncError}</p>
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setSyncError(null)}
+                  className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 w-full"
+                >
+                  Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      <TableSasaranOpd
-        tahun={selectedTahunValue}
-        bulanLabel={bulanName}
-        sasaranOpd={groupedSasaranOpd}
-        handleOpenPrintPreview={handleOpenPrintPreview}
-        kodeOpd={kodeOpd}
-        bulanKey={bulanKey}
-        onFaktorSuccess={refetchPenetapan}
-      />
-      {isPrintPreviewOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/40" onClick={handleClosePrintPreview}></div>
-          <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
-            <div className="mb-3 border-b pb-2">
-              <h2 className="text-lg font-semibold uppercase">Preview Cetak Sasaran OPD</h2>
-              <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
-            </div>
-
-            <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
-              {pdfPreviewUrl ? (
-                <iframe title="Preview PDF Sasaran OPD" src={pdfPreviewUrl} className="h-full w-full" />
-              ) : (
-                <div className="flex h-full items-center justify-center text-sm text-gray-500">
-                  Gagal memuat preview PDF.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={handleClosePrintPreview}
-                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-              >
-                Tutup
-              </button>
-              <button
-                type="button"
-                onClick={handleDownloadPdf}
-                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-              >
-                Unduh PDF
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isSyncModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
-          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
-            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi?</p>
-            <div className="flex justify-center gap-3">
-              <button
-                type="button"
-                onClick={() => setIsSyncModalOpen(false)}
-                className="rounded-lg border border-gray-300 px-5 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
-              >
-                Tidak
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSyncModalOpen(false);
-                  handleSync();
-                }}
-                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
-              >
-                Ya
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
     </>
   );
 }

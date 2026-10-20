@@ -104,6 +104,7 @@ export default function Tujuan() {
 
     const handleSync = async () => {
         setIsSyncing(true);
+        setSyncError(null);
         try {
             const sessionId = getSessionId();
             const response = await fetch(
@@ -116,12 +117,13 @@ export default function Tujuan() {
                 }
             );
             if (!response.ok) {
-                throw new Error("Failed to sync data");
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || errorData?.error || "Tidak ada data penetapan yang siap disinkronkan");
             }
             refetchRealisasi();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error during sync:", error);
-            setSyncError("Tidak ada data penetapan yang siap disinkronkan");
+            setSyncError(error?.message || "Tidak ada data penetapan yang siap disinkronkan");
         } finally {
             setIsSyncing(false);
         }
@@ -150,30 +152,6 @@ export default function Tujuan() {
             <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
                 Pilih dan aktifkan periode, tahun, dan bulan agar data tujuan pemda muncul.
             </div>
-        );
-    if (realisasiLoading)
-        return (
-            <>
-                {renderSyncButton()}
-                <LoadingBeat loading={realisasiLoading} />
-            </>
-        );
-    if (realisasiError)
-        return (
-            <>
-                {renderSyncButton()}
-                <div>Error fetching realisasi: {realisasiError}</div>
-            </>
-        );
-
-    if (groupedTujuanPemda.length === 0)
-        return (
-            <>
-                {renderSyncButton()}
-                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-                    Data tujuan pemda belum di sinkronisasi atau dikunci.
-                </div>
-            </>
         );
 
     const handleOpenModal = (data: TargetRealisasiCapaian[]) => {
@@ -383,34 +361,49 @@ export default function Tujuan() {
                 <div className="flex justify-between items-center mb-2">
                     <h2 className="text-lg font-semibold">Realisasi Tujuan Pemda</h2>
                 </div>
-            <div className="rounded-t-lg border border-red-400">
-                <TableTujuan
-                    tahun={parseInt(selectedTahun)}
-                    bulanLabel={bulanName}
-                    tujuansPemda={groupedTujuanPemda}
-                    canEdit={canEdit}
-                    handleOpenPrintPreview={handleOpenPrintPreview}
-                    handleOpenModal={handleOpenModal}
-                    bulanKey={bulanKey}
-                    onFaktorSuccess={() => refetchRealisasi()}
-                />
-                {canEdit && (
-                    <ModalTujuanPemda
-                        item={selectedTujuan}
+            {realisasiLoading ? (
+                <div className="rounded border border-red-200 px-4 py-6 text-center">
+                    <LoadingBeat loading={true} />
+                    <p className="text-sm text-gray-600 mt-2">Memuat data tujuan pemda...</p>
+                </div>
+            ) : realisasiError ? (
+                <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+                    Error fetching realisasi: {realisasiError}
+                </div>
+            ) : groupedTujuanPemda.length === 0 ? (
+                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+                    Data tujuan pemda belum di sinkronisasi atau dikunci.
+                </div>
+            ) : (
+                <div className="rounded-t-lg border border-red-400">
+                    <TableTujuan
                         tahun={parseInt(selectedTahun)}
-                        bulan={bulanKey}
                         bulanLabel={bulanName}
-                        isOpen={OpenModal}
-                        onClose={() => {
-                            setOpenModal(false);
-                        }}
-                        onSuccess={() => {
-                            setOpenModal(false);
-                            refetchRealisasi();
-                        }}
+                        tujuansPemda={groupedTujuanPemda}
+                        canEdit={canEdit}
+                        handleOpenPrintPreview={handleOpenPrintPreview}
+                        handleOpenModal={handleOpenModal}
+                        bulanKey={bulanKey}
+                        onFaktorSuccess={() => refetchRealisasi()}
                     />
-                )}
-            </div>
+                    {canEdit && (
+                        <ModalTujuanPemda
+                            item={selectedTujuan}
+                            tahun={parseInt(selectedTahun)}
+                            bulan={bulanKey}
+                            bulanLabel={bulanName}
+                            isOpen={OpenModal}
+                            onClose={() => {
+                                setOpenModal(false);
+                            }}
+                            onSuccess={() => {
+                                setOpenModal(false);
+                                refetchRealisasi();
+                            }}
+                        />
+                    )}
+                </div>
+            )}
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div

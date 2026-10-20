@@ -96,6 +96,7 @@ const SasaranPage = () => {
 
   const handleSync = async () => {
     setIsSyncing(true);
+    setSyncError(null);
     try {
       const sessionId = getSessionId();
       const response = await fetch(
@@ -108,12 +109,13 @@ const SasaranPage = () => {
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to sync data");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || errorData?.error || "Tidak ada data penetapan yang siap disinkronkan");
       }
       refetchRealisasi();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during sync:", error);
-      setSyncError("Tidak ada data penetapan yang siap disinkronkan");
+      setSyncError(error?.message || "Tidak ada data penetapan yang siap disinkronkan");
     } finally {
       setIsSyncing(false);
     }
@@ -142,33 +144,6 @@ const SasaranPage = () => {
       <div className="p-5 bg-red-100 border-red-400 rounded text-red-700 my-5">
         Pilih dan aktifkan periode, tahun, dan bulan agar data sasaran pemda muncul.
       </div>
-    );
-  }
-
-  if (realisasiLoading)
-    return (
-      <>
-        {renderSyncButton()}
-        <LoadingBeat loading={realisasiLoading} />
-      </>
-    );
-
-  if (realisasiError)
-    return (
-      <>
-        {renderSyncButton()}
-        <div>Error fetching realisasi: {realisasiError}</div>
-      </>
-    );
-
-  if (groupedSasaranPemda.length === 0) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data sasaran pemda belum di sinkronisasi atau dikunci.
-        </div>
-      </>
     );
   }
 
@@ -375,41 +350,56 @@ const SasaranPage = () => {
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-lg font-semibold">Realisasi Sasaran Pemda</h2>
       </div>
-      <div className="mt-2 rounded-t-lg border border-red-400">
-        <TableSasaran
-          tahun={selectedTahunNum}
-          bulanLabel={bulanName}
-          sasaranPemda={groupedSasaranPemda}
-          canEdit={canEdit}
-          handleOpenPrintPreview={handleOpenPrintPreview}
-          handleOpenModal={handleOpenModal}
-          bulanKey={bulanKey}
-          onFaktorSuccess={() => refetchRealisasi()}
-        />
-        {canEdit && (
-          <FormModal
-            isOpen={OpenModal}
-            onClose={() => {
-              setOpenModal(false);
-            }}
-            title={`Realisasi Sasaran Pemda - ${selectedTahunNum} - ${bulanName} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
-          >
-            <FormRealisasiSasaranPemda
-              requestValues={SelectedSasaran}
-              tahun={selectedTahunNum}
-              bulan={bulanKey}
-              bulanLabel={bulanName}
+      {realisasiLoading ? (
+        <div className="rounded border border-red-200 px-4 py-6 text-center">
+          <LoadingBeat loading={true} />
+          <p className="text-sm text-gray-600 mt-2">Memuat data sasaran pemda...</p>
+        </div>
+      ) : realisasiError ? (
+        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+          Error fetching realisasi: {realisasiError}
+        </div>
+      ) : groupedSasaranPemda.length === 0 ? (
+        <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+          Data sasaran pemda belum di sinkronisasi atau dikunci.
+        </div>
+      ) : (
+        <div className="mt-2 rounded-t-lg border border-red-400">
+          <TableSasaran
+            tahun={selectedTahunNum}
+            bulanLabel={bulanName}
+            sasaranPemda={groupedSasaranPemda}
+            canEdit={canEdit}
+            handleOpenPrintPreview={handleOpenPrintPreview}
+            handleOpenModal={handleOpenModal}
+            bulanKey={bulanKey}
+            onFaktorSuccess={() => refetchRealisasi()}
+          />
+          {canEdit && (
+            <FormModal
+              isOpen={OpenModal}
               onClose={() => {
                 setOpenModal(false);
               }}
-              onSuccess={() => {
-                setOpenModal(false);
-                refetchRealisasi();
-              }}
-            />
-          </FormModal>
-        )}
-      </div>
+              title={`Realisasi Sasaran Pemda - ${selectedTahunNum} - ${bulanName} - ${SelectedSasaran[0]?.sasaranPemda ?? ""}`}
+            >
+              <FormRealisasiSasaranPemda
+                requestValues={SelectedSasaran}
+                tahun={selectedTahunNum}
+                bulan={bulanKey}
+                bulanLabel={bulanName}
+                onClose={() => {
+                  setOpenModal(false);
+                }}
+                onSuccess={() => {
+                  setOpenModal(false);
+                  refetchRealisasi();
+                }}
+              />
+            </FormModal>
+          )}
+        </div>
+      )}
       {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div

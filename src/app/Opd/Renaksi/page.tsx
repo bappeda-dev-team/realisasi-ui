@@ -43,6 +43,7 @@ export default function RenaksiOpdPage() {
 
   const [isSyncing, setIsSyncing] = useState(false)
   const [isSyncModalOpen, setIsSyncModalOpen] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
   const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false)
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null)
   const [pdfFileName, setPdfFileName] = useState('renaksi-opd.pdf')
@@ -63,6 +64,7 @@ export default function RenaksiOpdPage() {
     if (!kodeOpd || !tahunValue || !bulanKey) return
 
     setIsSyncing(true)
+    setSyncError(null)
     try {
       const sessionId = getSessionId()
       const response = await fetch(
@@ -75,11 +77,13 @@ export default function RenaksiOpdPage() {
         }
       )
       if (!response.ok) {
-        console.error('Failed to sync data renaksi OPD')
+        const errorData = await response.json().catch(() => null)
+        throw new Error(errorData?.message || errorData?.error || 'Gagal melakukan sinkronisasi data renaksi OPD.')
       }
       refetch()
-    } catch (syncError) {
-      console.error('Error during sync:', syncError)
+    } catch (err: any) {
+      console.error('Error during sync:', err)
+      setSyncError(err?.message || 'Terjadi kesalahan saat sinkronisasi data.')
     } finally {
       setIsSyncing(false)
     }
@@ -244,46 +248,6 @@ export default function RenaksiOpdPage() {
     )
   }
 
-  if (loading) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-emerald-200 px-4 py-6 text-center">
-          <LoadingBeat loading={true} />
-          <p className="text-sm text-gray-600 mt-2">Memuat data renaksi OPD...</p>
-        </div>
-      </>
-    )
-  }
-
-  if (error) {
-    const normalizedError = String(error).toLowerCase()
-    const isOpdNotFoundError =
-      normalizedError.includes('404') ||
-      normalizedError.includes('not found') ||
-      normalizedError.includes('tidak ditemukan')
-
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-          {isOpdNotFoundError ? 'Data OPD yang anda pilih tidak ada' : `Gagal memuat data renaksi: ${error}`}
-        </div>
-      </>
-    )
-  }
-
-  if (!rows.length) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data renaksi OPD belum di sinkronisasi atau dikunci.
-        </div>
-      </>
-    )
-  }
-
   return (
     <>
       {renderSyncButton()}
@@ -292,16 +256,35 @@ export default function RenaksiOpdPage() {
           <h2 className="text-lg font-semibold">Realisasi Renaksi OPD - {namaDinas ?? '-'}</h2>
         </div>
 
-        <Table
-          rows={rows}
-          kodeOpd={kodeOpd}
-          tahun={tahunValue ?? ''}
-          bulanKey={bulanKey}
-          bulanLabel={bulanName}
-          isLocked={isLocked}
-          onPrint={handleOpenPrintPreview}
-          onFaktorSuccess={refetch}
-        />
+        {loading ? (
+          <div className="rounded border border-emerald-200 px-4 py-6 text-center">
+            <LoadingBeat loading={true} />
+            <p className="text-sm text-gray-600 mt-2">Memuat data renaksi OPD...</p>
+          </div>
+        ) : error ? (
+          <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+            {String(error).toLowerCase().includes('404') ||
+            String(error).toLowerCase().includes('not found') ||
+            String(error).toLowerCase().includes('tidak ditemukan')
+              ? 'Data OPD yang anda pilih tidak ada'
+              : `Gagal memuat data renaksi: ${error}`}
+          </div>
+        ) : !rows.length ? (
+          <div className="rounded border border-emerald-200 px-4 py-6 text-center text-sm text-gray-600">
+            Data renaksi OPD belum di sinkronisasi atau dikunci.
+          </div>
+        ) : (
+          <Table
+            rows={rows}
+            kodeOpd={kodeOpd}
+            tahun={tahunValue ?? ''}
+            bulanKey={bulanKey}
+            bulanLabel={bulanName}
+            isLocked={isLocked}
+            onPrint={handleOpenPrintPreview}
+            onFaktorSuccess={refetch}
+          />
+        )}
 
         {isPrintPreviewOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -365,6 +348,30 @@ export default function RenaksiOpdPage() {
                 className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {syncError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setSyncError(null)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Gagal Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">{syncError}</p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setSyncError(null)}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 w-full"
+              >
+                Tutup
               </button>
             </div>
           </div>
