@@ -1981,4 +1981,7 @@ export interface RenjaPaguAnggaran {
   kode_pagu: string;
   pagu: number;
   jenis_pagu: string;
+  realisasi?: number | null;
+  capaian?: number | null;
+  keterangan_capaian?: string | null;
 }

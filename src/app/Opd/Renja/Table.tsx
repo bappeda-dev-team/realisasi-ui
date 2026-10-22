@@ -202,16 +202,36 @@ const convertIndikatorsToNode = (
 
 const makePaguNode = (paguAnggaran: RenjaPaguAnggaran[]): RenjaNodePaguValue[] => {
     if (!paguAnggaran?.length) return [];
-    const totalPagu = paguAnggaran.reduce((sum, item) => sum + Number(item.pagu), 0);
+    const totalPagu = paguAnggaran.reduce((sum, item) => sum + Number(item.pagu ?? 0), 0);
+    const hasRealisasi = paguAnggaran.some((item) => item.realisasi != null);
+    const totalRealisasi = hasRealisasi
+        ? paguAnggaran.reduce((sum, item) => sum + Number(item.realisasi ?? 0), 0)
+        : null;
+
+    const firstWithCapaian = paguAnggaran.find((item) => item.capaian != null);
+    let capaian: string | null = null;
+    let keteranganCapaian: string | null = null;
+
+    if (firstWithCapaian?.capaian != null) {
+        capaian = String(firstWithCapaian.capaian);
+        keteranganCapaian = firstWithCapaian.keterangan_capaian ?? null;
+    } else if (totalRealisasi != null && totalPagu > 0) {
+        const calculated = (totalRealisasi / totalPagu) * 100;
+        capaian = String(Math.min(calculated, 100));
+        if (calculated > 100) {
+            keteranganCapaian = `nilai capaian lebih dari 100% (${calculated.toFixed(2)}%)`;
+        }
+    }
+
     return [{
         paguRealisasiId: null,
-        realisasi: null,
+        realisasi: totalRealisasi,
         pagu: totalPagu,
         status: null,
         createdBy: null,
         lastModifiedBy: null,
-        capaian: null,
-        keteranganCapaian: null,
+        capaian,
+        keteranganCapaian,
     }];
 };
 
@@ -390,10 +410,10 @@ const Table = () => {
                         faktorPenunjang: targetItem?.faktorPenunjang ?? "-",
                         faktorPenghambat: targetItem?.faktorPenghambat ?? "-",
                         pagu: paguItem?.pagu ?? null,
-                        realistasiPagu: null,
+                        realistasiPagu: parseNumericValue(paguItem?.realisasi),
                         satuanPagu: "Rupiah",
-                        capaianPagu: "-",
-                        keteranganCapaianPagu: "-",
+                        capaianPagu: paguItem?.capaian != null ? String(paguItem.capaian) : "-",
+                        keteranganCapaianPagu: paguItem?.keteranganCapaian ?? "-",
                     }],
                 });
             });
@@ -651,10 +671,13 @@ const Table = () => {
         };
     }, [pdfPreviewUrl]);
 
+    const [syncError, setSyncError] = useState<string | null>(null);
+
     const handleSync = async () => {
         if (!kodeOpd || !activatedTahun || !bulanKey) return;
         
         setIsSyncing(true);
+        setSyncError(null);
         try {
             const sessionId = getSessionId();
             const response = await fetch(
@@ -667,11 +690,13 @@ const Table = () => {
                 }
             );
             if (!response.ok) {
-                console.error("Failed to sync data");
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || errorData?.error || "Gagal melakukan sinkronisasi data.");
             }
             refetch();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error during sync:", error);
+            setSyncError(error?.message || "Terjadi kesalahan saat sinkronisasi data.");
         } finally {
             setIsSyncing(false);
         }
@@ -698,47 +723,27 @@ const Table = () => {
     );
     };
 
-    if (loading) {
-        return (
-            <>
-                {renderSyncButton()}
-                <div className="rounded border border-sky-200 px-4 py-6 text-center">
+    return (
+        <>
+            {renderSyncButton()}
+            {loading ? (
+                <div className="rounded border border-sky-200 px-4 py-6 text-center m-2">
                     <LoadingBeat loading={true} />
                     <p className="text-sm text-gray-600 mt-2">
                         Memuat data renja OPD...
                     </p>
                 </div>
-            </>
-        );
-    }
-
-    if (error) {
-        return (
-            <>
-                {renderSyncButton()}
-                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-red-600">
+            ) : error ? (
+                <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-red-600 m-2">
                     Error: {error}
                 </div>
-            </>
-        );
-    }
-
-    if (!rows.length) {
-        return (
-            <>
-                {renderSyncButton()}
-                <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600">
+            ) : !rows.length ? (
+                <div className="rounded border border-sky-200 px-4 py-6 text-center text-sm text-gray-600 m-2">
                     Data renja OPD belum di sinkronisasi atau dikunci.
                 </div>
-            </>
-        );
-    }
-
-    return (
-        <>
-            {renderSyncButton()}
-            <div className="overflow-auto m-2 rounded-t-xl">
-                <table id="print-area-renja" className="w-full">
+            ) : (
+                <div className="overflow-auto m-2 rounded-t-xl">
+                    <table id="print-area-renja" className="w-full">
                     <thead>
                         <tr className={`text-xm ${headerColor}`}>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
@@ -882,8 +887,9 @@ const Table = () => {
                             </tr>
                         ))}
                     </tbody>
-                </table>
-            </div>
+                    </table>
+                </div>
+            )}
             {isPrintPreviewOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div
@@ -999,6 +1005,29 @@ const Table = () => {
                                 className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
                             >
                                 Ya
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {syncError && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="fixed inset-0 bg-black/40" onClick={() => setSyncError(null)}></div>
+                    <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+                            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-semibold mb-2">Gagal Sinkronisasi</h2>
+                        <p className="text-gray-600 mb-6">{syncError}</p>
+                        <div className="flex justify-center">
+                            <button
+                                type="button"
+                                onClick={() => setSyncError(null)}
+                                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 w-full"
+                            >
+                                Tutup
                             </button>
                         </div>
                     </div>

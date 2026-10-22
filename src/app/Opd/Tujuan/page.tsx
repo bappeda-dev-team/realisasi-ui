@@ -172,10 +172,13 @@ export default function TujuanPage() {
     );
   }
 
+  const [syncError, setSyncError] = useState<string | null>(null);
+
   const handleSync = async () => {
     if (!kodeOpd || !selectedTahunValue || !bulanKey) return;
     
     setIsSyncing(true);
+    setSyncError(null);
     try {
       const sessionId = getSessionId();
       const response = await fetch(
@@ -188,11 +191,13 @@ export default function TujuanPage() {
         }
       );
       if (!response.ok) {
-        console.error("Failed to sync data");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || errorData?.error || "Gagal melakukan sinkronisasi data.");
       }
       setRefreshTrigger((prev) => prev + 1);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error during sync:", error);
+      setSyncError(error?.message || "Terjadi kesalahan saat sinkronisasi data.");
     } finally {
       setIsSyncing(false);
     }
@@ -218,40 +223,6 @@ export default function TujuanPage() {
     </div>
   );
   };
-
-  if (penetapanLoading) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-200 px-4 py-6 text-center">
-          <LoadingBeat loading={true} />
-          <p className="text-sm text-gray-600 mt-2">Memuat data tujuan OPD...</p>
-        </div>
-      </>
-    );
-  }
-
-  if (penetapanError) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
-          Error: {penetapanError}
-        </div>
-      </>
-    );
-  }
-
-  if (!groupedTujuanOpd.length) {
-    return (
-      <>
-        {renderSyncButton()}
-        <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data tujuan OPD belum disinkronisasi atau dikunci.
-        </div>
-      </>
-    );
-  }
 
   const createPdfDocument = () => {
     const doc = new jsPDF({
@@ -430,16 +401,33 @@ export default function TujuanPage() {
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-lg font-semibold">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
         </div>
-      <TableTujuanOpd
-        tahun={String(selectedTahunValue)}
-        kodeOpd={kodeOpd}
-        bulanLabel={bulanName}
-        tujuanOpd={groupedTujuanOpd}
-        handleOpenPrintPreview={handleOpenPrintPreview}
-        onOpenRealisasi={canEdit ? handleOpenRealisasi : undefined}
-        bulanKey={bulanKey}
-        onFaktorSuccess={() => setRefreshTrigger((prev) => prev + 1)}
-      />
+
+        {penetapanLoading ? (
+          <div className="rounded border border-red-200 px-4 py-6 text-center">
+            <LoadingBeat loading={true} />
+            <p className="text-sm text-gray-600 mt-2">Memuat data tujuan OPD...</p>
+          </div>
+        ) : penetapanError ? (
+          <div className="rounded border border-red-300 px-4 py-6 text-center text-sm text-red-700">
+            Error: {penetapanError}
+          </div>
+        ) : !groupedTujuanOpd.length ? (
+          <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
+            Data tujuan OPD belum disinkronisasi atau dikunci.
+          </div>
+        ) : (
+          <TableTujuanOpd
+            tahun={String(selectedTahunValue)}
+            kodeOpd={kodeOpd}
+            bulanLabel={bulanName}
+            tujuanOpd={groupedTujuanOpd}
+            handleOpenPrintPreview={handleOpenPrintPreview}
+            onOpenRealisasi={canEdit ? handleOpenRealisasi : undefined}
+            bulanKey={bulanKey}
+            onFaktorSuccess={() => setRefreshTrigger((prev) => prev + 1)}
+          />
+        )}
+
       <ModalTujuanOpd
         isOpen={!!selectedTarget}
         onClose={handleCloseRealisasi}
@@ -511,6 +499,30 @@ export default function TujuanPage() {
                 className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
               >
                 Ya
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {syncError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="fixed inset-0 bg-black/40" onClick={() => setSyncError(null)}></div>
+          <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold mb-2">Gagal Sinkronisasi</h2>
+            <p className="text-gray-600 mb-6">{syncError}</p>
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setSyncError(null)}
+                className="rounded-lg bg-red-600 px-5 py-2 text-sm font-medium text-white hover:bg-red-700 w-full"
+              >
+                Tutup
               </button>
             </div>
           </div>
