@@ -9,6 +9,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
@@ -172,7 +173,7 @@ const ProgramTable = () => {
                             satuan: "%",
                             tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
                             bulan: bulanName ?? undefined,
-                            jenisRealisasi: "NAIK",
+                            jenisRealisasi: DEFAULT_JENIS_REALISASI,
                             capaian: "-",
                             keteranganCapaian: "-",
                             pagu: renjaItem.pagu_program ?? null,
@@ -242,7 +243,7 @@ const ProgramTable = () => {
                             satuan: "%",
                             tahun: String(data.tahun_aktif ?? activatedTahun ?? ""),
                             bulan: bulanName ?? undefined,
-                            jenisRealisasi: "NAIK",
+                            jenisRealisasi: DEFAULT_JENIS_REALISASI,
                             capaian: "-",
                             keteranganCapaian: "-",
                             pagu: renjaItem.pagu_program ?? null,

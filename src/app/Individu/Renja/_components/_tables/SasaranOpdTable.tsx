@@ -9,6 +9,7 @@ import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RekinTarget } from "@/types";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
@@ -88,7 +89,7 @@ const SasaranOpdTable = () => {
                     satuan: t.satuan ?? "-",
                     tahun: String(t.tahun ?? data.tahun ?? yearLabel),
                     bulan: monthLabel ?? undefined,
-                    jenisRealisasi: "NAIK",
+                    jenisRealisasi: DEFAULT_JENIS_REALISASI,
                     capaian: t.capaian != null ? String(t.capaian) : "-",
                     keteranganCapaian: t.keterangan_capaian ?? "-",
                     faktorPenunjang: t.faktor_penunjang ?? "-",

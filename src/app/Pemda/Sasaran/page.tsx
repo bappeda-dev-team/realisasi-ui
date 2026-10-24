@@ -75,6 +75,7 @@ const SasaranPage = () => {
           realisasi: tgt.realisasi,
           capaian: tgt.capaian !== null && tgt.capaian !== undefined ? String(tgt.capaian) : "",
           keteranganCapaian: tgt.keterangan_capaian,
+          jenisRealisasi: tgt.jenis_realisasi ?? null,
           faktorPenunjang: tgt.faktor_penunjang,
           faktorPenghambat: tgt.faktor_penghambat,
           satuan: tgt.satuan,

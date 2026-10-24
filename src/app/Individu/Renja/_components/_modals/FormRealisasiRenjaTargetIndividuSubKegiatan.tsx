@@ -3,11 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenjaTarget, RenjaSubKegiatanIndividuResponse } from "@/types";
+import { FormProps, RenjaTarget, RenjaSubKegiatanIndividuResponse, JenisRealisasi } from "@/types";
 import { useFilterContext } from "@/context/FilterContext";
 import { useUserContext } from "@/context/UserContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from "@/lib/jenis-realisasi";
 import { getSessionId, notifySessionExpired } from "@/lib/session";
 
 type FormRealisasiRenjaTargetIndividuSubKegiatanProps = FormProps<RenjaTarget[], RenjaTarget[]>;
@@ -25,6 +26,7 @@ interface SubkegiatanRealisasiRequest {
   pagu: number;
   realisasi_target: number;
   realisasi_pagu: number;
+  jenisRealisasi: JenisRealisasi;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
@@ -58,6 +60,7 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
         ...item,
         tahun: selectedTahun ?? item.tahun,
         bulan: monthKey ?? item.bulan,
+        jenisRealisasi: item.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
       }))
     );
   }, [requestValues, selectedTahun, monthKey]);
@@ -78,6 +81,16 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
       previous.map((item) =>
         item.targetId === targetId && item.tahun === tahun
           ? { ...item, keteranganBuktiPendukung: value }
+          : item
+      )
+    );
+  };
+
+  const handleJenisRealisasiChange = (targetId: string, tahun: string, value: JenisRealisasi) => {
+    setFormData((previous) =>
+      previous.map((item) =>
+        item.targetId === targetId && item.tahun === tahun
+          ? { ...item, jenisRealisasi: value }
           : item
       )
     );
@@ -163,6 +176,7 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
       pagu: item.pagu ?? 0,
       realisasi_target: item.realisasi,
       realisasi_pagu: item.realisasiPagu ?? 0,
+      jenisRealisasi: item.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
       buktiPendukung: item.buktiPendukung,
       keteranganBuktiPendukung: item.keteranganBuktiPendukung,
     };
@@ -236,6 +250,21 @@ const FormRealisasiRenjaTargetIndividuSubKegiatan: React.FC<FormRealisasiRenjaTa
                   handleChange(target.targetId, target.tahun, event.target.value)
                 }
               />
+              <label className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2" htmlFor={`jenisRealisasi-${target.targetId}`}>
+                Jenis Realisasi
+              </label>
+              <select
+                id={`jenisRealisasi-${target.targetId}`}
+                className="w-full border rounded px-2 py-1 text-sm mb-1 bg-white"
+                value={target.jenisRealisasi ?? DEFAULT_JENIS_REALISASI}
+                onChange={(event) =>
+                  handleJenisRealisasiChange(target.targetId, target.tahun, event.target.value as JenisRealisasi)
+                }
+              >
+                {JENIS_REALISASI_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
               <p className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2">Satuan</p>
               <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
                 {target.satuan}

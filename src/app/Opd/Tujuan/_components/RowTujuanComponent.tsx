@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
-import { TujuanOpdRealisasiGrouped, TujuanOpdTargetRealisasiCapaian } from '@/types';
+import { TujuanOpdRealisasiGrouped, TujuanOpdTargetRealisasiCapaian, JenisRealisasiValue } from '@/types';
 import { formatPercentageText } from '@/lib/formatPercentageText';
 import FormFaktorPenunjang from './FormFaktorPenunjang';
 import FormFaktorPenghambat from './FormFaktorPenghambat';
@@ -25,6 +25,7 @@ interface RowTujuanComponentProps {
         sumberData: string;
         buktiPendukung?: string | null;
         keteranganBuktiPendukung?: string | null;
+        jenisRealisasi?: JenisRealisasiValue;
     }) => void;
     bulanKey?: string;
     onFaktorSuccess?: () => void;
@@ -105,6 +106,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                     sumberData: ind.sumberData,
                                     buktiPendukung: target.buktiPendukung,
                                     keteranganBuktiPendukung: target.keteranganBuktiPendukung,
+                                    jenisRealisasi: target.jenisRealisasi ?? null,
                                 }) : undefined}
                                 onEditFaktorPenunjang={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penunjang' }) : undefined}
                                 onEditFaktorPenghambat={onOpenRealisasi ? () => setFaktorTarget({ target, jenis: 'penghambat' }) : undefined}

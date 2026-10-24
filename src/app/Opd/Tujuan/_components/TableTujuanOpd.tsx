@@ -1,6 +1,6 @@
 import React from "react";
 import RowTujuanComponent from "./RowTujuanComponent";
-import { TujuanOpdRealisasiGrouped } from "@/types";
+import { TujuanOpdRealisasiGrouped, JenisRealisasiValue } from "@/types";
 
 interface TableTujuanProps {
   tahun: string;
@@ -21,6 +21,7 @@ interface TableTujuanProps {
     sumberData: string;
     buktiPendukung?: string | null;
     keteranganBuktiPendukung?: string | null;
+    jenisRealisasi?: JenisRealisasiValue;
   }) => void;
   bulanKey?: string;
   onFaktorSuccess?: () => void;

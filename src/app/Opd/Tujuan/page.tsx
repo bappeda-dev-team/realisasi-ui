@@ -11,6 +11,7 @@ import {
   TujuanOpdPenetapanResponse,
   TujuanOpdRealisasiGrouped,
   TujuanOpdRealisasiGroupedIndikator,
+  JenisRealisasiValue,
 } from "@/types";
 import autoTable from "jspdf-autotable";
 import jsPDF from "jspdf";
@@ -50,6 +51,7 @@ type TargetInfo = {
   satuan: string;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
+  jenisRealisasi?: JenisRealisasiValue;
 };
 
 export default function TujuanPage() {
@@ -127,6 +129,7 @@ export default function TujuanPage() {
             realisasi: tgt.realisasi,
             capaian: tgt.capaian != null ? String(tgt.capaian) : '-',
             keteranganCapaian: tgt.keterangan_capaian ?? '-',
+            jenisRealisasi: tgt.jenis_realisasi ?? null,
             faktorPenunjang: tgt.faktor_penunjang ?? null,
             faktorPenghambat: tgt.faktor_penghambat ?? null,
             satuan: tgt.satuan,
