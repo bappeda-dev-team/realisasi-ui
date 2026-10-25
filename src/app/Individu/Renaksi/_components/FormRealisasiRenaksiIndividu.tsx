@@ -3,10 +3,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
-import { FormProps, RenaksiTarget, RenaksiIndividuRealisasiRequest, RenaksiIndividuRealisasiResponse } from "@/types";
+import { FormProps, RenaksiTarget, RenaksiIndividuRealisasiRequest, RenaksiIndividuRealisasiResponse, JenisRealisasi } from "@/types";
 import { useFilterContext } from "@/context/FilterContext";
 import { useSubmitData } from "@/hooks/useSubmitData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from "@/lib/jenis-realisasi";
 import { getSessionId, notifySessionExpired } from "@/lib/session";
 
 type FormRealisasiRenaksiIndividuProps = FormProps<RenaksiTarget[], RenaksiTarget[]>;
@@ -46,6 +47,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                 ...item,
                 tahun: selectedTahun ?? item.tahun,
                 bulan: selectedMonthKey ?? getMonthKey(item.bulan) ?? null,
+                jenisRealisasi: item.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
             }))
         );
     }, [requestValues, selectedTahun, selectedBulan, activatedBulan, selectedMonthKey]);
@@ -65,6 +67,16 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
                     ? { ...item, keteranganBuktiPendukung: value }
+                    : item
+            )
+        );
+    };
+
+    const handleJenisRealisasiChange = (targetId: string, tahun: string, value: JenisRealisasi) => {
+        setFormData((previous) =>
+            previous.map((item) =>
+                item.targetId === targetId && item.tahun === tahun
+                    ? { ...item, jenisRealisasi: value }
                     : item
             )
         );
@@ -149,7 +161,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
             tahun: first.tahun,
             bulan: bulanKey,
             satuan: first.satuan,
-            jenisRealisasi: first.jenisRealisasi,
+            jenisRealisasi: first.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
             buktiPendukung: first.buktiPendukung,
             keteranganBuktiPendukung: first.keteranganBuktiPendukung,
         };
@@ -218,6 +230,21 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
                                     handleChange(target.targetId, target.tahun, event.target.value)
                                 }
                             />
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2" htmlFor={`jenisRealisasi-${target.targetId}`}>
+                                Jenis Realisasi
+                            </label>
+                            <select
+                                id={`jenisRealisasi-${target.targetId}`}
+                                className="w-full border rounded px-2 py-1 text-sm mb-1 bg-white"
+                                value={target.jenisRealisasi ?? DEFAULT_JENIS_REALISASI}
+                                onChange={(event) =>
+                                    handleJenisRealisasiChange(target.targetId, target.tahun, event.target.value as JenisRealisasi)
+                                }
+                            >
+                                {JENIS_REALISASI_OPTIONS.map((option) => (
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                ))}
+                            </select>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-2 mt-2">Satuan</p>
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
                                 {target.satuan}

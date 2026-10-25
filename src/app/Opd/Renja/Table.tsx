@@ -9,6 +9,7 @@ import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
+import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
 import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan, RenjaPaguAnggaran } from "@/types";
 import jsPDF from "jspdf";
@@ -404,7 +405,7 @@ const Table = () => {
                         realisasi: parseNumericValue(targetItem?.realisasi),
                         satuan: targetItem?.satuan ?? "-",
                         tahun: root.tahun ?? activatedTahun ?? "",
-                        jenisRealisasi: "NAIK",
+                        jenisRealisasi: DEFAULT_JENIS_REALISASI,
                         capaian: targetItem?.capaian ?? "-",
                         keteranganCapaian: targetItem?.keteranganCapaian ?? "-",
                         faktorPenunjang: targetItem?.faktorPenunjang ?? "-",

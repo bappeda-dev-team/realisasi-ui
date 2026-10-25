@@ -5,7 +5,8 @@ import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
 import { canEditOpdRealisasi } from '@/lib/rbac';
 import { useFilterContext } from '@/context/FilterContext';
-import { TujuanOpdRealisasiResponse, TujuanOpdRealisasiPayload } from '@/types';
+import { TujuanOpdRealisasiResponse, TujuanOpdRealisasiPayload, JenisRealisasi, JenisRealisasiValue } from '@/types';
+import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from '@/lib/jenis-realisasi';
 import React, { useState } from 'react';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
@@ -21,6 +22,7 @@ interface FormRealisasiTujuanOpdProps {
     satuan: string;
     buktiPendukung?: string | null;
     keteranganBuktiPendukung?: string | null;
+    jenisRealisasi?: JenisRealisasiValue;
   } | null;
   onClose: () => void;
   onSuccess: () => void;
@@ -57,6 +59,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
   });
   const [fileUrl, setFileUrl] = useState<string | null>(requestValues?.buktiPendukung ?? null);
   const [keteranganBuktiPendukung, setKeteranganBuktiPendukung] = useState<string>(requestValues?.keteranganBuktiPendukung ?? '');
+  const [jenisRealisasi, setJenisRealisasi] = useState<JenisRealisasi>(requestValues?.jenisRealisasi ?? DEFAULT_JENIS_REALISASI);
 
   const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -134,7 +137,7 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
       kodeIndikator: requestValues.kodeIndikator,
       kodeTarget: requestValues.kodeTarget,
       realisasi: numericReal,
-      jenisRealisasi: 'NAIK',
+      jenisRealisasi,
       tahun: String(tahun),
       bulan: normalizedBulan,
       kodeOpd: kodeOpd ?? '',
@@ -183,6 +186,21 @@ const FormRealisasiTujuanOpd: React.FC<FormRealisasiTujuanOpdProps> = ({
               onChange={(e) => setRealisasiValue(e.target.value)}
               placeholder="Masukkan nilai realisasi..."
             />
+          </div>
+          <div>
+            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor="jenisRealisasi">
+              Jenis Realisasi:
+            </label>
+            <select
+              id="jenisRealisasi"
+              className="w-full border rounded px-2 py-1 text-sm bg-white"
+              value={jenisRealisasi}
+              onChange={(e) => setJenisRealisasi(e.target.value as JenisRealisasi)}
+            >
+              {JENIS_REALISASI_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
           <div>
             <p className="uppercase text-xs font-bold text-gray-700 mb-1">

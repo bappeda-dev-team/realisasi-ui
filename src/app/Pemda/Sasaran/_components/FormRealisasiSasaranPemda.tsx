@@ -3,7 +3,8 @@ import { ButtonSky } from '@/components/Global/Button/button';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData';
 import { getMonthKey } from '@/lib/months';
-import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest } from '@/types';
+import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from '@/lib/jenis-realisasi';
+import { FormProps, RealisasiSasaran, TargetRealisasiCapaianSasaran, SasaranRequest, JenisRealisasi } from '@/types';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasaran[], RealisasiSasaran[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
@@ -37,7 +38,7 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
                 satuan: indikator.satuan,
                 tahun: indikator.tahun,
                 bulan: normalizedBulan ?? '',
-                jenisRealisasi: 'NAIK',
+                jenisRealisasi: indikator.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
                 buktiPendukung: indikator.buktiPendukung ?? '',
                 keteranganBuktiPendukung: indikator.keteranganBuktiPendukung ?? '',
             })
@@ -69,6 +70,16 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
             prev.map((item) =>
                 item.kodeIndikator === indikatorId && item.tahun === tahun && item.kodeTarget === kodeTarget
                     ? { ...item, realisasi: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
+                    : item
+            )
+        );
+    };
+
+    const handleJenisRealisasiChange = (indikatorId: string, tahun: string, kodeTarget: string, value: JenisRealisasi) => {
+        setFormData((prev) =>
+            prev.map((item) =>
+                item.kodeIndikator === indikatorId && item.tahun === tahun && item.kodeTarget === kodeTarget
+                    ? { ...item, jenisRealisasi: value }
                     : item
             )
         );
@@ -197,6 +208,28 @@ const FormRealisasiSasaranPemda: React.FC<FormProps<TargetRealisasiCapaianSasara
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
                                 placeholder="Masukkan nilai realisasi..."
                             />
+                        </div>
+                        <div>
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor={`jenisRealisasi-${ind.indikatorId}-${ind.targetId}`}>
+                                Jenis Realisasi:
+                            </label>
+                            {(() => {
+                                const current = formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.jenisRealisasi ?? DEFAULT_JENIS_REALISASI;
+                                return (
+                                    <>
+                                        <select
+                                            id={`jenisRealisasi-${ind.indikatorId}-${ind.targetId}`}
+                                            className="w-full border rounded px-2 py-1 text-sm bg-white"
+                                            value={current}
+                                            onChange={(e) => handleJenisRealisasiChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value as JenisRealisasi)}
+                                        >
+                                            {JENIS_REALISASI_OPTIONS.map((option) => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+                                    </>
+                                );
+                            })()}
                         </div>
                         <div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-1">

@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { ButtonSky } from '@/components/Global/Button/button';
-import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan } from '@/types';
+import { FormProps, TargetRealisasiCapaian, TujuanRequest, RealisasiTujuan, JenisRealisasi } from '@/types';
 import { LoadingButtonClip } from '@/components/Global/Loading';
 import { useSubmitData } from '@/hooks/useSubmitData'
 import { getMonthKey } from '@/lib/months';
+import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from '@/lib/jenis-realisasi';
 import { getSessionId, notifySessionExpired } from '@/lib/session';
 
 const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], RealisasiTujuan[]> & { tahun: number; bulan: string; bulanLabel?: string }> = ({
@@ -37,7 +38,7 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
                 satuan: indikator.satuan,
                 tahun: indikator.tahun,
                 bulan: (indikator.bulan || normalizedBulan) ?? '',
-                jenisRealisasi: 'NAIK',
+                jenisRealisasi: indikator.jenisRealisasi ?? DEFAULT_JENIS_REALISASI,
                 buktiPendukung: indikator.buktiPendukung ?? '',
                 keteranganBuktiPendukung: indikator.keteranganBuktiPendukung ?? '',
             })
@@ -70,6 +71,16 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
             prev.map((item) =>
                 item.kodeIndikator === kodeIndikator && item.tahun === tahun && item.kodeTarget === kodeTarget
                     ? { ...item, realisasi: isNaN(Number(numericReal)) || numericReal === '' ? '' : numericReal }
+                    : item
+            )
+        );
+    };
+
+    const handleJenisRealisasiChange = (kodeIndikator: string, tahun: string, kodeTarget: string, value: JenisRealisasi) => {
+        setFormData((prev) =>
+            prev.map((item) =>
+                item.kodeIndikator === kodeIndikator && item.tahun === tahun && item.kodeTarget === kodeTarget
+                    ? { ...item, jenisRealisasi: value }
                     : item
             )
         );
@@ -198,6 +209,28 @@ const FormRealisasiTujuanPemda: React.FC<FormProps<TargetRealisasiCapaian[], Rea
                                 onChange={(e) => handleChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value)}
                                 placeholder="Masukkan nilai realisasi..."
                             />
+                        </div>
+                        <div>
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-1 block" htmlFor={`jenisRealisasi-${ind.indikatorId}-${ind.targetId}`}>
+                                Jenis Realisasi:
+                            </label>
+                            {(() => {
+                                const current = formData.find((f) => f.kodeIndikator === ind.indikatorId && f.tahun === ind.tahun && f.kodeTarget === ind.targetId)?.jenisRealisasi ?? DEFAULT_JENIS_REALISASI;
+                                return (
+                                    <>
+                                        <select
+                                            id={`jenisRealisasi-${ind.indikatorId}-${ind.targetId}`}
+                                            className="w-full border rounded px-2 py-1 text-sm bg-white"
+                                            value={current}
+                                            onChange={(e) => handleJenisRealisasiChange(ind.indikatorId, ind.tahun, ind.targetId, e.target.value as JenisRealisasi)}
+                                        >
+                                            {JENIS_REALISASI_OPTIONS.map((option) => (
+                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                            ))}
+                                        </select>
+                                    </>
+                                );
+                            })()}
                         </div>
                         <div>
                             <p className="uppercase text-xs font-bold text-gray-700 mb-1">

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ButtonRed } from "@/components/Global/Button/button";
+import { JenisRealisasiValue } from "@/types";
 import FormRealisasiTujuanOpd from './FormRealisasiTujuanOpd';
 
 interface ModalTujuanOpdProps {
@@ -16,6 +17,7 @@ interface ModalTujuanOpdProps {
     satuan: string;
     buktiPendukung?: string | null;
     keteranganBuktiPendukung?: string | null;
+    jenisRealisasi?: JenisRealisasiValue;
   } | null;
   tahun: number;
   bulan: string;

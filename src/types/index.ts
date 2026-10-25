@@ -1,4 +1,4 @@
-export type JenisRealisasi = "NAIK" | "TURUN" | "IDEAL";
+export type JenisRealisasi = "NAIK" | "TURUN";
 export type JenisRealisasiValue = JenisRealisasi | null;
 
 export type User = {
@@ -117,6 +117,7 @@ export interface TargetRealisasiCapaian {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  jenisRealisasi?: JenisRealisasiValue;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   satuan: string;
@@ -150,7 +151,7 @@ export interface TujuanRequest {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: string;
+  jenisRealisasi: JenisRealisasi;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
@@ -164,7 +165,7 @@ export interface SasaranRequest {
   satuan: string;
   tahun: string;
   bulan: string;
-  jenisRealisasi: string;
+  jenisRealisasi: JenisRealisasi;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
@@ -380,7 +381,7 @@ export interface RenaksiIndividuRealisasiRequest {
   tahun: string;
   bulan: string;
   satuan: string;
-  jenisRealisasi: JenisRealisasiValue;
+  jenisRealisasi: JenisRealisasi;
   buktiPendukung?: string | null;
   keteranganBuktiPendukung?: string | null;
 }
@@ -442,6 +443,7 @@ export interface RekinRealisasiRequest {
   kodeIndikatorPKrekin: string;
   kodeTargetPKrekin: string;
   realisasi: number;
+  jenisRealisasi: JenisRealisasi;
   tahun: string;
   bulan: string;
   buktiPendukung?: string | null;
@@ -652,6 +654,7 @@ export interface TargetRealisasiCapaianSasaran {
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  jenisRealisasi?: JenisRealisasiValue;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   satuan: string;
@@ -727,6 +730,7 @@ export interface TujuanOpdTargetRealisasiCapaian {
   realisasi: number | null;
   capaian: string;
   keteranganCapaian: string;
+  jenisRealisasi?: JenisRealisasiValue;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   satuan: string;
@@ -804,6 +808,7 @@ export interface TujuanOpdPenetapanTarget {
   realisasi: number | null;
   capaian: number | null;
   keterangan_capaian: string | null;
+  jenis_realisasi?: JenisRealisasiValue;
   faktor_penunjang?: string | null;
   faktor_penghambat?: string | null;
   bukti_pendukung?: string | null;
@@ -901,7 +906,7 @@ export interface TujuanOpdRealisasiPayload {
   kodeIndikator: string;
   kodeTarget: string;
   realisasi: number;
-  jenisRealisasi: string;
+  jenisRealisasi: JenisRealisasi;
   tahun: string;
   bulan: string;
   kodeOpd: string;
@@ -1716,6 +1721,7 @@ export interface TujuanPemdaPenetapanTarget {
   realisasi: number;
   capaian: number;
   keterangan_capaian: string;
+  jenis_realisasi?: JenisRealisasiValue;
   faktor_penunjang: string;
   faktor_penghambat: string;
   bukti_pendukung: string;
@@ -1948,6 +1954,7 @@ export interface SasaranPemdaPenetapanTarget {
   realisasi: number;
   capaian: number;
   keterangan_capaian: string;
+  jenis_realisasi?: JenisRealisasiValue;
   faktor_penunjang: string;
   faktor_penghambat: string;
   bukti_pendukung: string;
