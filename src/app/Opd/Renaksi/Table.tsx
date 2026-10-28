@@ -29,7 +29,6 @@ interface TableProps {
   tahun: string
   bulanKey: string
   bulanLabel: string
-  isLocked: boolean
   onPrint: () => void
   onFaktorSuccess: () => void
 }
@@ -77,7 +76,6 @@ const Table: React.FC<TableProps> = ({
   tahun,
   bulanKey,
   bulanLabel,
-  isLocked,
   onPrint,
   onFaktorSuccess,
 }) => {
@@ -87,8 +85,8 @@ const Table: React.FC<TableProps> = ({
 
   const periodLabel = `${tahun || 'Tahun'} - ${bulanLabel || 'Bulan'}`
 
-  const canEditFaktor = (row: RenaksiRow) =>
-    !isLocked && row.realisasi !== null && Number(row.realisasi) !== 0
+  const hasRealisasi = (row: RenaksiRow) =>
+    row.realisasi !== null && row.realisasi !== undefined && Number(row.realisasi) !== 0
 
   const FaktorCell = ({ row, value, onEdit }: {
     row: RenaksiRow
@@ -97,13 +95,14 @@ const Table: React.FC<TableProps> = ({
   }) => (
     <div className="flex flex-col items-center gap-2">
       <span className="whitespace-pre-line">{value || '-'}</span>
-      <ButtonGreenBorder
-        className="w-full text-xs py-0.5"
-        disabled={!canEditFaktor(row)}
-        onClick={onEdit}
-      >
-        Faktor
-      </ButtonGreenBorder>
+      {hasRealisasi(row) && (
+        <ButtonGreenBorder
+          className="w-full text-xs py-0.5"
+          onClick={onEdit}
+        >
+          Faktor
+        </ButtonGreenBorder>
+      )}
     </div>
   )
 
@@ -159,7 +158,12 @@ const Table: React.FC<TableProps> = ({
           </tr>
           <tr className="bg-emerald-500 text-white">
             <th className="border-l border-b px-3 py-2 min-w-[70px]">Target (%)</th>
-            <th className="border-l border-b px-3 py-2 min-w-[90px]">Realisasi (%)</th>
+            <th
+              className="border-l border-b px-3 py-2 min-w-[90px]"
+              title="Nilai otomatis dari realisasi Renaksi Individu"
+            >
+              Realisasi (%)
+            </th>
             <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian (%)</th>
             <th className="border-l border-b px-3 py-2 min-w-[180px]">Keterangan Capaian</th>
             <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penunjang</th>

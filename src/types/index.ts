@@ -371,7 +371,7 @@ export interface RenaksiRealisasiRequest {
 }
 
 export interface RenaksiIndividuRealisasiRequest {
-  targetRealisasiId: number;
+  targetRealisasiId: number | null;
   kodeOpd: string;
   nip: string;
   kodeRekin: string;
