@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
+import { ToastSuccess } from "@/components/Global/Alert";
 import { LoadingBeat } from "@/components/Global/Loading";
 import FormRealisasiRenaksiIndividu from "./_components/FormRealisasiRenaksiIndividu";
 import FormFaktorPenunjangRenaksiIndividu from "./_components/FormFaktorPenunjangRenaksiIndividu";
@@ -18,8 +19,6 @@ import { RenaksiIndividuItem, RenaksiTarget, JenisRealisasiValue } from "@/types
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
-import { TbRefresh } from "react-icons/tb";
-import { getSessionId } from "@/lib/session";
 
 interface RenaksiRow {
   id: number;
@@ -42,8 +41,7 @@ const Table = () => {
   const [selectedFaktorRow, setSelectedFaktorRow] = useState<RenaksiRow | null>(null);
   const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false);
   const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [isSuccessToastOpen, setIsSuccessToastOpen] = useState(false);
 
   const { activatedDinas, activatedTahun, activatedBulan, namaDinas, activatedLevelRole, activatedNamaPegawai } = useFilterContext();
   const { user } = useUserContext();
@@ -222,6 +220,8 @@ const Table = () => {
     );
     setIsModalOpen(false);
     setSelectedRow(null);
+    setIsSuccessToastOpen(true);
+    refetch();
   };
 
   const createPdfDocument = () => {
@@ -652,6 +652,12 @@ const Table = () => {
           </div>
         </div>
       )}
+      <ToastSuccess
+        isOpen={isSuccessToastOpen}
+        onClose={() => setIsSuccessToastOpen(false)}
+        message="Realisasi tersimpan dan otomatis tersinkron ke Renaksi OPD."
+        duration={3000}
+      />
     </>
   );
 };

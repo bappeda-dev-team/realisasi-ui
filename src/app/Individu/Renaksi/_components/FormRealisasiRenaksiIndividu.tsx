@@ -151,7 +151,7 @@ const FormRealisasiRenaksiIndividu: React.FC<FormRealisasiRenaksiIndividuProps> 
         }
 
         const payload: RenaksiIndividuRealisasiRequest = {
-            targetRealisasiId: first.targetRealisasiId ?? 0,
+            targetRealisasiId: null,
             kodeOpd: first.kodeOpd ?? "",
             nip: first.nip,
             kodeRekin: first.kodeRekin ?? "",

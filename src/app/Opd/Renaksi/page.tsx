@@ -14,11 +14,47 @@ import { getMonthKey, getMonthName } from '@/lib/months'
 import { getSessionId } from '@/lib/session'
 import { ROLES } from '@/constants/roles'
 import { RenaksiOpdPenetapanResponse } from '@/types'
-import Table, { formatRupiah, mapPenetapanToRenaksiRows } from './Table'
+import Table, { formatRupiah, mapPenetapanToRenaksiRows, type RenaksiRow } from './Table'
 
 const sanitizeForPdf = (value: unknown) => {
   if (value == null || value === '') return '-'
   return String(value).replace(/\s+/g, ' ').trim() || '-'
+}
+
+const getTriwulanFromMonth = (bulanKey: string | null): number | null => {
+  if (!bulanKey) return null
+
+  const bulan = Number.parseInt(bulanKey, 10)
+  if (!Number.isFinite(bulan) || bulan < 1 || bulan > 12) return null
+
+  return Math.ceil(bulan / 3)
+}
+
+const hitungCapaianTriwulan = (realisasi: number | null, target: number | null): number | null => {
+  if (realisasi == null || target == null || target === 0 || realisasi === 0) return null
+
+  const capaian = (Number(realisasi) / Number(target)) * 100
+  return Math.min(capaian, 100)
+}
+
+interface PdfTriwulanCell {
+  target: number | null
+  realisasi: number | null
+  capaian: number | null
+}
+
+const buildPdfTriwulanCells = (row: RenaksiRow, activeTw: number | null): PdfTriwulanCell[] => {
+  return [1, 2, 3, 4].map((tw) => {
+    const isActiveTw = activeTw === tw
+    const target = 100
+    const realisasi = isActiveTw ? row.realisasi : null
+
+    return {
+      target,
+      realisasi,
+      capaian: isActiveTw ? hitungCapaianTriwulan(realisasi, target) : null,
+    }
+  })
 }
 
 export default function RenaksiOpdPage() {
@@ -50,7 +86,6 @@ export default function RenaksiOpdPage() {
   const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null)
 
   const rows = useMemo(() => mapPenetapanToRenaksiRows(data?.renaksi_opds), [data])
-  const isLocked = data?.is_locked === true
 
   useEffect(() => {
     return () => {
@@ -97,6 +132,7 @@ export default function RenaksiOpdPage() {
     })
 
     const opdTitle = namaDinas ? ` - ${namaDinas}` : ''
+    const activeTw = getTriwulanFromMonth(bulanKey)
 
     doc.setFontSize(14)
     doc.text(`Renaksi OPD${opdTitle}`, 40, 40)
@@ -111,43 +147,71 @@ export default function RenaksiOpdPage() {
         { content: 'Sasaran Kinerja', rowSpan: 2 },
         { content: 'Subkegiatan', rowSpan: 2 },
         { content: 'Anggaran (Rp)', rowSpan: 2 },
-        { content: `${tahunValue ?? 'Tahun'} - ${bulanName}`, colSpan: 6 },
+        { content: 'TW1', colSpan: 3 },
+        { content: 'TW2', colSpan: 3 },
+        { content: 'TW3', colSpan: 3 },
+        { content: 'TW4', colSpan: 3 },
+        { content: `Keterangan Capaian (${bulanName})`, rowSpan: 2 },
+        { content: `Faktor Penunjang (${bulanName})`, rowSpan: 2 },
+        { content: `Faktor Penghambat (${bulanName})`, rowSpan: 2 },
         { content: 'Aksi', rowSpan: 2 },
       ],
       [
         'Target (%)',
         'Realisasi (%)',
         'Capaian (%)',
-        'Keterangan Capaian',
-        'Faktor Penunjang',
-        'Faktor Penghambat',
+        'Target (%)',
+        'Realisasi (%)',
+        'Capaian (%)',
+        'Target (%)',
+        'Realisasi (%)',
+        'Capaian (%)',
+        'Target (%)',
+        'Realisasi (%)',
+        'Capaian (%)',
       ],
     ]
 
-    const tableBody: any[] = rows.map((row, index) => [
-      index + 1,
-      sanitizeForPdf(row.kodeRencanaAksiOpd),
-      sanitizeForPdf(row.namaRenaksi),
-      sanitizeForPdf(row.kodeSasaranOpd),
-      sanitizeForPdf(
-        row.namaSubkegiatan !== '-' ? `${row.namaSubkegiatan} (${row.kodeSubkegiatan})` : row.kodeSubkegiatan
-      ),
-      sanitizeForPdf(formatRupiah(row.anggaran)),
-      sanitizeForPdf(row.target),
-      sanitizeForPdf(row.realisasi),
-      sanitizeForPdf(formatPercentageText(row.capaian ?? '-')),
-      sanitizeForPdf(formatPercentageText(row.keteranganCapaian ?? '-')),
-      sanitizeForPdf(row.faktorPenunjang),
-      sanitizeForPdf(row.faktorPenghambat),
-      index === 0 ? 'Cetak' : '-',
-    ])
+    const tableBody: any[] = rows.map((row, index) => {
+      const twCells = buildPdfTriwulanCells(row, activeTw)
+
+      return [
+        index + 1,
+        sanitizeForPdf(row.kodeRencanaAksiOpd),
+        sanitizeForPdf(row.namaRenaksi),
+        sanitizeForPdf(row.kodeSasaranOpd),
+        sanitizeForPdf(
+          row.namaSubkegiatan !== '-' ? `${row.namaSubkegiatan} (${row.kodeSubkegiatan})` : row.kodeSubkegiatan
+        ),
+        sanitizeForPdf(formatRupiah(row.anggaran)),
+        ...twCells.flatMap((cell) => [
+          sanitizeForPdf(cell.target),
+          sanitizeForPdf(cell.realisasi),
+          sanitizeForPdf(formatPercentageText(cell.capaian ?? '-')),
+        ]),
+        sanitizeForPdf(formatPercentageText(row.keteranganCapaian ?? '-')),
+        sanitizeForPdf(row.faktorPenunjang),
+        sanitizeForPdf(row.faktorPenghambat),
+        index === 0 ? 'Cetak' : '-',
+      ]
+    })
+
+    const columnStyles: Record<number, { halign?: 'left' | 'center' | 'right'; cellWidth?: number }> = {
+      0: { cellWidth: 24, halign: 'center' },
+      5: { halign: 'right' },
+      21: { halign: 'center' },
+    }
+
+    for (let columnIndex = 6; columnIndex <= 17; columnIndex += 1) {
+      columnStyles[columnIndex] = { halign: 'center' }
+    }
 
     autoTable(doc, {
       head: tableHead,
       body: tableBody,
       startY: 72,
       styles: {
-        fontSize: 8,
+        fontSize: 7,
         cellPadding: 3,
         lineColor: [16, 185, 129],
         lineWidth: 0.5,
@@ -162,10 +226,7 @@ export default function RenaksiOpdPage() {
         halign: 'center',
         valign: 'middle',
       },
-      columnStyles: {
-        0: { cellWidth: 26, halign: 'center' },
-        5: { halign: 'right' },
-      },
+      columnStyles,
       tableWidth: 'auto',
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
       theme: 'grid',
@@ -174,7 +235,7 @@ export default function RenaksiOpdPage() {
     const safeYearLabel = String(tahunValue || 'tahun').replace(/\s+/g, '-').toLowerCase()
     const safeMonthLabel = String(bulanName || 'bulan').replace(/\s+/g, '-').toLowerCase()
 
-    return { doc, fileName: `renaksi-opd-${safeYearLabel}-${safeMonthLabel}.pdf` }
+    return { doc, fileName: `renaksi-opd-${safeYearLabel}-${safeMonthLabel}-triwulan.pdf` }
   }
 
   const handleOpenPrintPreview = () => {
@@ -224,7 +285,7 @@ export default function RenaksiOpdPage() {
           ) : (
             <div className="flex items-center gap-2">
               <TbRefresh size={20} />
-              <span>Sinkronisasi</span>
+              <span>Sinkronisasi Penetapan</span>
             </div>
           )}
         </ButtonSky>
@@ -280,7 +341,6 @@ export default function RenaksiOpdPage() {
             tahun={tahunValue ?? ''}
             bulanKey={bulanKey}
             bulanLabel={bulanName}
-            isLocked={isLocked}
             onPrint={handleOpenPrintPreview}
             onFaktorSuccess={refetch}
           />
@@ -330,7 +390,6 @@ export default function RenaksiOpdPage() {
           <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>
           <div className="relative z-10 w-full max-w-sm rounded-lg bg-white p-6 shadow-lg text-center">
             <h2 className="text-xl font-semibold mb-2">Konfirmasi Sinkronisasi</h2>
-            <p className="text-gray-600 mb-6">Apakah Anda ingin melakukan sinkronisasi data renaksi OPD?</p>
             <div className="flex justify-center gap-3">
               <button
                 type="button"
