@@ -37,6 +37,17 @@ export function getResolvedLevel(user: User | null, activatedLevelRole?: string 
   return user?.roles.find((r) => r.startsWith("level_"));
 }
 
+/**
+ * Mendapatkan level role user dari `roles` user-info.
+ * Backend mengirim lowercase (mis. `level_3`), sedangkan FilterContext/UI
+ * memakai uppercase (mis. `LEVEL_3`).
+ */
+export function getUserLevelRole(user: User | null): string | null {
+  if (!user) return null;
+  const level = user.roles.find((r) => /^level_[1-4]$/i.test(r));
+  return level ? level.toUpperCase() : null;
+}
+
 export function canSelectAllOpdFilters(user: User | null): boolean {
   if (!user) return false;
   return (
@@ -211,14 +222,9 @@ export function getAccessibleMenus(user: User | null): { name: string; href: str
   return menus;
 }
 
-/**
- * Apakah user wajib memilih OPD + Level Role setelah login?
- * Berlaku untuk super_admin, admin_opd, dan seluruh user individu
- * (termasuk level 1-3 di production yang roles-nya hanya memuat role
- * Keycloak default namun memiliki `nip`).
- */
 export function needsOpdSelection(user: User | null): boolean {
   if (!user) return false;
+  if (user.kode_opd) return false;
   return (
     hasRole(user, ROLES.SUPER_ADMIN) ||
     hasRole(user, ROLES.ADMIN_OPD) ||

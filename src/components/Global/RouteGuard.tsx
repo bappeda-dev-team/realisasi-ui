@@ -14,9 +14,13 @@ export const RouteGuard = ({ children }: RouteGuardProps) => {
   const pathname = usePathname();
   const { user, loading, opdSelected } = useUserContext();
 
+  const isPemda =
+    pathname.startsWith("/Pemda") || pathname.startsWith("/Laporan/Pemda");
+
   const needsOpdSel =
     user &&
     !opdSelected &&
+    !isPemda &&
     needsOpdSelection(user);
 
   useEffect(() => {
