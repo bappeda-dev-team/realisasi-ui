@@ -8,6 +8,7 @@ import {
   getSessionId,
   SESSION_EXPIRED_EVENT,
 } from "@/lib/session";
+import { isIndividuUser } from "@/lib/rbac";
 import Cookies from "js-cookie";
 
 const OPD_SELECTED_COOKIE = "opdSelected";
@@ -108,6 +109,10 @@ export function UserProvider({
       try {
         const user = await authenticate(sessionId);
         setUser(user);
+        if (user.kode_opd) {
+          setOpdSelected(true);
+          setOpdLocked(isIndividuUser(user));
+        }
         setError(null);
       } catch (_) {
         logout();

@@ -58,9 +58,13 @@ export const Header = () => {
     }
   }, [error]);
 
+  const isPemda =
+    pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda');
+
   const showOpdSelectionModal =
     user &&
     !opdSelected &&
+    !isPemda &&
     needsOpdSelection(user);
 
   return (
@@ -68,7 +72,7 @@ export const Header = () => {
       <TopFilter 
         user={user} 
         forceOpdLock={pathname.startsWith('/Individu') || pathname.startsWith('/Laporan/Individu')} 
-        hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} 
+        hideOpd={isPemda} 
         opdLocked={opdLocked}
       />
       <nav
@@ -148,7 +152,7 @@ export const Header = () => {
 
             {!loading && !user && <Login onClick={() => setModalLogin(true)} />}
 
-            {!loading && user && <UserProfile user={user} hideOpd={pathname.startsWith('/Pemda') || pathname.startsWith('/Laporan/Pemda')} />}
+            {!loading && user && <UserProfile user={user} hideOpd={isPemda} />}
           </div>
         </div>
         <ToastSuccess

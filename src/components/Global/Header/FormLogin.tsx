@@ -7,7 +7,7 @@ import { LoadingButtonClip } from "@/components/Global/Loading";
 import { useUserContext } from "@/context/UserContext";
 import { authenticate } from "@/lib/auth";
 import { setSessionId } from "@/lib/session";
-import { getDefaultPage, needsOpdSelection } from "@/lib/rbac";
+import { getDefaultPage, isIndividuUser, needsOpdSelection } from "@/lib/rbac";
 
 interface FormLoginProps {
   onClose: () => void;
@@ -53,10 +53,9 @@ const FormLogin: React.FC<FormLoginProps> = ({ onClose, onSuccess }) => {
       if (needsOpdSelection(user)) {
         setOpdSelected(false);
         setOpdLocked(false);
-        // Jangan redirect — biarkan OpdSelectionModal tampil
       } else {
         setOpdSelected(true);
-        setOpdLocked(false);
+        setOpdLocked(isIndividuUser(user) && Boolean(user.kode_opd));
         const defaultPage = getDefaultPage(user);
         router.push(defaultPage);
       }

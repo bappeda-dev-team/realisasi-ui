@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useBrandingContext } from "@/context/BrandingContext";
 import { useFilterContext } from "@/context/FilterContext";
@@ -8,7 +8,7 @@ import Select from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
-import { canAccessPemda, canSelectAllOpdFilters } from "@/lib/rbac";
+import { canAccessPemda, canSelectAllOpdFilters, getUserLevelRole, isIndividuUser } from "@/lib/rbac";
 import { useFetchData } from "@/hooks/useFetchData";
 import { useUserContext } from "@/context/UserContext";
 
@@ -113,10 +113,11 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   const canEditOpd = user ? canSelectAllOpdFilters(user) : false;
   const userKodeOpd = user?.kode_opd;
 
-  // Level 1-3 di production memilih OPD dari dropdown (bukan dari user-info),
-  // sehingga forceOpdLock hanya mengunci user yang memang tidak bisa memilih
-  // semua OPD (bukan super_admin / admin_opd / individu dengan nip).
-  const effectivelyCanEditOpd = opdLocked
+  const userProfileOpd = user?.kode_opd ?? null;
+  
+  const lockedToUserOpd = Boolean(user && isIndividuUser(user) && userProfileOpd);
+
+  const effectivelyCanEditOpd = opdLocked || lockedToUserOpd
     ? false
     : (forceOpdLock && !canEditOpd) ? false : canEditOpd;
 
@@ -185,6 +186,49 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
       setDinasOptions(options);
     }
   }, [dataDinas, effectivelyCanEditOpd, disableOpdLock, userKodeOpd, dinas, namaDinas]);
+
+  // ----------------------------
+  // SEED OPD & LEVEL ROLE DARI USER-INFO
+  // ----------------------------
+  const seededProfileOpd = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      seededProfileOpd.current = null;
+      return;
+    }
+    if (!userProfileOpd) return;
+
+    const key = `${user.username}:${userProfileOpd}`;
+    if (seededProfileOpd.current === key) return;
+    seededProfileOpd.current = key;
+
+    setDinas(userProfileOpd);
+    setActivatedDinas(userProfileOpd);
+
+    // Level role hanya untuk user individu; admin memilih manual di header.
+    if (isIndividuUser(user)) {
+      const level = getUserLevelRole(user);
+      if (level) {
+        setLevelRole(level);
+        setActivatedLevelRole(level);
+      }
+    }
+  }, [
+    user,
+    userProfileOpd,
+    setDinas,
+    setActivatedDinas,
+    setLevelRole,
+    setActivatedLevelRole,
+  ]);
+
+  // Lengkapi nama OPD setelah daftar OPD termuat (dipakai header & judul tabel).
+  useEffect(() => {
+    if (!dinas || namaDinas) return;
+    const opt = dinasOptions.find((o) => o.value === dinas);
+    if (opt) setNamaDinas(opt.label);
+  }, [dinas, namaDinas, dinasOptions, setNamaDinas]);
 
   // ----------------------------
   // DROPDOWN PERIODE
@@ -273,8 +317,15 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   // ----------------------------
   // RESTORE DARI COOKIE
   // ----------------------------
+  const restoredCookieFor = useRef<string | null>(null);
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      restoredCookieFor.current = null;
+      return;
+    }
+    if (restoredCookieFor.current === user.username) return;
+    restoredCookieFor.current = user.username;
 
     const cookieStr = Cookies.get("selectedCookie");
     if (!cookieStr) return;
@@ -286,8 +337,8 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
       return;
     }
 
-    // OPD yang dipilih di popup modal di-restore untuk semua user.
-    if (cookie.dinas?.value) {
+    // User individu: OPD & Level Role bersumber dari user-info
+    if (!lockedToUserOpd && cookie.dinas?.value) {
       const adaDiOptions = dinasOptions.some(
         (opt) => opt.value === cookie.dinas?.value,
       );
@@ -304,14 +355,17 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     setActivatedTahun(cookie.tahun?.value ?? null);
     setBulan(cookie.bulan?.value ?? null);
     setActivatedBulan(cookie.bulan?.value ?? null);
-    setLevelRole(cookie.levelRole?.value ?? null);
-    setActivatedLevelRole(cookie.levelRole?.value ?? null);
+    if (!lockedToUserOpd) {
+      setLevelRole(cookie.levelRole?.value ?? null);
+      setActivatedLevelRole(cookie.levelRole?.value ?? null);
+    }
     setNamaPegawai(cookie.namaPegawai?.value ?? null);
     setActivatedNamaPegawai(cookie.namaPegawai?.value ?? null);
   }, [
     periodeOptions,
     dinasOptions,
     user,
+    lockedToUserOpd,
     forceOpdLock,
     userKodeOpd,
     isSuperAdmin,
