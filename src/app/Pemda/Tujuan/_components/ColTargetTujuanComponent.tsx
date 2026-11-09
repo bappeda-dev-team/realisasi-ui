@@ -45,7 +45,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
         <div className="flex flex-col items-center gap-1">
           <span>{faktorPenunjang || '-'}</span>
           {canEdit && onEditFaktorPenunjang && (
-            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenunjang}>
+            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" onClick={onEditFaktorPenunjang}>
               Faktor
             </ButtonGreenBorder>
           )}
@@ -55,7 +55,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
         <div className="flex flex-col items-center gap-1">
           <span>{faktorPenghambat || '-'}</span>
           {canEdit && onEditFaktorPenghambat && (
-            <ButtonGreenBorder className="w-full text-xs py-0.5" onClick={onEditFaktorPenghambat}>
+            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" onClick={onEditFaktorPenghambat}>
               Faktor
             </ButtonGreenBorder>
           )}

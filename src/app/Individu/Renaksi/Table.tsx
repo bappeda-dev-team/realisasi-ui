@@ -228,7 +228,7 @@ const Table = () => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     const periodLabel = `${monthColumnLabel}`;
@@ -438,13 +438,13 @@ const Table = () => {
               </th>
               <th
                 rowSpan={2}
-                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                className="border-l border-b px-6 py-3 min-w-[250px] text-center"
               >
                 Faktor Penunjang
               </th>
               <th
                 rowSpan={2}
-                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                className="border-l border-b px-6 py-3 min-w-[250px] text-center"
               >
                 Faktor Penghambat
               </th>
@@ -513,7 +513,7 @@ const Table = () => {
                       <span>{target?.faktorPenunjang || "-"}</span>
                       {canEditRealisasi && (
                         <ButtonGreenBorder
-                          className="w-full text-xs py-0.5"
+                          className="w-full max-w-[120px] text-xs py-0.5"
                           onClick={isRealisasiFilled ? () => handleOpenFaktorPenunjang(row) : undefined}
                           disabled={!isRealisasiFilled}
                         >
@@ -527,7 +527,7 @@ const Table = () => {
                       <span>{target?.faktorPenghambat || "-"}</span>
                       {canEditRealisasi && (
                         <ButtonGreenBorder
-                          className="w-full text-xs py-0.5"
+                          className="w-full max-w-[120px] text-xs py-0.5"
                           onClick={isRealisasiFilled ? () => handleOpenFaktorPenghambat(row) : undefined}
                           disabled={!isRealisasiFilled}
                         >

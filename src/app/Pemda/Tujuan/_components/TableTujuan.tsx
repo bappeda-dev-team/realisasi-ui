@@ -23,13 +23,13 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[400px] text-center">Tujuan</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Visi/Misi</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Indikator</th>
-                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Rumus Perhitungan</th>
-                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center">Sumber Data</th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center">Rumus Perhitungan</th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center">Sumber Data</th>
                     <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun} - {bulanLabel}
                     </th>
-                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penunjang</th>
-                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center">Faktor Penghambat</th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center">Faktor Penunjang</th>
+                    <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center">Faktor Penghambat</th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="text-white bg-red-500">

@@ -54,15 +54,15 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                         {indikatorIndex === 0 && targetIndex === 0 && (
                             <>
                                 <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{no}</td>
-                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanPemda}</td>
-                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-center">{tujuan.visiMisi || "-"}</td>
+                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-left">{tujuan.tujuanPemda}</td>
+                                <td rowSpan={totalRows} className="border border-red-400 px-6 py-4 text-left">{tujuan.visiMisi || "-"}</td>
                             </>
                         )}
                         {targetIndex === 0 && (
                             <>
-                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.indikator ?? "-"}</td>
-                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.rumusPerhitungan || "-"}</td>
-                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-center">{indikator.sumberData || "-"}</td>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-left">{indikator.indikator ?? "-"}</td>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-left">{indikator.rumusPerhitungan || "-"}</td>
+                                <td rowSpan={rowSpan} className="border border-red-400 px-6 py-4 text-left">{indikator.sumberData || "-"}</td>
                             </>
                         )}
                         {target ? (
@@ -153,8 +153,8 @@ const EmptyIndikatorRow: React.FC<{
     return (
         <tr key={tujuan.tujuanId}>
             <td className="border border-red-400 px-6 py-4 text-center">{no}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{tujuan.tujuanPemda}</td>
-            <td className="border border-red-400 px-6 py-4 text-center">{tujuan.visiMisi || "-"}</td>
+            <td className="border border-red-400 px-6 py-4 text-left">{tujuan.tujuanPemda}</td>
+            <td className="border border-red-400 px-6 py-4 text-left">{tujuan.visiMisi || "-"}</td>
             <td className="border border-red-400 px-6 py-4 text-center text-red-600 font-medium">Data indikator tidak ada / belum di isi</td>
             <td className="border border-red-400 px-6 py-4 text-center">-</td>
             <td className="border border-red-400 px-6 py-4 text-center">-</td>
@@ -172,7 +172,7 @@ const EmptyIndikatorRow: React.FC<{
             <td className="border border-red-400 px-6 py-4 text-center">
                 <div className="flex flex-col items-center gap-1">
                     <span>-</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                    <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
                         Faktor
                     </ButtonGreenBorder>
                 </div>
@@ -180,7 +180,7 @@ const EmptyIndikatorRow: React.FC<{
             <td className="border border-red-400 px-6 py-4 text-center">
                 <div className="flex flex-col items-center gap-1">
                     <span>-</span>
-                    <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                    <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
                         Faktor
                     </ButtonGreenBorder>
                 </div>

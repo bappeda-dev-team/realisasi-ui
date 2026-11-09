@@ -118,7 +118,7 @@ const SasaranOpdTable = () => {
         const doc = new jsPDF({
             orientation: "landscape",
             unit: "pt",
-            format: "a4",
+            format: "a3",
         });
 
         const periodLabel = `${yearLabel} - ${monthLabel}`;
@@ -345,13 +345,13 @@ const SasaranOpdTable = () => {
                                     </td>
                                     <td
                                         rowSpan={2}
-                                        className="border-r border-b px-6 py-3 min-w-[300px]"
+                                        className="border-r border-b px-6 py-3 min-w-[250px]"
                                     >
                                         Rumus Perhitungan
                                     </td>
                                     <td
                                         rowSpan={2}
-                                        className="border-r border-b px-6 py-3 min-w-[300px]"
+                                        className="border-r border-b px-6 py-3 min-w-[250px]"
                                     >
                                         Sumber Data
                                     </td>
@@ -360,13 +360,13 @@ const SasaranOpdTable = () => {
                                     </th>
                                     <th
                                         rowSpan={2}
-                                        className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                                        className="border-l border-b px-6 py-3 min-w-[250px] text-center"
                                     >
                                         Faktor Penunjang
                                     </th>
                                     <th
                                         rowSpan={2}
-                                        className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                                        className="border-l border-b px-6 py-3 min-w-[250px] text-center"
                                     >
                                         Faktor Penghambat
                                     </th>
@@ -394,18 +394,18 @@ const SasaranOpdTable = () => {
                                                     <td rowSpan={targets.length} className="border-x border-b border-emerald-500 py-4 px-3 text-center">
                                                         {index + 1}
                                                     </td>
-                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                         {item.rekin || "-"}
                                                     </td>
-                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                         <div className="flex gap-2 items-center">
                                                             <p>{item.indikator || "-"}</p>
                                                         </div>
                                                     </td>
-                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                         {item.rumusPerhitungan || "-"}
                                                     </td>
-                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4">
+                                                    <td rowSpan={targets.length} className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                         {item.sumberData || "-"}
                                                     </td>
                                                 </>

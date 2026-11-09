@@ -779,8 +779,8 @@ const KegiatanSubKegiatanTable = () => {
                 9: { cellWidth: 48, halign: "center" },
                 10: { cellWidth: 42, halign: "center" },
                 11: { cellWidth: 46, halign: "center" },
-                12: { cellWidth: 80 },
-                13: { cellWidth: 80 },
+                12: { cellWidth: 140 },
+                13: { cellWidth: 140 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -850,8 +850,8 @@ const KegiatanSubKegiatanTable = () => {
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Kegiatan / Sub Kegiatan</td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                                     <th colSpan={8} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja ${activatedTahun} - ${bulanName}`}</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penghambat</th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
                                     <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
                                 </tr>
                                 <tr className={headerColor}>
@@ -901,7 +901,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     <span className="text-xs text-gray-500">({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
-                                            <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <td className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                 {row.indikatorNull ? (
                                                     <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
                                                 ) : (
@@ -959,7 +959,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     <span>{target?.faktorPenunjang || "-"}</span>
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
-                                                            className="w-full text-xs py-0.5"
+                                                            className="w-full max-w-[120px] text-xs py-0.5"
                                                             disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenunjang(row)}
                                                         >
@@ -973,7 +973,7 @@ const KegiatanSubKegiatanTable = () => {
                                                     <span>{target?.faktorPenghambat || "-"}</span>
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
-                                                            className="w-full text-xs py-0.5"
+                                                            className="w-full max-w-[120px] text-xs py-0.5"
                                                             disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenghambat(row)}
                                                         >

@@ -476,8 +476,8 @@ const ProgramTable = () => {
                 6: { cellWidth: 46, halign: "center" },
                 7: { cellWidth: 50, halign: "center" },
                 8: { cellWidth: 80 },
-                9: { cellWidth: 110 },
-                10: { cellWidth: 110 },
+                9: { cellWidth: 140 },
+                10: { cellWidth: 140 },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -548,8 +548,8 @@ const ProgramTable = () => {
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Program</td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                                     <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Program ${activatedTahun} - ${bulanName}`}</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[150px] text-center">Faktor Penghambat</th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
                                     <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
                                 </tr>
                                 <tr className={headerColor}>
@@ -580,7 +580,7 @@ const ProgramTable = () => {
                                                     <span className="text-sm text-gray-500">({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
-                                            <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                            <td className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                                 {row.indikatorNull ? (
                                                     <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
                                                 ) : (
@@ -618,7 +618,7 @@ const ProgramTable = () => {
                                                     <span>{target?.faktorPenunjang || "-"}</span>
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
-                                                            className="w-full text-xs py-0.5"
+                                                            className="w-full max-w-[120px] text-xs py-0.5"
                                                             disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenunjang(row)}
                                                         >
@@ -632,7 +632,7 @@ const ProgramTable = () => {
                                                     <span>{target?.faktorPenghambat || "-"}</span>
                                                     {canEditRealisasi && (
                                                         <ButtonGreenBorder
-                                                            className="w-full text-xs py-0.5"
+                                                            className="w-full max-w-[120px] text-xs py-0.5"
                                                             disabled={!!row.indikatorNull}
                                                             onClick={() => handleOpenFaktorPenghambat(row)}
                                                         >

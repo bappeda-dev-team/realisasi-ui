@@ -180,7 +180,7 @@ const SasaranPage = () => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     const periodLabel = `${selectedTahunNum} - ${bulanName}`;
@@ -293,16 +293,16 @@ const SasaranPage = () => {
       },
       columnStyles: {
         0: { cellWidth: 26, halign: "center" },
-        1: { cellWidth: 150 },
-        2: { cellWidth: 120 },
+        1: { cellWidth: 120 },
+        2: { cellWidth: 100 },
         3: { cellWidth: 100 },
-        4: { cellWidth: 120 },
+        4: { cellWidth: 100 },
         5: { cellWidth: 45, halign: "center" },
         6: { cellWidth: 55, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
         8: { cellWidth: 70 },
-        9: { cellWidth: 70 },
-        10: { cellWidth: 70 },
+        9: { cellWidth: 100 },
+        10: { cellWidth: 100 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },

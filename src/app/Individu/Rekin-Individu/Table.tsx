@@ -297,7 +297,7 @@ const Table = () => {
         const doc = new jsPDF({
             orientation: "landscape",
             unit: "pt",
-            format: "a4",
+            format: "a3",
         });
 
         const periodLabel = `${yearLabel} - ${monthLabel}`;
@@ -496,13 +496,13 @@ const Table = () => {
                             </th>
                             <th
                                 rowSpan={2}
-                                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                                className="border-l border-b px-6 py-3 min-w-[250px] text-center"
                             >
                                 Faktor Penunjang
                             </th>
                             <th
                                 rowSpan={2}
-                                className="border-l border-b px-6 py-3 min-w-[150px] text-center"
+                                className="border-l border-b px-6 py-3 min-w-[250px] text-center"
                             >
                                 Faktor Penghambat
                             </th>
@@ -529,7 +529,7 @@ const Table = () => {
                                     <td className="border-x border-b border-emerald-500 py-4 px-3 text-center">
                                         {index + 1}
                                     </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                         {item.rekin || "-"}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -538,7 +538,7 @@ const Table = () => {
                                             <p>({item.nip || "-"})</p>
                                         </div>
                                     </td>
-                                    <td className="border-r border-b border-emerald-500 px-6 py-4">
+                                    <td className="border-r border-b border-emerald-500 px-6 py-4 text-left">
                                         <div className="flex gap-2 items-center">
                                             {item.indikatorNull ? (
                                                 <p className="text-red-600 text-sm">{item.indikator}</p>
@@ -575,7 +575,7 @@ const Table = () => {
                                             <span>{target?.faktorPenunjang || "-"}</span>
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
-                                                    className="w-full text-xs py-0.5"
+                                                    className="w-full max-w-[120px] text-xs py-0.5"
                                                     onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenunjang(item) : undefined}
                                                     disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >
@@ -589,7 +589,7 @@ const Table = () => {
                                             <span>{target?.faktorPenghambat || "-"}</span>
                                             {canEditRealisasi && (
                                                 <ButtonGreenBorder
-                                                    className="w-full text-xs py-0.5"
+                                                    className="w-full max-w-[120px] text-xs py-0.5"
                                                     onClick={isRealisasiFilled && !item.indikatorNull ? () => handleOpenFaktorPenghambat(item) : undefined}
                                                     disabled={!isRealisasiFilled || !!item.indikatorNull}
                                                 >

@@ -137,7 +137,7 @@ const IkuPage = () => {
     const doc = new jsPDF({
       orientation: "landscape",
       unit: "pt",
-      format: "a4",
+      format: "a3",
     });
 
     doc.setFontSize(14);
@@ -222,16 +222,16 @@ const IkuPage = () => {
       },
       columnStyles: {
         0: { cellWidth: 26, halign: "center" },
-        1: { cellWidth: 130 },
+        1: { cellWidth: 120 },
         2: { cellWidth: 60 },
-        3: { cellWidth: 80 },
-        4: { cellWidth: 60 },
+        3: { cellWidth: 100 },
+        4: { cellWidth: 100 },
         5: { cellWidth: 45, halign: "center" },
         6: { cellWidth: 45, halign: "center" },
         7: { cellWidth: 45, halign: "center" },
         8: { cellWidth: 80 },
-        9: { cellWidth: 80 },
-        10: { cellWidth: 80 },
+        9: { cellWidth: 100 },
+        10: { cellWidth: 100 },
       },
       tableWidth: "wrap",
       margin: { top: 72, right: 40, bottom: 40, left: 40 },
