@@ -47,13 +47,13 @@ function TableSasaran({
           </th>
           <th
             rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center"
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
             Rumus Perhitungan
           </th>
           <th
             rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center"
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
             Sumber Data
           </th>
@@ -66,13 +66,13 @@ function TableSasaran({
           </th>
           <th
             rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
             Faktor Penunjang
           </th>
           <th
             rowSpan={2}
-            className="border-r border-b py-4 px-6 border-gray-300 min-w-[150px] text-center"
+            className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
             Faktor Penghambat
           </th>

@@ -299,7 +299,7 @@ const FaktorCell: React.FC<FaktorCellProps> = ({ value, isRealisasiFilled, onEdi
         <div className="flex flex-col items-center gap-1">
             <span>{value || "-"}</span>
             <ButtonGreenBorder
-                className="w-full text-xs py-0.5"
+                className="w-full max-w-[120px] text-xs py-0.5"
                 onClick={onEdit}
                 disabled={!isRealisasiFilled}
             >
@@ -594,13 +594,13 @@ const Table = () => {
                 3: { cellWidth: 56, halign: "center" },
                 4: { cellWidth: 52, halign: "center" },
                 5: { cellWidth: 50, halign: "center" },
-                6: { cellWidth: 150, halign: "center" },
+                6: { cellWidth: 130, halign: "center" },
                 7: { cellWidth: 62, halign: "center" },
                 8: { cellWidth: 68, halign: "center" },
                 9: { cellWidth: 54, halign: "center" },
-                10: { cellWidth: 150, halign: "center" },
-                11: { cellWidth: 110, halign: "center" },
-                12: { cellWidth: 110, halign: "center" },
+                10: { cellWidth: 130, halign: "center" },
+                11: { cellWidth: 130, halign: "center" },
+                12: { cellWidth: 130, halign: "center" },
             },
             tableWidth: "wrap",
             margin: { top: 72, right: 40, bottom: 40, left: 40 },
@@ -752,8 +752,8 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || ""} - ${bulanName || ""}`}</th>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || ""} - ${bulanName || ""}`}</th>
-                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[160px] text-center">Faktor Penunjang</th>
-                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[160px] text-center">Faktor Penghambat</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                         </tr>
                         <tr className={headerColor}>
@@ -789,7 +789,7 @@ const Table = () => {
                                                     <span className={`text-xs ${row.jenisRenja === "Subkegiatan" ? "text-slate-700" : "text-white/90"}`}>({row.kodeRenja || "-"})</span>
                                                 </div>
                                             </td>
-                                            <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line align-top">
+                                            <td className="border-r border-b border-sky-600 px-6 py-4 whitespace-pre-line text-left align-top">
                                                 {row.indikatorEmpty ? (
                                                     <span className="text-red-600 font-medium">Data indikator tidak ada / belum di isi</span>
                                                 ) : (
@@ -860,7 +860,7 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
                                                                 Faktor
                                                             </ButtonGreenBorder>
                                                         </div>
@@ -868,7 +868,7 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full text-xs py-0.5" disabled onClick={() => {}}>
+                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
                                                                 Faktor
                                                             </ButtonGreenBorder>
                                                         </div>

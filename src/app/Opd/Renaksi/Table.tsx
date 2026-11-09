@@ -97,7 +97,7 @@ const Table: React.FC<TableProps> = ({
       <span className="whitespace-pre-line">{value || '-'}</span>
       {hasRealisasi(row) && (
         <ButtonGreenBorder
-          className="w-full text-xs py-0.5"
+          className="w-full max-w-[120px] text-xs py-0.5"
           onClick={onEdit}
         >
           Faktor
@@ -166,8 +166,8 @@ const Table: React.FC<TableProps> = ({
             </th>
             <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian (%)</th>
             <th className="border-l border-b px-3 py-2 min-w-[180px]">Keterangan Capaian</th>
-            <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penunjang</th>
-            <th className="border-l border-b px-3 py-2 min-w-[150px]">Faktor Penghambat</th>
+            <th className="border-l border-b px-3 py-2 min-w-[250px]">Faktor Penunjang</th>
+            <th className="border-l border-b px-3 py-2 min-w-[250px]">Faktor Penghambat</th>
           </tr>
         </thead>
         <tbody>

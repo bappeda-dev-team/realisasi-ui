@@ -24,10 +24,10 @@ export default function RowIkuComponent({
         <>
             <tr key={ikuPemda.indikator_id}>
                 <td className="border-x border-b border-sky-500 py-4 px-3 text-center">{no}</td>
-                <td className="border-r border-b border-sky-500 px-6 py-4">{ikuPemda.indikator}</td>
+                <td className="border-r border-b border-sky-500 px-6 py-4 text-left">{ikuPemda.indikator}</td>
                 <td className="border-r border-b border-sky-500 px-6 py-4 text-center">{ikuPemda.asal_iku}</td>
-                <td className="border-r border-b border-sky-500 px-6 py-4">{ikuPemda.rumus_perhitungan}</td>
-                <td className="border-r border-b border-sky-500 px-6 py-4">{ikuPemda.sumber_data}</td>
+                <td className="border-r border-b border-sky-500 px-6 py-4 text-left">{ikuPemda.rumus_perhitungan}</td>
+                <td className="border-r border-b border-sky-500 px-6 py-4 text-left">{ikuPemda.sumber_data}</td>
                 {targetList.length > 0 ? (
                     targetList.map((target, idx) => (
                         <ColTargetIku

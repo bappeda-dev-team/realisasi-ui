@@ -17,13 +17,13 @@ export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian, hand
                     <th rowSpan={2} className="border-r border-b px-6 py-3 text-center">No</th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">IKU</th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Asal IKU</th>
-                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Rumus Perhitungan</th>
-                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Sumber Data</th>
+                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]">Rumus Perhitungan</th>
+                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]">Sumber Data</th>
                     <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
                         {tahun}
                     </th>
-                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px] text-center">Faktor Penunjang</th>
-                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px] text-center">Faktor Penghambat</th>
+                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
+                    <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
                 </tr>
                 <tr className="text-white bg-sky-500">
