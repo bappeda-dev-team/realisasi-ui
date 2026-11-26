@@ -70,6 +70,11 @@ interface PegawaiData {
   status_pegawai: string;
 }
 
+interface RoleOptionData {
+  label: string;
+  value: string;
+}
+
 export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd, opdLocked }: FilterProps) {
   const { branding } = useBrandingContext();
   const {
@@ -103,6 +108,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   const [bulanOptions, setBulanOptions] = useState<LabelDropdown[]>([]);
   const [levelRoleOptions, setLevelRoleOptions] = useState<LabelDropdown[]>([]);
   const [namaPegawaiOptions, setNamaPegawaiOptions] = useState<LabelDropdown[]>([]);
+  const [roleIdByLevel, setRoleIdByLevel] = useState<Record<string, string>>({});
 
   const [loadingTahun, setLoadingTahun] = useState<boolean>(false);
   const [fetchTrigger, setFetchTrigger] = useState<number>(0);
@@ -140,11 +146,24 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   });
 
   const {
+    data: dataRoleOptions,
+    loading: loadingRoleOptions,
+  } = useFetchData<{ data: RoleOptionData[] }>({
+    url: `/api/kepegawaian/role/options`,
+    trigger: fetchTrigger,
+  });
+
+  const selectedRoleId = levelRole ? roleIdByLevel[levelRole] : undefined;
+
+  const {
     data: dataPegawai,
     loading: loadingPegawai,
     error: errorPegawai,
   } = useFetchData<{ data: PegawaiData[] }>({
-    url: `/kepegawaian-service/pegawai`,
+    url:
+      dinas && selectedRoleId && (isSuperAdmin || isAdminOpd)
+        ? `/api/kepegawaian/pegawai?kodeOpd=${encodeURIComponent(dinas)}&roleId=${encodeURIComponent(selectedRoleId)}`
+        : null,
     trigger: fetchTrigger,
   });
   // ----------------------------
@@ -252,9 +271,33 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
   }, [dataPeriode]);
 
   // ----------------------------
+  // DROPDOWN LEVEL ROLE
+  // ----------------------------
+  useEffect(() => {
+    if (dataRoleOptions?.data) {
+      const nextRoleIdByLevel: Record<string, string> = {};
+      const options = dataRoleOptions.data.map((role) => {
+        const normalizedLevel = role.label.trim().replace(/\s+/g, "_").toUpperCase();
+        nextRoleIdByLevel[normalizedLevel] = role.value;
+        return {
+          value: normalizedLevel,
+          label: role.label,
+        };
+      });
+
+      setRoleIdByLevel(nextRoleIdByLevel);
+      setLevelRoleOptions(options);
+    }
+  }, [dataRoleOptions]);
+
+  // ----------------------------
   // DROPDOWN PEGAWAI
   // ----------------------------
   useEffect(() => {
+    if (!dinas || !selectedRoleId) {
+      setNamaPegawaiOptions([]);
+      return;
+    }
     if (dataPegawai?.data) {
       setNamaPegawaiOptions(
         dataPegawai.data.map((p) => ({
@@ -262,8 +305,10 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
           label: p.nama_pegawai,
         }))
       );
+    } else if (!loadingPegawai) {
+      setNamaPegawaiOptions([]);
     }
-  }, [dataPegawai]);
+  }, [dataPegawai, dinas, loadingPegawai, selectedRoleId]);
 
   // ----------------------------
   // DROPDOWN TAHUN
@@ -304,14 +349,6 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     ];
 
     setBulanOptions(resp);
-
-    // Dummy options for Level Role since API is not provided
-    setLevelRoleOptions([
-      { label: "Level 1", value: "LEVEL_1" },
-      { label: "Level 2", value: "LEVEL_2" },
-      { label: "Level 3", value: "LEVEL_3" },
-      { label: "Level 4", value: "LEVEL_4" },
-    ]);
   }
 
   // ----------------------------
@@ -449,7 +486,11 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
               options={dinasOptions}
               isLoading={loadingDinas}
               value={dinasOptions.find((x) => x.value === dinas) ?? null}
-              onChange={(opt) => setDinas(opt?.value ?? null)}
+              onChange={(opt) => {
+                setDinas(opt?.value ?? null);
+                setNamaPegawai(null);
+                setActivatedNamaPegawai(null);
+              }}
               placeholder={loadingDinas ? "Memuat..." : "Pilih Dinas/OPD"}
               isSearchable
               isClearable={effectivelyCanEditOpd || disableOpdLock}
@@ -502,9 +543,14 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
                 instanceId="select-level-role"
                 className="text-sm w-full sm:w-44"
                 options={levelRoleOptions}
+                isLoading={loadingRoleOptions}
                 value={levelRoleOptions.find((x) => x.value === levelRole) ?? null}
-                onChange={(opt) => setLevelRole(opt?.value ?? null)}
-                placeholder="Level Role"
+                onChange={(opt) => {
+                  setLevelRole(opt?.value ?? null);
+                  setNamaPegawai(null);
+                  setActivatedNamaPegawai(null);
+                }}
+                placeholder={loadingRoleOptions ? "Memuat..." : "Level Role"}
                 isSearchable
                 isClearable={!activatedLevelRole || isAdminOrSuperAdmin}
                 isDisabled={Boolean(activatedLevelRole) && !isAdminOrSuperAdmin}
