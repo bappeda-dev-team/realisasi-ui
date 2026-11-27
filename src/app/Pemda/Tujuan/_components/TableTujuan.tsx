@@ -26,7 +26,7 @@ function TableTujuan({ tahun, bulanLabel, tujuansPemda, canEdit, handleOpenPrint
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Rumus Perhitungan</span><span>(5)</span></div></th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Sumber Data</span><span>(6)</span></div></th>
                     <th colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
-                        {tahun} - {bulanLabel}
+                        Realisasi - Tujuan
                     </th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(11)</span></div></th>
                     <th rowSpan={2} className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(12)</span></div></th>

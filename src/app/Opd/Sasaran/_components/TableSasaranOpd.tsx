@@ -23,7 +23,7 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleO
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]"><div className="flex flex-col items-center"><span>Indikator</span><span>(3)</span></div></td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]"><div className="flex flex-col items-center"><span>Rumus Perhitungan</span><span>(4)</span></div></td>
                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]"><div className="flex flex-col items-center"><span>Sumber Data</span><span>(5)</span></div></td>
-                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{tahun} - {bulanLabel}</th>
+                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi - Sasaran</th>
                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(10)</span></div></th>
                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(11)</span></div></th>
                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center"><div className="flex flex-col items-center"><span>Aksi</span><span>(12)</span></div></th>

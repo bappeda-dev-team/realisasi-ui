@@ -348,8 +348,8 @@ const SasaranPage = () => {
     <>
       {renderSyncButton()}
       <div className="overflow-auto grid gap-2">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold">Realisasi Sasaran Pemda</h2>
+        <div className="flex items-center mb-2">
+          <h2 className="text-lg font-semibold">Realisasi Sasaran Pemda - {selectedTahunNum} - {bulanName}</h2>
       </div>
       {realisasiLoading ? (
         <div className="rounded border border-red-200 px-4 py-6 text-center">

@@ -2,10 +2,12 @@
 
 import React from 'react'
 import { useFilterContext } from '@/context/FilterContext'
+import { getMonthName } from '@/lib/months'
 import Table from './Table'
 
 const RenjaTargetPage = () => {
   const { activatedDinas: kodeOpd, activatedTahun: selectedTahun, activatedBulan: selectedBulan } = useFilterContext()
+  const bulanName = getMonthName(selectedBulan)
 
   if (!kodeOpd) {
     return (
@@ -25,8 +27,8 @@ const RenjaTargetPage = () => {
 
   return (
     <div className="transition-all ease-in-out duration-500">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold">Rencana Kerja OPD</h2>
+      <div className="flex items-center mb-2">
+        <h2 className="text-lg font-semibold">Rencana Kerja OPD - {selectedTahun} - {bulanName}</h2>
       </div>
       <Table />
     </div>

@@ -492,7 +492,7 @@ const Table = () => {
                                 <div className="flex flex-col items-center"><span>Indikator</span><span>(4)</span></div>
                             </td>
                             <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
-                                {yearLabel} - {monthLabel}
+                                Realisasi - Rekin
                             </th>
                             <th
                                 rowSpan={2}
@@ -516,7 +516,7 @@ const Table = () => {
                         <tr className={headerColor}>
                             <th className="border-l border-r border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(5)</span></div></th>
                             <th className="border-l border-r border-b px-6 py-3 min-w-[100px]"><div className="flex flex-col items-center"><span>Realisasi (%)</span><span>(6)</span></div></th>
-                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(7)</span></div></th>
+                            <th className="border-l border-r border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(7)</span><span>(6/5*100)</span></div></th>
                             <th className="border-l border-r border-b px-6 py-3 min-w-[150px]"><div className="flex flex-col items-center"><span>Keterangan Capaian</span><span>(8)</span></div></th>
                         </tr>
                     </thead>

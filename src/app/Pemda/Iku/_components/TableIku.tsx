@@ -4,12 +4,13 @@ import RowIkuComponent from './RowIkuComponent';
 
 interface TableIkuProps {
     tahun: number;
+    bulan: string;
     ikuPemda: IkuPemda[];
     targetRealisasiCapaian: IkuPemdaTargetRealisasiCapaian[];
     handleOpenPrintPreview: () => void;
 }
 
-export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian, handleOpenPrintPreview }: TableIkuProps) {
+export default function TableIku({ tahun, bulan, ikuPemda, targetRealisasiCapaian, handleOpenPrintPreview }: TableIkuProps) {
     return (
         <table className="w-full">
             <thead>
@@ -20,7 +21,7 @@ export default function TableIku({ tahun, ikuPemda, targetRealisasiCapaian, hand
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]"><div className="flex flex-col items-center"><span>Rumus Perhitungan</span><span>(4)</span></div></th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px]"><div className="flex flex-col items-center"><span>Sumber Data</span><span>(5)</span></div></th>
                     <th key={tahun} colSpan={4} className="border-r border-b py-2 px-6 border-gray-300 min-w-[100px] text-center">
-                        {tahun}
+                        Realisasi - IKU
                     </th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(10)</span></div></th>
                     <th rowSpan={2} className="border-r border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(11)</span></div></th>

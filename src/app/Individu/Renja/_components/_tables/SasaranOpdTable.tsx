@@ -356,7 +356,7 @@ const SasaranOpdTable = () => {
                                         <div className="flex flex-col items-center"><span>Sumber Data</span><span>(5)</span></div>
                                     </td>
                                     <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">
-                                        {yearLabel} - {monthLabel}
+                                        Renja
                                     </th>
                                     <th
                                         rowSpan={2}

@@ -434,7 +434,7 @@ const Table = () => {
                 colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
-                {monthColumnLabel}
+                Realisasi - Renaksi
               </th>
               <th
                 rowSpan={2}

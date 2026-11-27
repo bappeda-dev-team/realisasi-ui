@@ -750,8 +750,8 @@ const Table = () => {
                             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center"><div className="flex flex-col items-center"><span>No</span><span>(1)</span></div></td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]"><div className="flex flex-col items-center"><span>Program/Kegiatan/Subkegiatan</span><span>(2)</span></div></td>
                             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Indikator</span><span>(3)</span></div></td>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || ""} - ${bulanName || ""}`}</th>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || ""} - ${bulanName || ""}`}</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Renja Target</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Renja Pagu</th>
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(12)</span></div></th>
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(13)</span></div></th>
                             <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center"><div className="flex flex-col items-center"><span>Aksi</span><span>(14)</span></div></th>

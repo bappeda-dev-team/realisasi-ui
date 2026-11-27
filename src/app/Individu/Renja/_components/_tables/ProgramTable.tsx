@@ -547,7 +547,7 @@ const ProgramTable = () => {
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]"><div className="flex flex-col items-center"><span>Nama/NIP</span><span>(2)</span></div></td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Program</span><span>(3)</span></div></td>
                                     <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Indikator</span><span>(4)</span></div></td>
-                                    <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Program ${activatedTahun} - ${bulanName}`}</th>
+                                    <th colSpan={5} className="border-l border-b px-6 py-3 min-w-[100px]">Renja</th>
                                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(10)</span></div></th>
                                     <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(11)</span></div></th>
                                     <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center"><div className="flex flex-col items-center"><span>Aksi</span><span>(12)</span></div></td>

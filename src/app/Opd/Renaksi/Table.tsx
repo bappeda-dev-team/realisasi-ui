@@ -150,7 +150,7 @@ const Table: React.FC<TableProps> = ({
               <div className="flex flex-col items-center"><span>Anggaran (Rp)</span><span>(6)</span></div>
             </td>
             <th colSpan={6} className="border-l border-b px-6 py-3 min-w-[100px] text-center uppercase">
-              {periodLabel}
+              Realisasi - Renaksi
             </th>
             <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">
               <div className="flex flex-col items-center"><span>Aksi</span><span>(13)</span></div>

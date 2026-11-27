@@ -401,8 +401,8 @@ export default function TujuanPage() {
     <>
       {renderSyncButton()}
       <div className="overflow-auto grid gap-2">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold">Realisasi Tujuan OPD - {namaDinas ?? "-"}</h2>
+        <div className="flex items-center mb-2">
+          <h2 className="text-lg font-semibold">Realisasi Tujuan OPD - {namaDinas ?? "-"} - {selectedTahunValue} - {bulanName}</h2>
         </div>
 
         {penetapanLoading ? (

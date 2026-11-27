@@ -12,6 +12,7 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import { getMonthName } from "@/lib/months";
 
 const IkuPage = () => {
   const {
@@ -31,6 +32,7 @@ const IkuPage = () => {
   }
 
   const selectedTahunValue = selectedTahun ? parseInt(selectedTahun) : 2025;
+  const bulanName = getMonthName(activatedBulan) ?? "Bulan";
 
   const {
     data: ikuRealisasi,
@@ -274,10 +276,11 @@ const IkuPage = () => {
 
   return (
     <div className="overflow-auto grid gap-2">
-      <h2 className="text-lg font-semibold mb-2">Realisasi IKU Pemda</h2>
+      <h2 className="text-lg font-semibold mb-2">Realisasi IKU Pemda - {selectedTahunValue} - {bulanName}</h2>
       <div className="mt-2 rounded-t-lg border border-red-400">
         <TableIku
           tahun={selectedTahunValue}
+          bulan={bulanName}
           ikuPemda={PerencanaanIku}
           targetRealisasiCapaian={TargetRealisasiCapaian}
           handleOpenPrintPreview={handleOpenPrintPreview}
