@@ -31,31 +31,46 @@ function TableSasaran({
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[50px] text-center"
           >
-            No
+            <div className="flex flex-col items-center">
+              <span>No</span>
+              <span>(1)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[400px] text-center"
           >
-            Sasaran
+            <div className="flex flex-col items-center">
+              <span>Sasaran</span>
+              <span>(2)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[200px] text-center"
           >
-            Indikator
+            <div className="flex flex-col items-center">
+              <span>Indikator</span>
+              <span>(3)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
-            Rumus Perhitungan
+            <div className="flex flex-col items-center">
+              <span>Rumus Perhitungan</span>
+              <span>(4)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
-            Sumber Data
+            <div className="flex flex-col items-center">
+              <span>Sumber Data</span>
+              <span>(5)</span>
+            </div>
           </th>
           <th
             key={tahun}
@@ -68,33 +83,55 @@ function TableSasaran({
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
-            Faktor Penunjang
+            <div className="flex flex-col items-center">
+              <span>Faktor Penunjang</span>
+              <span>(10)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[250px] text-center"
           >
-            Faktor Penghambat
+            <div className="flex flex-col items-center">
+              <span>Faktor Penghambat</span>
+              <span>(11)</span>
+            </div>
           </th>
           <th
             rowSpan={2}
             className="border-r border-b py-4 px-6 border-gray-300 min-w-[120px] text-center"
           >
-            Aksi
+            <div className="flex flex-col items-center">
+              <span>Aksi</span>
+              <span>(12)</span>
+            </div>
           </th>
         </tr>
         <tr className="text-white bg-red-500">
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Target (%)
+            <div className="flex flex-col items-center">
+              <span>Target</span>
+              <span>(6)</span>
+            </div>
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Realisasi (%)
+            <div className="flex flex-col items-center">
+              <span>Realisasi (%)</span>
+              <span>(7)</span>
+            </div>
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[50px] text-center">
-            Capaian (%)
+            <div className="flex flex-col items-center">
+              <span>Capaian (%)</span>
+              <span>(8)</span>
+              <span>(7/6*100)</span>
+            </div>
           </th>
           <th className="border-b border-r py-2 px-6 border-gray-300 min-w-[150px] text-center">
-            Keterangan Capaian
+            <div className="flex flex-col items-center">
+              <span>Keterangan Capaian</span>
+              <span>(9)</span>
+            </div>
           </th>
         </tr>
       </thead>
