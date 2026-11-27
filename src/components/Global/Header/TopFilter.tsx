@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useBrandingContext } from "@/context/BrandingContext";
 import { useFilterContext } from "@/context/FilterContext";
-import Select from "react-select";
+import Select, { StylesConfig } from "react-select";
 import Cookies from "js-cookie";
 import { ToastSuccess } from "@/components/Global/Alert";
 import { User } from "@/types";
@@ -74,6 +74,14 @@ interface RoleOptionData {
   label: string;
   value: string;
 }
+
+const getSelectStyles = <Option,>(): StylesConfig<Option, false> => ({
+  control: (baseStyles, state) => ({
+    ...baseStyles,
+    borderColor: state.hasValue ? "#22c55e" : baseStyles.borderColor,
+    borderWidth: state.hasValue ? "3px" : baseStyles.borderWidth,
+  }),
+});
 
 export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd, opdLocked }: FilterProps) {
   const { branding } = useBrandingContext();
@@ -483,6 +491,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
             <Select
               instanceId="select-dinas"
               className="text-sm w-full sm:w-64"
+              styles={getSelectStyles<LabelDropdown>()}
               options={dinasOptions}
               isLoading={loadingDinas}
               value={dinasOptions.find((x) => x.value === dinas) ?? null}
@@ -502,6 +511,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
           <Select
             instanceId="select-periode"
             className="text-sm w-full sm:w-56"
+            styles={getSelectStyles<PeriodeDropdown>()}
             options={periodeOptions}
             isLoading={loadingPeriode}
             value={periodeOptions.find((x) => x.value === periode) ?? null}
@@ -515,6 +525,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
           <Select
             instanceId="select-tahun"
             className="text-sm w-full sm:w-44"
+            styles={getSelectStyles<LabelDropdown>()}
             options={tahunOptions}
             isLoading={loadingTahun}
             value={tahunOptions.find((x) => x.value === tahun) ?? null}
@@ -528,6 +539,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
           <Select
             instanceId="select-bulan"
             className="text-sm w-full sm:w-44"
+            styles={getSelectStyles<LabelDropdown>()}
             options={bulanOptions}
             value={bulanOptions.find((x) => x.value === bulan) ?? null}
             onChange={(opt) => setBulan(opt?.value ?? null)}
@@ -542,6 +554,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
               <Select
                 instanceId="select-level-role"
                 className="text-sm w-full sm:w-44"
+                styles={getSelectStyles<LabelDropdown>()}
                 options={levelRoleOptions}
                 isLoading={loadingRoleOptions}
                 value={levelRoleOptions.find((x) => x.value === levelRole) ?? null}
@@ -561,6 +574,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
                 <Select
                   instanceId="select-nama-pegawai"
                   className="text-sm w-full sm:w-44"
+                  styles={getSelectStyles<LabelDropdown>()}
                   options={namaPegawaiOptions}
                   isLoading={loadingPegawai}
                   value={namaPegawaiOptions.find((x) => x.value === namaPegawai) ?? null}
