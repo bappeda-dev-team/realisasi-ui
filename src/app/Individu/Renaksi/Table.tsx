@@ -430,13 +430,7 @@ const Table = () => {
         {isLevel1 ? (
           <OpdTable
             rows={opdRows}
-            kodeOpd={kodeOpd ?? ""}
-            tahun={yearLabel ?? ""}
-            bulanKey={monthKey ?? ""}
-            bulanLabel={monthLabel ?? ""}
             onPrint={handleOpenPrintPreview}
-            onFaktorSuccess={refetch}
-            canEditFaktor={false}
             headerColor={headerColor}
           />
         ) : <table id="print-area-renaksi" className="w-full">

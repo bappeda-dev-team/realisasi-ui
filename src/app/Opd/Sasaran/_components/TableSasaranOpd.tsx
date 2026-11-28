@@ -4,15 +4,11 @@ import { SasaranOpdPenetapanGrouped } from '@/types'
 
 interface TableSasaranOpdProps {
     tahun: number;
-    bulanLabel?: string;
     sasaranOpd: SasaranOpdPenetapanGrouped[];
     handleOpenPrintPreview: () => void;
-    kodeOpd: string;
-    bulanKey?: string;
-    onFaktorSuccess?: () => void;
 }
 
-export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleOpenPrintPreview, kodeOpd, bulanKey, onFaktorSuccess }: TableSasaranOpdProps) {
+export default function TableSasaranOpd({ tahun, sasaranOpd, handleOpenPrintPreview }: TableSasaranOpdProps) {
 
     return (
         <table className="w-full">
@@ -42,9 +38,6 @@ export default function TableSasaranOpd({ tahun, bulanLabel, sasaranOpd, handleO
                         no={index + 1}
                         sasaranOpd={sasOpd}
                         tahun={tahun}
-                        kodeOpd={kodeOpd}
-                        bulanKey={bulanKey}
-                        onFaktorSuccess={onFaktorSuccess}
                         handleOpenPrintPreview={handleOpenPrintPreview}
                     />
                 ))}

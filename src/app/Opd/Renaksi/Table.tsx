@@ -1,12 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { ButtonGreenBorder } from '@/components/Global/Button/button'
-import { FormModal } from '@/components/Global/Modal'
 import { formatPercentageText } from '@/lib/formatPercentageText'
 import { RenaksiOpdPenetapanItem } from '@/types'
-import FormFaktorPenunjangRenaksiOpd from './_components/FormFaktorPenunjangRenaksiOpd'
-import FormFaktorPenghambatRenaksiOpd from './_components/FormFaktorPenghambatRenaksiOpd'
 
 export interface RenaksiRow {
   kodeRencanaAksiOpd: string
@@ -25,13 +22,7 @@ export interface RenaksiRow {
 
 interface TableProps {
   rows: RenaksiRow[]
-  kodeOpd: string
-  tahun: string
-  bulanKey: string
-  bulanLabel: string
   onPrint: () => void
-  onFaktorSuccess: () => void
-  canEditFaktor?: boolean
   headerColor?: string
 }
 
@@ -74,63 +65,12 @@ const formatNumber = (value: number | null | undefined): string => {
 
 const Table: React.FC<TableProps> = ({
   rows,
-  kodeOpd,
-  tahun,
-  bulanKey,
-  bulanLabel,
   onPrint,
-  onFaktorSuccess,
-  canEditFaktor = true,
   headerColor = 'bg-emerald-500 text-white',
 }) => {
-  const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null)
-  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false)
-  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false)
-
-  const periodLabel = `${tahun || 'Tahun'} - ${bulanLabel || 'Bulan'}`
-
-  const hasRealisasi = (row: RenaksiRow) =>
-    row.realisasi !== null && row.realisasi !== undefined && Number(row.realisasi) !== 0
-
-  const FaktorCell = ({ row, value, onEdit }: {
-    row: RenaksiRow
-    value: string
-    onEdit: () => void
-  }) => (
-    <div className="flex flex-col items-center gap-2">
-      <span className="whitespace-pre-line">{value || '-'}</span>
-      {canEditFaktor && hasRealisasi(row) && (
-        <ButtonGreenBorder
-          className="w-full max-w-[120px] text-xs py-0.5"
-          onClick={onEdit}
-        >
-          Faktor
-        </ButtonGreenBorder>
-      )}
-    </div>
+  const FaktorCell = ({ value }: { value: string }) => (
+    <span className="whitespace-pre-line">{value || '-'}</span>
   )
-
-  const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
-    if (!canEditFaktor) return
-    setSelectedRow(row)
-    setIsFaktorPenunjangModalOpen(true)
-  }
-
-  const handleCloseFaktorPenunjang = () => {
-    setIsFaktorPenunjangModalOpen(false)
-    setSelectedRow(null)
-  }
-
-  const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
-    if (!canEditFaktor) return
-    setSelectedRow(row)
-    setIsFaktorPenghambatModalOpen(true)
-  }
-
-  const handleCloseFaktorPenghambat = () => {
-    setIsFaktorPenghambatModalOpen(false)
-    setSelectedRow(null)
-  }
 
   return (
     <>
@@ -210,16 +150,12 @@ const Table: React.FC<TableProps> = ({
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell
-                  row={row}
                   value={row.faktorPenunjang}
-                  onEdit={() => handleOpenFaktorPenunjang(row)}
                 />
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell
-                  row={row}
                   value={row.faktorPenghambat}
-                  onEdit={() => handleOpenFaktorPenghambat(row)}
                 />
               </td>
               <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -238,47 +174,6 @@ const Table: React.FC<TableProps> = ({
         </tbody>
       </table>
 
-      {canEditFaktor && <FormModal
-        isOpen={isFaktorPenunjangModalOpen}
-        onClose={handleCloseFaktorPenunjang}
-        title="Faktor Penunjang"
-        maxWidthClass="max-w-lg"
-      >
-        <FormFaktorPenunjangRenaksiOpd
-          kodeOpd={kodeOpd}
-          tahun={tahun}
-          bulan={bulanKey}
-          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
-          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
-          currentValue={selectedRow?.faktorPenunjang ?? ''}
-          onClose={handleCloseFaktorPenunjang}
-          onSuccess={() => {
-            handleCloseFaktorPenunjang()
-            onFaktorSuccess()
-          }}
-        />
-      </FormModal>}
-
-      {canEditFaktor && <FormModal
-        isOpen={isFaktorPenghambatModalOpen}
-        onClose={handleCloseFaktorPenghambat}
-        title="Faktor Penghambat"
-        maxWidthClass="max-w-lg"
-      >
-        <FormFaktorPenghambatRenaksiOpd
-          kodeOpd={kodeOpd}
-          tahun={tahun}
-          bulan={bulanKey}
-          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
-          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
-          currentValue={selectedRow?.faktorPenghambat ?? ''}
-          onClose={handleCloseFaktorPenghambat}
-          onSuccess={() => {
-            handleCloseFaktorPenghambat()
-            onFaktorSuccess()
-          }}
-        />
-      </FormModal>}
     </>
   )
 }

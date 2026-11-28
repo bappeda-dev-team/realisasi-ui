@@ -381,12 +381,8 @@ export default function SasaranPage() {
         ) : (
           <TableSasaranOpd
             tahun={selectedTahunValue}
-            bulanLabel={bulanName}
             sasaranOpd={groupedSasaranOpd}
             handleOpenPrintPreview={handleOpenPrintPreview}
-            kodeOpd={kodeOpd}
-            bulanKey={bulanKey}
-            onFaktorSuccess={refetchPenetapan}
           />
         )}
 

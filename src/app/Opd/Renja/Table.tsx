@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from 'react';
 
 import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
 import { TbRefresh } from "react-icons/tb";
-import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
 import { useFetchData } from "@/hooks/useFetchData";
@@ -15,8 +14,6 @@ import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram,
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getSessionId } from "@/lib/session";
-import FormFaktorPenunjangRenjaOpd from "./_components/FormFaktorPenunjangRenjaOpd";
-import FormFaktorPenghambatRenjaOpd from "./_components/FormFaktorPenghambatRenjaOpd";
 import { useUserContext } from "@/context/UserContext";
 import { ROLES } from "@/constants/roles";
 
@@ -113,11 +110,6 @@ interface FlattenedRenjaRow {
         keteranganCapaianPagu: string;
     }>;
 }
-
-type SelectedFaktorTarget = {
-    target: FlattenedRenjaRow["targets"][number];
-    jenis: "penunjang" | "penghambat";
-};
 
 const normalizeJenisRenja = (jenisRenja: string | undefined) => {
     switch ((jenisRenja || "").toUpperCase()) {
@@ -288,33 +280,15 @@ const transformPenetapanToHierarchy = (response: RenjaPenetapanResponse): RenjaO
     }];
 };
 
-type FaktorCellProps = {
-    value?: string | null;
-    isRealisasiFilled: boolean;
-    onEdit: () => void;
-};
-
-const FaktorCell: React.FC<FaktorCellProps> = ({ value, isRealisasiFilled, onEdit }) => {
-    return (
-        <div className="flex flex-col items-center gap-1">
-            <span>{value || "-"}</span>
-            <ButtonGreenBorder
-                className="w-full max-w-[120px] text-xs py-0.5"
-                onClick={onEdit}
-                disabled={!isRealisasiFilled}
-            >
-                Faktor
-            </ButtonGreenBorder>
-        </div>
-    );
-};
+const FaktorCell = ({ value }: { value?: string | null }) => (
+    <span className="whitespace-pre-line">{value || "-"}</span>
+);
 
 const Table = () => {
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState<string>("renja-opd.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-    const [selectedFaktorTarget, setSelectedFaktorTarget] = useState<SelectedFaktorTarget | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
@@ -656,10 +630,6 @@ const Table = () => {
         previewDoc.save(pdfFileName);
     };
 
-    const handleCloseFaktorTarget = () => {
-        setSelectedFaktorTarget(null);
-    };
-
     const jenisRenjaHeader = rows.find((row) => row.jenisRenja && row.jenisRenja !== "-")?.jenisRenja;
     const headerColor = getHeaderColorByJenisRenja(jenisRenjaHeader);
     const headerFillColor = getHeaderFillColorByJenisRenja(jenisRenjaHeader);
@@ -676,7 +646,6 @@ const Table = () => {
 
     const handleSync = async () => {
         if (!kodeOpd || !activatedTahun || !bulanKey) return;
-        
         setIsSyncing(true);
         setSyncError(null);
         try {
@@ -773,7 +742,6 @@ const Table = () => {
                         {(() => {
                             const target = row.targets[0];
                             const isFirstRowInProgram = firstRowIdByProgram.get(row.programKey) === row.id;
-                            const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
 
                             return (
                                 <>
@@ -842,15 +810,11 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <FaktorCell
                                                             value={target.faktorPenunjang}
-                                                            isRealisasiFilled={isRealisasiFilled}
-                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penunjang" })}
                                                         />
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <FaktorCell
                                                             value={target.faktorPenghambat}
-                                                            isRealisasiFilled={isRealisasiFilled}
-                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penghambat" })}
                                                         />
                                                     </td>
                                                 </>
@@ -860,17 +824,11 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
-                                                                Faktor
-                                                            </ButtonGreenBorder>
                                                         </div>
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
-                                                                Faktor
-                                                            </ButtonGreenBorder>
                                                         </div>
                                                     </td>
                                                 </>
@@ -936,53 +894,6 @@ const Table = () => {
                     </div>
                 </div>
             )}
-            {selectedFaktorTarget?.jenis === "penunjang" && selectedFaktorTarget.target && (
-                <FormModal
-                    isOpen={true}
-                    onClose={handleCloseFaktorTarget}
-                    title={`Faktor Penunjang - ${selectedFaktorTarget.target.indikator}`}
-                >
-                    <FormFaktorPenunjangRenjaOpd
-                        kodeOpd={kodeOpd ?? ""}
-                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
-                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
-                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
-                        kodeTarget={selectedFaktorTarget.target.targetId}
-                        tahun={String(activatedTahun ?? "")}
-                        bulan={bulanName ?? ""}
-                        currentValue={selectedFaktorTarget.target.faktorPenunjang ?? ""}
-                        onClose={handleCloseFaktorTarget}
-                        onSuccess={() => {
-                            handleCloseFaktorTarget();
-                            refetch();
-                        }}
-                    />
-                </FormModal>
-            )}
-            {selectedFaktorTarget?.jenis === "penghambat" && selectedFaktorTarget.target && (
-                <FormModal
-                    isOpen={true}
-                    onClose={handleCloseFaktorTarget}
-                    title={`Faktor Penghambat - ${selectedFaktorTarget.target.indikator}`}
-                >
-                    <FormFaktorPenghambatRenjaOpd
-                        kodeOpd={kodeOpd ?? ""}
-                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
-                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
-                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
-                        kodeTarget={selectedFaktorTarget.target.targetId}
-                        tahun={String(activatedTahun ?? "")}
-                        bulan={bulanName ?? ""}
-                        currentValue={selectedFaktorTarget.target.faktorPenghambat ?? ""}
-                        onClose={handleCloseFaktorTarget}
-                        onSuccess={() => {
-                            handleCloseFaktorTarget();
-                            refetch();
-                        }}
-                    />
-                </FormModal>
-            )}
-            
             {isSyncModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>

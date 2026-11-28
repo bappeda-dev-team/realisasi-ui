@@ -337,12 +337,7 @@ export default function RenaksiOpdPage() {
         ) : (
           <Table
             rows={rows}
-            kodeOpd={kodeOpd}
-            tahun={tahunValue ?? ''}
-            bulanKey={bulanKey}
-            bulanLabel={bulanName}
             onPrint={handleOpenPrintPreview}
-            onFaktorSuccess={refetch}
           />
         )}
 
