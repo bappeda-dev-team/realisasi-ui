@@ -337,8 +337,11 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     }
 
     setTahunOptions(tahunList);
-    setTahun(null);
-  }, [periode, periodeOptions]);
+
+    if (tahun && !tahunList.some((option) => option.value === tahun)) {
+      setTahun(null);
+    }
+  }, [periode, periodeOptions, tahun]);
 
   async function loadBulan() {
     const resp = [
