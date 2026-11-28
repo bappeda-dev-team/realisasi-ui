@@ -19,6 +19,7 @@ export interface RenaksiRow {
   keteranganCapaian: string | null
   faktorPenunjang: string
   faktorPenghambat: string
+  buktiPendukung?: string | null
 }
 
 interface TableProps {
@@ -46,6 +47,7 @@ export const mapPenetapanToRenaksiRows = (
       keteranganCapaian: realisasi?.keterangan_capaian ?? null,
       faktorPenunjang: realisasi?.faktor_penunjang ?? '',
       faktorPenghambat: realisasi?.faktor_penghambat ?? '',
+      buktiPendukung: realisasi?.bukti_pendukung ?? null,
     }
   })
 
@@ -147,7 +149,7 @@ const Table: React.FC<TableProps> = ({
                 {formatPercentageText(row.capaian ?? '-').replace(/%$/, '')}
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                <CapaianKeterangan>{formatPercentageText(row.keteranganCapaian ?? '-')}</CapaianKeterangan>
+                <CapaianKeterangan buktiPendukung={row.buktiPendukung}>{formatPercentageText(row.keteranganCapaian ?? '-')}</CapaianKeterangan>
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell

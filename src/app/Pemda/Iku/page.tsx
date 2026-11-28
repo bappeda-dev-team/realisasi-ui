@@ -85,6 +85,7 @@ const IkuPage = () => {
           tahun: r.tahun,
           jenisRealisasi: r.jenisRealisasi,
           jenisIku: r.jenisIku,
+          buktiPendukung: r.buktiPendukung ?? r.bukti_pendukung ?? null,
         });
       });
 

@@ -71,6 +71,7 @@ export default function RowSasaranComponent({
                 realisasi={target.realisasi}
                 capaian={target.capaian}
                 keteranganCapaian={target.keteranganCapaian}
+                buktiPendukung={target.buktiPendukung}
                 faktorPenunjang={target.faktorPenunjang}
                 faktorPenghambat={target.faktorPenghambat}
                 canEdit={canEdit}
@@ -203,13 +204,14 @@ const ColTargetSasaran: React.FC<{
   realisasi: number;
   capaian: string;
   keteranganCapaian: string;
+  buktiPendukung?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   canEdit?: boolean;
   handleClick?: () => void;
   onEditFaktorPenunjang?: () => void;
   onEditFaktorPenghambat?: () => void;
-}> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
+}> = ({ target, realisasi, capaian, keteranganCapaian, buktiPendukung, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
   return (
     <>
       <td className="border border-red-400 px-6 py-4 text-center">{convertToDisplayString(target)}</td>
@@ -227,7 +229,7 @@ const ColTargetSasaran: React.FC<{
         </div>
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{capaian ? formatPercentageText(capaian).replace(/%$/, "") : "-"}</td>
-      <td className="border border-red-400 px-6 py-4"><CapaianKeterangan>{formatPercentageText(keteranganCapaian || "-")}</CapaianKeterangan></td>
+      <td className="border border-red-400 px-6 py-4"><CapaianKeterangan buktiPendukung={buktiPendukung}>{formatPercentageText(keteranganCapaian || "-")}</CapaianKeterangan></td>
       <td className="border border-red-400 px-6 py-4">
         <div className="flex flex-col items-center gap-1">
           <span>{faktorPenunjang || '-'}</span>

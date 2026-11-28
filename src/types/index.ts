@@ -604,6 +604,7 @@ export interface IkuPemdaTargetRealisasiCapaian {
   tahun: string;
   jenisRealisasi: JenisRealisasiValue;
   jenisIku: "TUJUAN" | "SASARAN" | null;
+  buktiPendukung?: string | null;
 }
 
 export interface IkuPemdaRealisasi {
@@ -1125,6 +1126,7 @@ export interface SasaranOpdTargetRealisasiCapaian {
   kodeOpd: string;
   rumusPerhitungan: string;
   sumberData: string;
+  buktiPendukung?: string | null;
 }
 
 export interface SasaranOpdRealisasiGroupedIndikator {
@@ -1156,6 +1158,7 @@ export interface RenaksiOpdPenetapanRealisasi {
   keterangan_capaian: string | null;
   faktor_penunjang: string | null;
   faktor_penghambat: string | null;
+  bukti_pendukung?: string | null;
 }
 
 export interface RenaksiOpdPenetapanItem {
@@ -1669,6 +1672,7 @@ export interface RenjaPenetapanTarget {
   keterangan_capaian: string | null;
   faktor_penunjang?: string | null;
   faktor_penghambat?: string | null;
+  bukti_pendukung?: string | null;
 }
 
 export interface RenjaPenetapanIndikator {

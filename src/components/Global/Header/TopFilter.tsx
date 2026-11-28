@@ -63,11 +63,16 @@ interface ListPeriode {
   tahun_akhir: number;
 }
 
-interface PegawaiData {
-  id: number;
-  nip: string;
-  nama_pegawai: string;
-  status_pegawai: string;
+interface PegawaiOption {
+  label: string;
+  value: string;
+}
+
+interface PegawaiOptionsResponse {
+  code: number;
+  status: string;
+  message: string;
+  data: PegawaiOption[];
 }
 
 interface RoleOptionData {
@@ -167,10 +172,10 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
     data: dataPegawai,
     loading: loadingPegawai,
     error: errorPegawai,
-  } = useFetchData<{ data: PegawaiData[] }>({
+  } = useFetchData<PegawaiOptionsResponse>({
     url:
       dinas && selectedRoleId && (isSuperAdmin || isAdminOpd)
-        ? `/api/kepegawaian/pegawai?kodeOpd=${encodeURIComponent(dinas)}&roleId=${encodeURIComponent(selectedRoleId)}`
+        ? `/api/kepegawaian/pegawai/options?kodeOpd=${encodeURIComponent(dinas)}&roleId=${encodeURIComponent(selectedRoleId)}`
         : null,
     trigger: fetchTrigger,
   });
@@ -307,12 +312,7 @@ export default function TopFilter({ user, disableOpdLock, forceOpdLock, hideOpd,
       return;
     }
     if (dataPegawai?.data) {
-      setNamaPegawaiOptions(
-        dataPegawai.data.map((p) => ({
-          value: p.nip?.replace(/-$/, ""),
-          label: p.nama_pegawai,
-        }))
-      );
+      setNamaPegawaiOptions(dataPegawai.data);
     } else if (!loadingPegawai) {
       setNamaPegawaiOptions([]);
     }

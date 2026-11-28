@@ -58,6 +58,7 @@ export default function RowSasaranComponent({ no, sasaranOpd, tahun, handleOpenP
                                 realisasi={target.realisasi}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
+                                buktiPendukung={target.buktiPendukung}
                                 faktorPenunjang={target.faktorPenunjang}
                                 faktorPenghambat={target.faktorPenghambat}
                             />
@@ -133,6 +134,7 @@ type TargetColProps = {
     realisasi: number;
     capaian: string;
     keteranganCapaian: string;
+    buktiPendukung?: string | null;
     faktorPenunjang?: string | null;
     faktorPenghambat?: string | null;
 };
@@ -147,6 +149,7 @@ const ColTargetSasaranComponent: React.FC<TargetColProps> = ({
     realisasi,
     capaian,
     keteranganCapaian,
+    buktiPendukung,
     faktorPenunjang,
     faktorPenghambat,
 }) => {
@@ -157,7 +160,7 @@ const ColTargetSasaranComponent: React.FC<TargetColProps> = ({
                 <span>{formatWithComma(realisasi)}</span>
             </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
-            <td className="border border-emerald-500 px-6 py-4"><CapaianKeterangan>{formatPercentageText(keteranganCapaian || '-')}</CapaianKeterangan></td>
+            <td className="border border-emerald-500 px-6 py-4"><CapaianKeterangan buktiPendukung={buktiPendukung}>{formatPercentageText(keteranganCapaian || '-')}</CapaianKeterangan></td>
             <td className="border border-emerald-500 px-6 py-4">
                 <div className="flex flex-col items-center gap-1">
                     <span className="whitespace-pre-line">{faktorPenunjang || '-'}</span>

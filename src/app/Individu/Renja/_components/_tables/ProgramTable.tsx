@@ -609,7 +609,7 @@ const ProgramTable = () => {
                                                 {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                <CapaianKeterangan>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
+                                                <CapaianKeterangan buktiPendukung={target?.buktiPendukung}>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {formatRupiah(target?.pagu)}

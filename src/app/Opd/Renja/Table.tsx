@@ -32,6 +32,7 @@ interface RenjaNodeTargetValue {
     keteranganCapaian?: string | null;
     faktorPenunjang?: string | null;
     faktorPenghambat?: string | null;
+    buktiPendukung?: string | null;
 }
 
 interface RenjaNodePaguValue {
@@ -104,6 +105,7 @@ interface FlattenedRenjaRow {
         keteranganCapaian: string;
         faktorPenunjang: string;
         faktorPenghambat: string;
+        buktiPendukung?: string | null;
         pagu: number | null;
         realistasiPagu: number | null;
         satuanPagu: string;
@@ -187,6 +189,7 @@ const convertIndikatorsToNode = (
                 keteranganCapaian: tgt.keterangan_capaian,
                 faktorPenunjang: tgt.faktor_penunjang ?? null,
                 faktorPenghambat: tgt.faktor_penghambat ?? null,
+                buktiPendukung: tgt.bukti_pendukung ?? null,
             });
         });
     });
@@ -385,6 +388,7 @@ const Table = () => {
                         keteranganCapaian: targetItem?.keteranganCapaian ?? "-",
                         faktorPenunjang: targetItem?.faktorPenunjang ?? "-",
                         faktorPenghambat: targetItem?.faktorPenghambat ?? "-",
+                        buktiPendukung: targetItem?.buktiPendukung ?? null,
                         pagu: paguItem?.pagu ?? null,
                         realistasiPagu: parseNumericValue(paguItem?.realisasi),
                         satuanPagu: "Rupiah",
@@ -777,7 +781,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaian || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        <CapaianKeterangan>{formatPercentageText(target.keteranganCapaian || "-")}</CapaianKeterangan>
+                                                        <CapaianKeterangan buktiPendukung={target.buktiPendukung}>{formatPercentageText(target.keteranganCapaian || "-")}</CapaianKeterangan>
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         {target.pagu != null ? target.pagu.toLocaleString() : "-"}
@@ -789,7 +793,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaianPagu || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        <CapaianKeterangan>{formatPercentageText(target.keteranganCapaianPagu || "-")}</CapaianKeterangan>
+                                                        <CapaianKeterangan buktiPendukung={target.buktiPendukung}>{formatPercentageText(target.keteranganCapaianPagu || "-")}</CapaianKeterangan>
                                                     </td>
                                                 </>
                                             ) : (
