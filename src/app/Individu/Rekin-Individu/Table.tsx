@@ -14,6 +14,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { RekinIndividuPenetapanResponse, RekinTarget, JenisRealisasiValue } from "@/types";
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
@@ -568,7 +569,7 @@ const Table = () => {
                                         {formatPercentageText(target?.capaian || "-")}
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                        {formatPercentageText(target?.keteranganCapaian || "-")}
+                                        <CapaianKeterangan>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                                     </td>
                                     <td className="border-r border-b border-emerald-500 px-6 py-4">
                                         <div className="flex flex-col items-center gap-2">

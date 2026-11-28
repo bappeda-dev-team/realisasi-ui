@@ -3,6 +3,7 @@ import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { SasaranPemdaRealisasiGrouped, TargetRealisasiCapaianSasaran } from "@/types";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import FormFaktorPenunjangSasaran from "./FormFaktorPenunjangSasaran";
 import FormFaktorPenghambatSasaran from "./FormFaktorPenghambatSasaran";
 
@@ -226,7 +227,7 @@ const ColTargetSasaran: React.FC<{
         </div>
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{capaian ? formatPercentageText(capaian).replace(/%$/, "") : "-"}</td>
-      <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || "-")}</td>
+      <td className="border border-red-400 px-6 py-4"><CapaianKeterangan>{formatPercentageText(keteranganCapaian || "-")}</CapaianKeterangan></td>
       <td className="border border-red-400 px-6 py-4">
         <div className="flex flex-col items-center gap-1">
           <span>{faktorPenunjang || '-'}</span>

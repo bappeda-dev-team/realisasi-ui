@@ -15,6 +15,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { RenaksiOpdPenetapanResponse, RenaksiTarget, JenisRealisasiValue } from "@/types";
 import OpdTable, { mapPenetapanToRenaksiRows } from "@/app/Opd/Renaksi/Table";
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
@@ -542,7 +543,7 @@ const Table = () => {
                     {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {formatPercentageText(target?.keteranganCapaian || "-")}
+                    <CapaianKeterangan>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">

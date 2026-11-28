@@ -10,6 +10,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan, RenjaPaguAnggaran } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -776,7 +777,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaian || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        {formatPercentageText(target.keteranganCapaian || "-")}
+                                                        <CapaianKeterangan>{formatPercentageText(target.keteranganCapaian || "-")}</CapaianKeterangan>
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         {target.pagu != null ? target.pagu.toLocaleString() : "-"}
@@ -788,7 +789,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaianPagu || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        {formatPercentageText(target.keteranganCapaianPagu || "-")}
+                                                        <CapaianKeterangan>{formatPercentageText(target.keteranganCapaianPagu || "-")}</CapaianKeterangan>
                                                     </td>
                                                 </>
                                             ) : (

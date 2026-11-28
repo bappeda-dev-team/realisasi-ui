@@ -2,6 +2,7 @@ import React from 'react'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { SasaranOpdPenetapanGrouped } from '@/types'
 import { formatPercentageText } from '@/lib/formatPercentageText'
+import CapaianKeterangan from '@/components/Global/CapaianKeterangan'
 
 interface RowSasaranOpdComponentProps {
     no: number;
@@ -156,7 +157,7 @@ const ColTargetSasaranComponent: React.FC<TargetColProps> = ({
                 <span>{formatWithComma(realisasi)}</span>
             </td>
             <td className="border border-emerald-500 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
-            <td className="border border-emerald-500 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
+            <td className="border border-emerald-500 px-6 py-4"><CapaianKeterangan>{formatPercentageText(keteranganCapaian || '-')}</CapaianKeterangan></td>
             <td className="border border-emerald-500 px-6 py-4">
                 <div className="flex flex-col items-center gap-1">
                     <span className="whitespace-pre-line">{faktorPenunjang || '-'}</span>

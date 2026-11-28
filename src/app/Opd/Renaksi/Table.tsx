@@ -3,6 +3,7 @@
 import React from 'react'
 import { ButtonGreenBorder } from '@/components/Global/Button/button'
 import { formatPercentageText } from '@/lib/formatPercentageText'
+import CapaianKeterangan from '@/components/Global/CapaianKeterangan'
 import { RenaksiOpdPenetapanItem } from '@/types'
 
 export interface RenaksiRow {
@@ -146,7 +147,7 @@ const Table: React.FC<TableProps> = ({
                 {formatPercentageText(row.capaian ?? '-').replace(/%$/, '')}
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                {formatPercentageText(row.keteranganCapaian ?? '-')}
+                <CapaianKeterangan>{formatPercentageText(row.keteranganCapaian ?? '-')}</CapaianKeterangan>
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell

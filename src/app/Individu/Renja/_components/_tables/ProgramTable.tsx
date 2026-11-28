@@ -11,6 +11,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
@@ -608,7 +609,7 @@ const ProgramTable = () => {
                                                 {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {formatPercentageText(target?.keteranganCapaian || "-")}
+                                                <CapaianKeterangan>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {formatRupiah(target?.pagu)}
