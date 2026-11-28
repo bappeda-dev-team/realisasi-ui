@@ -1,6 +1,7 @@
 import React from 'react';
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 
 type TargetColProps = {
   target: string;
@@ -8,6 +9,7 @@ type TargetColProps = {
   satuan: string;
   capaian: string;
   keteranganCapaian: string;
+  buktiPendukung?: string | null;
   faktorPenunjang?: string | null;
   faktorPenghambat?: string | null;
   canEdit: boolean;
@@ -21,7 +23,7 @@ const convertToDisplayString = (value: string | null | undefined): string => {
   return value.toString().replace(/\./g, ',');
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, satuan, capaian, keteranganCapaian, buktiPendukung, faktorPenunjang, faktorPenghambat, canEdit, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
 
   return (
     <React.Fragment>
@@ -40,7 +42,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
         </div>
       </td>
       <td className="border border-red-400 px-6 py-4 text-center">{capaian ? formatPercentageText(capaian).replace(/%$/, "") : "-"}</td>
-      <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
+      <td className="border border-red-400 px-6 py-4"><CapaianKeterangan buktiPendukung={buktiPendukung}>{formatPercentageText(keteranganCapaian || '-')}</CapaianKeterangan></td>
       <td className="border border-red-400 px-6 py-4">
         <div className="flex flex-col items-center gap-1">
           <span>{faktorPenunjang || '-'}</span>

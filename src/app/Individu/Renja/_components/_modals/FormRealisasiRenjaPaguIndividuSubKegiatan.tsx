@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ButtonSky } from "@/components/Global/Button/button";
 import { LoadingButtonClip } from "@/components/Global/Loading";
 import { FormProps, RenjaTarget, RenjaSubKegiatanIndividuResponse, JenisRealisasi } from "@/types";
@@ -11,6 +11,14 @@ import { getMonthKey, getMonthName } from "@/lib/months";
 import { DEFAULT_JENIS_REALISASI, JENIS_REALISASI_OPTIONS } from "@/lib/jenis-realisasi";
 
 type FormRealisasiRenjaPaguIndividuSubKegiatanProps = FormProps<RenjaTarget[], RenjaTarget[]>;
+
+const formatRealisasiInput = (value: string): string => {
+    const [integer, decimal] = value.split(',');
+    const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return decimal === undefined ? groupedInteger : `${groupedInteger},${decimal}`;
+};
+
+const getRealisasiInputKey = (targetId: string, tahun: string) => JSON.stringify([targetId, tahun]);
 
 interface SubkegiatanPaguRealisasiRequest {
     kodeOpd: string;
@@ -30,6 +38,8 @@ interface SubkegiatanPaguRealisasiRequest {
 
 const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPaguIndividuSubKegiatanProps> = ({ requestValues, onClose, onSuccess }) => {
     const [formData, setFormData] = useState<RenjaTarget[]>([]);
+    const [inputValues, setInputValues] = useState<Record<string, string>>({});
+    const pendingSelection = useRef<{ input: HTMLInputElement; position: number } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const { tahun: selectedTahun, activatedBulan, activatedDinas } = useFilterContext();
@@ -49,9 +59,16 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
     useEffect(() => {
         if (!requestValues?.length) {
             setFormData([]);
+            setInputValues({});
             return;
         }
 
+        setInputValues(Object.fromEntries(requestValues.map((item) => [
+            getRealisasiInputKey(item.targetId, selectedTahun ?? item.tahun),
+            item.realisasiPagu == null ? '' : item.realisasiPagu.toLocaleString('id-ID', {
+                maximumFractionDigits: 2,
+            }),
+        ])));
         setFormData(
             requestValues.map((item) => ({
                 ...item,
@@ -62,12 +79,39 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
         );
     }, [requestValues, selectedTahun, monthKey]);
 
-    const handleChange = (targetId: string, tahun: string, value: string) => {
-        const parsedValue = parseFloat(value);
+    useLayoutEffect(() => {
+        if (pendingSelection.current) {
+            const { input, position } = pendingSelection.current;
+            input.setSelectionRange(position, position);
+            pendingSelection.current = null;
+        }
+    }, [inputValues]);
+
+    const handleChange = (targetId: string, tahun: string, input: HTMLInputElement) => {
+        const key = getRealisasiInputKey(targetId, tahun);
+        const value = input.value;
+        const rawValue = value.replace(/\./g, '');
+        if (!/^-?\d*(,\d{0,2})?$/.test(rawValue)) {
+            input.value = inputValues[key] ?? '';
+            return;
+        }
+
+        const formattedValue = formatRealisasiInput(rawValue);
+        const charactersBeforeCursor = value.slice(0, input.selectionStart ?? value.length).replace(/\./g, '').length;
+        let position = 0;
+        let characters = 0;
+        while (position < formattedValue.length && characters < charactersBeforeCursor) {
+            if (formattedValue[position] !== '.') characters++;
+            position++;
+        }
+        pendingSelection.current = { input, position };
+        setInputValues((previous) => ({ ...previous, [key]: formattedValue }));
+
+        const parsedValue = Number(rawValue.replace(',', '.'));
         setFormData((previous) =>
             previous.map((item) =>
                 item.targetId === targetId && item.tahun === tahun
-                    ? { ...item, realisasiPagu: isNaN(parsedValue) || value === '' ? null : parsedValue }
+                    ? { ...item, realisasiPagu: !Number.isFinite(parsedValue) || rawValue === '' ? null : parsedValue }
                     : item
             )
         );
@@ -179,18 +223,30 @@ const FormRealisasiRenjaPaguIndividuSubKegiatan: React.FC<FormRealisasiRenjaPagu
                             <p className="w-full bg-gray-300 border rounded px-2 py-1 text-sm mb-1">
                                 {formatRupiah(target.pagu)}
                             </p>
-                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor="realisasi">
+                            <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor={`realisasi-${target.targetId}-${target.tahun}`}>
                                 Realisasi
                             </label>
                             <input
-                                type="number"
+                                id={`realisasi-${target.targetId}-${target.tahun}`}
+                                type="text"
+                                inputMode="decimal"
                                 className="w-full border rounded px-2 py-1 text-sm mb-1"
-                                step="0.01"
                                 name={`realisasi[${target.targetId}][${target.tahun}]`}
-                                value={target.realisasiPagu || ''}
+                                value={inputValues[getRealisasiInputKey(target.targetId, target.tahun)] ?? ''}
                                 onChange={(event) =>
-                                    handleChange(target.targetId, target.tahun, event.target.value)
+                                    handleChange(target.targetId, target.tahun, event.currentTarget)
                                 }
+                                onKeyDown={(event) => {
+                                    const input = event.currentTarget;
+                                    const start = input.selectionStart;
+                                    if (start == null || start !== input.selectionEnd) return;
+                                    // Delete the neighboring digit together with a grouping separator.
+                                    if (event.key === 'Backspace' && start > 1 && input.value[start - 1] === '.') {
+                                        input.setSelectionRange(start - 2, start);
+                                    } else if (event.key === 'Delete' && input.value[start] === '.') {
+                                        input.setSelectionRange(start, start + 2);
+                                    }
+                                }}
                             />
                             <label className="uppercase text-xs font-bold text-gray-700 mb-2" htmlFor={`jenisRealisasi-${target.targetId}`}>
                                 Jenis Realisasi

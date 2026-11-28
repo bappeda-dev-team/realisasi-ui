@@ -14,6 +14,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const relativePath = pathname.replace(/^\/realisasi/, '')
   const navItems = [
     {
+      label: 'Renaksi',
+      href: '/Individu/Renaksi',
+      activeClass: 'bg-green-600 text-white border-green-600',
+      inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
+    },
+    {
       label: 'Rekin Individu',
       href: '/Individu/Rekin-Individu',
       activeClass: 'bg-red-600 text-white border-red-600',
@@ -24,12 +30,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       href: '/Individu/Renja',
       activeClass: 'bg-sky-600 text-white border-sky-600',
       inactiveClass: 'text-[#1C1D1D] hover:bg-sky-800 hover:text-white',
-    },
-    {
-      label: 'Renaksi',
-      href: '/Individu/Renaksi',
-      activeClass: 'bg-green-600 text-white border-green-600',
-      inactiveClass: 'text-[#1C1D1D] hover:bg-green-700 hover:text-white',
     },
   ].filter((item) => {
     if (item.href === '/Individu/Renja') return canAccessIndividuRenja(user)

@@ -361,8 +361,8 @@ export default function SasaranPage() {
     <>
       {renderSyncButton()}
       <div className="overflow-auto grid gap-2">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"}</h2>
+        <div className="flex items-center mb-2">
+          <h2 className="text-lg font-semibold">Realisasi Sasaran OPD - {namaOpd ?? "-"} - {selectedTahunValue} - {bulanName}</h2>
         </div>
 
         {penetapanLoading ? (
@@ -381,12 +381,8 @@ export default function SasaranPage() {
         ) : (
           <TableSasaranOpd
             tahun={selectedTahunValue}
-            bulanLabel={bulanName}
             sasaranOpd={groupedSasaranOpd}
             handleOpenPrintPreview={handleOpenPrintPreview}
-            kodeOpd={kodeOpd}
-            bulanKey={bulanKey}
-            onFaktorSuccess={refetchPenetapan}
           />
         )}
 

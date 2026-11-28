@@ -4,19 +4,17 @@ import { useState, useMemo, useEffect } from 'react';
 
 import { ButtonGreenBorder, ButtonSky } from "@/components/Global/Button/button";
 import { TbRefresh } from "react-icons/tb";
-import { FormModal } from "@/components/Global/Modal";
 import { LoadingBeat } from "@/components/Global/Loading";
 import { useFilterContext } from "@/context/FilterContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { RenjaPenetapanResponse, RenjaPenetapanIndikator, RenjaPenetapanProgram, RenjaPenetapanKegiatan, RenjaPenetapanSubkegiatan, RenjaPaguAnggaran } from "@/types";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { getSessionId } from "@/lib/session";
-import FormFaktorPenunjangRenjaOpd from "./_components/FormFaktorPenunjangRenjaOpd";
-import FormFaktorPenghambatRenjaOpd from "./_components/FormFaktorPenghambatRenjaOpd";
 import { useUserContext } from "@/context/UserContext";
 import { ROLES } from "@/constants/roles";
 
@@ -34,6 +32,7 @@ interface RenjaNodeTargetValue {
     keteranganCapaian?: string | null;
     faktorPenunjang?: string | null;
     faktorPenghambat?: string | null;
+    buktiPendukung?: string | null;
 }
 
 interface RenjaNodePaguValue {
@@ -106,6 +105,7 @@ interface FlattenedRenjaRow {
         keteranganCapaian: string;
         faktorPenunjang: string;
         faktorPenghambat: string;
+        buktiPendukung?: string | null;
         pagu: number | null;
         realistasiPagu: number | null;
         satuanPagu: string;
@@ -113,11 +113,6 @@ interface FlattenedRenjaRow {
         keteranganCapaianPagu: string;
     }>;
 }
-
-type SelectedFaktorTarget = {
-    target: FlattenedRenjaRow["targets"][number];
-    jenis: "penunjang" | "penghambat";
-};
 
 const normalizeJenisRenja = (jenisRenja: string | undefined) => {
     switch ((jenisRenja || "").toUpperCase()) {
@@ -194,6 +189,7 @@ const convertIndikatorsToNode = (
                 keteranganCapaian: tgt.keterangan_capaian,
                 faktorPenunjang: tgt.faktor_penunjang ?? null,
                 faktorPenghambat: tgt.faktor_penghambat ?? null,
+                buktiPendukung: tgt.bukti_pendukung ?? null,
             });
         });
     });
@@ -288,33 +284,15 @@ const transformPenetapanToHierarchy = (response: RenjaPenetapanResponse): RenjaO
     }];
 };
 
-type FaktorCellProps = {
-    value?: string | null;
-    isRealisasiFilled: boolean;
-    onEdit: () => void;
-};
-
-const FaktorCell: React.FC<FaktorCellProps> = ({ value, isRealisasiFilled, onEdit }) => {
-    return (
-        <div className="flex flex-col items-center gap-1">
-            <span>{value || "-"}</span>
-            <ButtonGreenBorder
-                className="w-full max-w-[120px] text-xs py-0.5"
-                onClick={onEdit}
-                disabled={!isRealisasiFilled}
-            >
-                Faktor
-            </ButtonGreenBorder>
-        </div>
-    );
-};
+const FaktorCell = ({ value }: { value?: string | null }) => (
+    <span className="whitespace-pre-line">{value || "-"}</span>
+);
 
 const Table = () => {
     const [isPrintPreviewOpen, setIsPrintPreviewOpen] = useState(false);
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string | null>(null);
     const [pdfFileName, setPdfFileName] = useState<string>("renja-opd.pdf");
     const [previewDoc, setPreviewDoc] = useState<jsPDF | null>(null);
-    const [selectedFaktorTarget, setSelectedFaktorTarget] = useState<SelectedFaktorTarget | null>(null);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
@@ -410,6 +388,7 @@ const Table = () => {
                         keteranganCapaian: targetItem?.keteranganCapaian ?? "-",
                         faktorPenunjang: targetItem?.faktorPenunjang ?? "-",
                         faktorPenghambat: targetItem?.faktorPenghambat ?? "-",
+                        buktiPendukung: targetItem?.buktiPendukung ?? null,
                         pagu: paguItem?.pagu ?? null,
                         realistasiPagu: parseNumericValue(paguItem?.realisasi),
                         satuanPagu: "Rupiah",
@@ -656,10 +635,6 @@ const Table = () => {
         previewDoc.save(pdfFileName);
     };
 
-    const handleCloseFaktorTarget = () => {
-        setSelectedFaktorTarget(null);
-    };
-
     const jenisRenjaHeader = rows.find((row) => row.jenisRenja && row.jenisRenja !== "-")?.jenisRenja;
     const headerColor = getHeaderColorByJenisRenja(jenisRenjaHeader);
     const headerFillColor = getHeaderFillColorByJenisRenja(jenisRenjaHeader);
@@ -676,7 +651,6 @@ const Table = () => {
 
     const handleSync = async () => {
         if (!kodeOpd || !activatedTahun || !bulanKey) return;
-        
         setIsSyncing(true);
         setSyncError(null);
         try {
@@ -747,24 +721,24 @@ const Table = () => {
                     <table id="print-area-renja" className="w-full">
                     <thead>
                         <tr className={`text-xm ${headerColor}`}>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">Program/Kegiatan/Subkegiatan</td>
-                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Target ${activatedTahun || ""} - ${bulanName || ""}`}</th>
-                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja Pagu ${activatedTahun || ""} - ${bulanName || ""}`}</th>
-                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
-                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
-                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</th>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center"><div className="flex flex-col items-center"><span>No</span><span>(1)</span></div></td>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]"><div className="flex flex-col items-center"><span>Program/Kegiatan/Subkegiatan</span><span>(2)</span></div></td>
+                            <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Indikator</span><span>(3)</span></div></td>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Renja Target</th>
+                            <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Renja Pagu</th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(12)</span></div></th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(13)</span></div></th>
+                            <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center"><div className="flex flex-col items-center"><span>Aksi</span><span>(14)</span></div></th>
                         </tr>
                         <tr className={headerColor}>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Target (%)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (%)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian (%)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu (Rp.)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi (Rp.)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[80px]">Capaian (Rp.)</th>
-                            <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(4)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[100px]"><div className="flex flex-col items-center"><span>Realisasi (%)</span><span>(5)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(6)</span><span>(5/4*100)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[150px]"><div className="flex flex-col items-center"><span>Keterangan Capaian</span><span>(7)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Pagu (Rp.)</span><span>(8)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[100px]"><div className="flex flex-col items-center"><span>Realisasi (Rp.)</span><span>(9)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Capaian (Rp.)</span><span>(10)</span><span>(9/8*100)</span></div></th>
+                            <th className="border-l border-b px-6 py-3 min-w-[150px]"><div className="flex flex-col items-center"><span>Keterangan Capaian</span><span>(11)</span></div></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -773,7 +747,6 @@ const Table = () => {
                         {(() => {
                             const target = row.targets[0];
                             const isFirstRowInProgram = firstRowIdByProgram.get(row.programKey) === row.id;
-                            const isRealisasiFilled = target?.realisasi !== null && target?.realisasi !== undefined && Number(target.realisasi) !== 0;
 
                             return (
                                 <>
@@ -808,7 +781,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaian || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        {formatPercentageText(target.keteranganCapaian || "-")}
+                                                        <CapaianKeterangan buktiPendukung={target.buktiPendukung}>{formatPercentageText(target.keteranganCapaian || "-")}</CapaianKeterangan>
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         {target.pagu != null ? target.pagu.toLocaleString() : "-"}
@@ -820,7 +793,7 @@ const Table = () => {
                                                         {formatPercentageText(target.capaianPagu || "-")}
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
-                                                        {formatPercentageText(target.keteranganCapaianPagu || "-")}
+                                                        <CapaianKeterangan buktiPendukung={target.buktiPendukung}>{formatPercentageText(target.keteranganCapaianPagu || "-")}</CapaianKeterangan>
                                                     </td>
                                                 </>
                                             ) : (
@@ -842,15 +815,11 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <FaktorCell
                                                             value={target.faktorPenunjang}
-                                                            isRealisasiFilled={isRealisasiFilled}
-                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penunjang" })}
                                                         />
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <FaktorCell
                                                             value={target.faktorPenghambat}
-                                                            isRealisasiFilled={isRealisasiFilled}
-                                                            onEdit={() => setSelectedFaktorTarget({ target, jenis: "penghambat" })}
                                                         />
                                                     </td>
                                                 </>
@@ -860,17 +829,11 @@ const Table = () => {
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
-                                                                Faktor
-                                                            </ButtonGreenBorder>
                                                         </div>
                                                     </td>
                                                     <td className="border-r border-b border-sky-600 px-6 py-4 align-top">
                                                         <div className="flex flex-col items-center gap-1">
                                                             <span>-</span>
-                                                            <ButtonGreenBorder className="w-full max-w-[120px] text-xs py-0.5" disabled onClick={() => {}}>
-                                                                Faktor
-                                                            </ButtonGreenBorder>
                                                         </div>
                                                     </td>
                                                 </>
@@ -936,53 +899,6 @@ const Table = () => {
                     </div>
                 </div>
             )}
-            {selectedFaktorTarget?.jenis === "penunjang" && selectedFaktorTarget.target && (
-                <FormModal
-                    isOpen={true}
-                    onClose={handleCloseFaktorTarget}
-                    title={`Faktor Penunjang - ${selectedFaktorTarget.target.indikator}`}
-                >
-                    <FormFaktorPenunjangRenjaOpd
-                        kodeOpd={kodeOpd ?? ""}
-                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
-                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
-                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
-                        kodeTarget={selectedFaktorTarget.target.targetId}
-                        tahun={String(activatedTahun ?? "")}
-                        bulan={bulanName ?? ""}
-                        currentValue={selectedFaktorTarget.target.faktorPenunjang ?? ""}
-                        onClose={handleCloseFaktorTarget}
-                        onSuccess={() => {
-                            handleCloseFaktorTarget();
-                            refetch();
-                        }}
-                    />
-                </FormModal>
-            )}
-            {selectedFaktorTarget?.jenis === "penghambat" && selectedFaktorTarget.target && (
-                <FormModal
-                    isOpen={true}
-                    onClose={handleCloseFaktorTarget}
-                    title={`Faktor Penghambat - ${selectedFaktorTarget.target.indikator}`}
-                >
-                    <FormFaktorPenghambatRenjaOpd
-                        kodeOpd={kodeOpd ?? ""}
-                        kodeRenja={selectedFaktorTarget.target.kodeRenja}
-                        jenisRenja={selectedFaktorTarget.target.jenisRenja}
-                        kodeIndikator={selectedFaktorTarget.target.indikatorId}
-                        kodeTarget={selectedFaktorTarget.target.targetId}
-                        tahun={String(activatedTahun ?? "")}
-                        bulan={bulanName ?? ""}
-                        currentValue={selectedFaktorTarget.target.faktorPenghambat ?? ""}
-                        onClose={handleCloseFaktorTarget}
-                        onSuccess={() => {
-                            handleCloseFaktorTarget();
-                            refetch();
-                        }}
-                    />
-                </FormModal>
-            )}
-            
             {isSyncModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center">
                     <div className="fixed inset-0 bg-black/40" onClick={() => setIsSyncModalOpen(false)}></div>

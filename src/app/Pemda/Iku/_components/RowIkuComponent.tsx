@@ -2,6 +2,7 @@ import React from 'react'
 import { IkuPemda, IkuPemdaTargetRealisasiCapaian } from '@/types'
 import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { formatPercentageText } from '@/lib/formatPercentageText';
+import CapaianKeterangan from '@/components/Global/CapaianKeterangan';
 
 interface RowIkuComponentProps {
     no: number;
@@ -36,6 +37,7 @@ export default function RowIkuComponent({
                             realisasi={target.realisasi}
                             keteranganCapaian={target.keteranganCapaian}
                             capaian={target.capaian}
+                            buktiPendukung={target.buktiPendukung}
                         />
                     ))
                 ) : (
@@ -64,18 +66,20 @@ const ColTargetIku: React.FC<{
     realisasi: number;
     keteranganCapaian: string | null;
     capaian: string;
+    buktiPendukung?: string | null;
 }> = ({
     target,
     realisasi,
     keteranganCapaian,
-    capaian
+    capaian,
+    buktiPendukung
 }) => {
         return (
             <>
                 <td className="border border-sky-500 px-6 py-4 text-center">{target}</td>
                 <td className="border border-sky-500 px-6 py-4 text-center">{realisasi}</td>
                 <td className="border border-sky-500 px-6 py-4 text-center">{formatPercentageText(capaian).replace(/%$/, "")}</td>
-                <td className="border border-sky-500 px-6 py-4">{keteranganCapaian || "-"}</td>
+                <td className="border border-sky-500 px-6 py-4"><CapaianKeterangan buktiPendukung={buktiPendukung}>{keteranganCapaian || "-"}</CapaianKeterangan></td>
             </>
         );
     }

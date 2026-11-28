@@ -1,6 +1,7 @@
 import { User } from "@/types";
 import { useUserContext } from "@/context/UserContext";
 import { useFilterContext } from "@/context/FilterContext";
+import { ROLES } from "@/constants/roles";
 import { clearSessionId } from "@/lib/session";
 import { getResolvedLevel } from "@/lib/rbac";
 import { TbLogout } from "react-icons/tb";
@@ -10,6 +11,7 @@ export default function UserProfile({ user, hideOpd }: { user: User, hideOpd?: b
   const { setUser, setError } = useUserContext();
   const { periode, activatedTahun, activatedBulan, namaDinas, activatedLevelRole } = useFilterContext();
   const level = getResolvedLevel(user, activatedLevelRole) ?? user?.roles?.[0] ?? "unknown";
+  const hideLevel = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
 
   const getMonthName = (monthValue: string | null) => {
     if (!monthValue) return "";
@@ -43,8 +45,12 @@ export default function UserProfile({ user, hideOpd }: { user: User, hideOpd?: b
         )}
         <span className="text-white/70">|</span>
         <span>{user?.firstName}</span>
-        <span className="text-white/70">|</span>
-        <span>{level}</span>
+        {!hideLevel && (
+          <>
+            <span className="text-white/70">|</span>
+            <span>{level}</span>
+          </>
+        )}
       </div>
       <div className="font-bold rounded-lg cursor-pointer py-1 px-3 hover:text-black text-white hover:bg-white border border-white">
         <button

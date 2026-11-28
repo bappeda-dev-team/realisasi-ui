@@ -15,7 +15,9 @@ import { useUserContext } from "@/context/UserContext";
 import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { formatPercentageText } from "@/lib/formatPercentageText";
-import { RenaksiIndividuItem, RenaksiTarget, JenisRealisasiValue } from "@/types";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
+import { RenaksiOpdPenetapanResponse, RenaksiTarget, JenisRealisasiValue } from "@/types";
+import OpdTable, { mapPenetapanToRenaksiRows } from "@/app/Opd/Renaksi/Table";
 import { getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import { ROLES } from "@/constants/roles";
 import { canEditIndividuRenaksiRealisasi } from "@/lib/rbac";
@@ -48,9 +50,11 @@ const Table = () => {
   const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
   const isAdmin = user?.roles?.includes(ROLES.SUPER_ADMIN) || user?.roles?.includes(ROLES.ADMIN_OPD);
   const isOpdScopedView = canBypassNip && Boolean(activatedDinas);
-  const canEditRealisasi = canEditIndividuRenaksiRealisasi(user, activatedLevelRole) && !isOpdScopedView;
 
   const effectiveLevel = getEffectiveUserLevel(user, activatedLevelRole);
+  const isLevel1 = effectiveLevel === ROLES.LEVEL_1;
+  const canEditRealisasi = !isLevel1 && canEditIndividuRenaksiRealisasi(user, activatedLevelRole) && !isOpdScopedView;
+  const dataLabel = isLevel1 ? "OPD" : "Individu";
 
   const getHeaderColor = (level: string | undefined) => {
     switch (level) {
@@ -90,7 +94,10 @@ const Table = () => {
   const nip = user?.nip;
   const kodeOpd = activatedDinas || user?.kode_opd;
   let apiUrl = null;
-  if (kodeOpd && yearLabel && monthKey) {
+  if (user && kodeOpd && yearLabel && monthKey) {
+    if (isLevel1) {
+      apiUrl = `/api/v1/realisasi/renaksi_opd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
+    } else {
       let safeNip = null;
       if (isOpdScopedView && activatedNamaPegawai) {
           safeNip = activatedNamaPegawai.replace(/-$/, "");
@@ -101,16 +108,21 @@ const Table = () => {
       if (safeNip) {
           apiUrl = `/api/v1/realisasi/renaksi_individu/nip/${encodeURIComponent(safeNip)}/kodeOpd/${encodeURIComponent(kodeOpd)}/tahun/${encodeURIComponent(yearLabel)}/penetapan?bulan=${encodeURIComponent(monthKey)}`;
       }
+    }
   }
 
   const { data, loading, error, refetch } = useFetchData<any>({
     url: apiUrl,
   });
+  const opdPayload: RenaksiOpdPenetapanResponse | undefined = isLevel1 ? (data?.data ?? data) : undefined;
+  const opdRows = mapPenetapanToRenaksiRows(
+    Array.isArray(opdPayload?.renaksi_opds) ? opdPayload.renaksi_opds : [],
+  );
 
   useEffect(() => {
     const payload = data?.data ?? data;
 
-    if (!payload || !user || !Array.isArray(payload.rekins)) {
+    if (isLevel1 || !payload || !user || !Array.isArray(payload.rekins)) {
       setRows([]);
       return;
     }
@@ -174,7 +186,7 @@ const Table = () => {
     });
 
     setRows(flattened);
-  }, [data, user, monthKey, yearLabel]);
+  }, [data, user, monthKey, yearLabel, isLevel1]);
 
   const monthColumnLabel = `${activatedTahun} - ${monthLabel}`;
 
@@ -235,11 +247,15 @@ const Table = () => {
     const opdTitle = namaDinas ? ` - ${namaDinas}` : "";
 
     doc.setFontSize(14);
-    doc.text(`Renaksi Individu${opdTitle}`, 40, 40);
+    doc.text(`Renaksi ${dataLabel}${opdTitle}`, 40, 40);
     doc.setFontSize(10);
     doc.text(`Periode: ${periodLabel}`, 40, 58);
 
-    const tableHead = [[
+    const tableHead = isLevel1 ? [[
+      "No", "Kode Renaksi", "Rencana Aksi", "Sasaran Kinerja", "Subkegiatan",
+      "Anggaran (Rp)", "Target (%)", "Realisasi (%)", "Capaian (%)",
+      "Keterangan Capaian", "Faktor Penunjang", "Faktor Penghambat",
+    ]] : [[
       "No",
       "Sasaran Kinerja",
       "Nama Pemilik",
@@ -255,7 +271,22 @@ const Table = () => {
 
     const tableBody: any[] = [];
 
-    rows.forEach((item, index) => {
+    if (isLevel1) {
+      opdRows.forEach((row, index) => tableBody.push([
+        index + 1,
+        row.kodeRencanaAksiOpd || "-",
+        row.namaRenaksi,
+        row.kodeSasaranOpd,
+        `${row.namaSubkegiatan} (${row.kodeSubkegiatan})`,
+        formatRupiah(row.anggaran),
+        row.target ?? "-",
+        row.realisasi ?? "-",
+        formatPercentageText(row.capaian ?? "-").replace(/%$/, ""),
+        formatPercentageText(row.keteranganCapaian ?? "-"),
+        row.faktorPenunjang || "-",
+        row.faktorPenghambat || "-",
+      ]));
+    } else rows.forEach((item, index) => {
       const targets = item.targets.length ? item.targets : [null];
 
       targets.forEach((target, targetIndex) => {
@@ -310,7 +341,7 @@ const Table = () => {
 
     const safeMonthLabel = String(monthLabel || "bulan").replace(/\s+/g, "-").toLowerCase();
     const safeYearLabel = String(yearLabel || "tahun").replace(/\s+/g, "-").toLowerCase();
-    const fileName = `renaksi-individu-${safeYearLabel}-${safeMonthLabel}.pdf`;
+    const fileName = `renaksi-${dataLabel.toLowerCase()}-${safeYearLabel}-${safeMonthLabel}.pdf`;
     return { doc, fileName };
   };
 
@@ -343,12 +374,12 @@ const Table = () => {
     previewDoc.save(pdfFileName);
   };
 
-  const infoMessage = !user || (!user?.nip && !canBypassNip)
+  const infoMessage = !user || (!isLevel1 && !user?.nip && !canBypassNip)
     ? "Silakan login terlebih dahulu untuk melihat data renaksi individu."
-    : canBypassNip && !activatedDinas
-      ? "Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi individu muncul."
+    : !kodeOpd || (canBypassNip && !activatedDinas)
+      ? `Pilih dan aktifkan OPD, tahun, dan bulan agar data renaksi ${dataLabel} muncul.`
       : !activatedTahun
-        ? "Pilih dan aktifkan tahun agar data renaksi individu muncul."
+        ? `Pilih dan aktifkan tahun agar data renaksi ${dataLabel} muncul.`
         : !monthKey
           ? "Silakan pilih bulan terlebih dahulu melalui dropdown pilih bulan di header."
           : undefined;
@@ -367,7 +398,7 @@ const Table = () => {
         <div className="rounded border border-emerald-200 px-4 py-6 text-center">
           <LoadingBeat loading={true} />
           <p className="text-sm text-gray-600 mt-2">
-            Memuat data renaksi individu...
+            Memuat data renaksi {dataLabel}...
           </p>
         </div>
       </>
@@ -384,11 +415,11 @@ const Table = () => {
     );
   }
 
-  if (!rows.length) {
+  if (!(isLevel1 ? opdRows.length : rows.length)) {
     return (
       <>
         <div className="rounded border border-red-200 px-4 py-6 text-center text-sm text-gray-600">
-          Data renaksi individu belum dikunci.
+          {isLevel1 ? "Data renaksi OPD belum tersedia atau belum dikunci." : "Data renaksi individu belum dikunci."}
         </div>
       </>
     );
@@ -397,71 +428,77 @@ const Table = () => {
   return (
     <>
       <div className="overflow-auto m-2 rounded-t-xl">
-        <table id="print-area-renaksi" className="w-full">
+        {isLevel1 ? (
+          <OpdTable
+            rows={opdRows}
+            onPrint={handleOpenPrintPreview}
+            headerColor={headerColor}
+          />
+        ) : <table id="print-area-renaksi" className="w-full">
           <thead>
             <tr className={`text-xm ${headerColor}`}>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 max-w-[100px] text-center"
               >
-                No
+                <div className="flex flex-col items-center"><span>No</span><span>(1)</span></div>
               </td>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[180px]"
               >
-                Sasaran Kinerja
+                <div className="flex flex-col items-center"><span>Sasaran Kinerja</span><span>(2)</span></div>
               </td>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[200px]"
               >
-                Nama Pemilik
+                <div className="flex flex-col items-center"><span>Nama Pemilik</span><span>(3)</span></div>
               </td>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[400px] text-center"
               >
-                Rencana Aksi
+                <div className="flex flex-col items-center"><span>Rencana Aksi</span><span>(4)</span></div>
               </td>
               <td
                 rowSpan={2}
                 className="border-r border-b px-6 py-3 min-w-[150px] text-center"
               >
-                Anggaran (Rp)
+                <div className="flex flex-col items-center"><span>Anggaran (Rp)</span><span>(5)</span></div>
               </td>
               <th
                 colSpan={4}
                 className="border-l border-b px-6 py-3 min-w-[100px]"
               >
-                {monthColumnLabel}
+                Realisasi - Renaksi
               </th>
               <th
                 rowSpan={2}
                 className="border-l border-b px-6 py-3 min-w-[250px] text-center"
               >
-                Faktor Penunjang
+                <div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(10)</span></div>
               </th>
               <th
                 rowSpan={2}
                 className="border-l border-b px-6 py-3 min-w-[250px] text-center"
               >
-                Faktor Penghambat
+                <div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(11)</span></div>
               </th>
               <td
                 rowSpan={2}
                 className="border-l border-b px-6 py-3 min-w-[120px] text-center"
               >
-                Aksi
+                <div className="flex flex-col items-center"><span>Aksi</span><span>(12)</span></div>
               </td>
             </tr>
             <tr className={headerColor}>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Target (%)</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(6)</span></div></th>
               <th className="border-l border-b px-6 py-3 min-w-[50px]">
-                Realisasi (%)
+                <div className="flex flex-col items-center"><span>Realisasi (%)</span><span>(7)</span></div>
               </th>
-              <th className="border-l border-b px-6 py-3 min-w-[50px]">Capaian (%)</th>
-              <th className="border-l border-b px-6 py-3 min-w-[150px]">Keterangan Capaian</th>
+              <th className="border-l border-b px-6 py-3 min-w-[50px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(8)</span><span>(7/6*100)</span></div></th>
+              <th className="border-l border-b px-6 py-3 min-w-[150px]"><div className="flex flex-col items-center"><span>Keterangan Capaian</span><span>(9)</span></div></th>
             </tr>
           </thead>
           <tbody>
@@ -506,7 +543,7 @@ const Table = () => {
                     {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
-                    {formatPercentageText(target?.keteranganCapaian || "-")}
+                    <CapaianKeterangan buktiPendukung={target?.buktiPendukung}>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                   </td>
                   <td className="border-r border-b border-emerald-500 px-6 py-4">
                     <div className="flex flex-col items-center gap-2">
@@ -550,7 +587,7 @@ const Table = () => {
               );
             })}
           </tbody>
-        </table>
+        </table>}
       </div>
       {canEditRealisasi && (
         <FormModal
@@ -615,14 +652,14 @@ const Table = () => {
           ></div>
           <div className="relative z-10 w-[95vw] max-w-6xl rounded-lg bg-white p-4 shadow-lg">
             <div className="mb-3 border-b pb-2">
-              <h2 className="text-lg font-semibold uppercase">Preview Cetak Renaksi Individu</h2>
+              <h2 className="text-lg font-semibold uppercase">Preview Cetak Renaksi {dataLabel}</h2>
               <p className="text-sm text-gray-600">Periksa tampilan sebelum mengunduh PDF.</p>
             </div>
 
             <div className="h-[70vh] overflow-hidden rounded border border-gray-300">
               {pdfPreviewUrl ? (
                 <iframe
-                  title="Preview PDF Renaksi Individu"
+                  title={`Preview PDF Renaksi ${dataLabel}`}
                   src={pdfPreviewUrl}
                   className="h-full w-full"
                 />

@@ -3,6 +3,7 @@ import { ButtonGreenBorder } from "@/components/Global/Button/button";
 import { FormModal } from "@/components/Global/Modal";
 import { TujuanOpdRealisasiGrouped, TujuanOpdTargetRealisasiCapaian, JenisRealisasiValue } from '@/types';
 import { formatPercentageText } from '@/lib/formatPercentageText';
+import CapaianKeterangan from '@/components/Global/CapaianKeterangan';
 import FormFaktorPenunjang from './FormFaktorPenunjang';
 import FormFaktorPenghambat from './FormFaktorPenghambat';
 
@@ -90,6 +91,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 realisasi={target.realisasi}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
+                                buktiPendukung={target.buktiPendukung}
                                 faktorPenunjang={target.faktorPenunjang}
                                 faktorPenghambat={target.faktorPenghambat}
                                 canEditRealisasi={!!onOpenRealisasi}
@@ -239,6 +241,7 @@ type TargetColProps = {
     realisasi: number | null;
     capaian: string;
     keteranganCapaian: string;
+    buktiPendukung?: string | null;
     faktorPenunjang?: string | null;
     faktorPenghambat?: string | null;
     canEditRealisasi?: boolean;
@@ -252,7 +255,7 @@ const convertToDisplayString = (value: string | number | null | undefined): stri
     return value.toString().replace(/\./g, ',');
 };
 
-const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, faktorPenunjang, faktorPenghambat, canEditRealisasi, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
+const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi, capaian, keteranganCapaian, buktiPendukung, faktorPenunjang, faktorPenghambat, canEditRealisasi, handleClick, onEditFaktorPenunjang, onEditFaktorPenghambat }) => {
     const isRealisasiFilled = realisasi != null && realisasi !== 0;
 
     return (
@@ -272,7 +275,7 @@ const ColTargetTujuanComponent: React.FC<TargetColProps> = ({ target, realisasi,
                 </div>
             </td>
             <td className="border border-red-400 px-6 py-4 text-center">{formatPercentageText(capaian)}</td>
-            <td className="border border-red-400 px-6 py-4">{formatPercentageText(keteranganCapaian || '-')}</td>
+            <td className="border border-red-400 px-6 py-4"><CapaianKeterangan buktiPendukung={buktiPendukung}>{formatPercentageText(keteranganCapaian || '-')}</CapaianKeterangan></td>
             <td className="border border-red-400 px-6 py-4">
                 <div className="flex flex-col items-center gap-1">
                     <span>{faktorPenunjang || '-'}</span>

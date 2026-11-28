@@ -1,12 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { ButtonGreenBorder } from '@/components/Global/Button/button'
-import { FormModal } from '@/components/Global/Modal'
 import { formatPercentageText } from '@/lib/formatPercentageText'
+import CapaianKeterangan from '@/components/Global/CapaianKeterangan'
 import { RenaksiOpdPenetapanItem } from '@/types'
-import FormFaktorPenunjangRenaksiOpd from './_components/FormFaktorPenunjangRenaksiOpd'
-import FormFaktorPenghambatRenaksiOpd from './_components/FormFaktorPenghambatRenaksiOpd'
 
 export interface RenaksiRow {
   kodeRencanaAksiOpd: string
@@ -21,16 +19,13 @@ export interface RenaksiRow {
   keteranganCapaian: string | null
   faktorPenunjang: string
   faktorPenghambat: string
+  buktiPendukung?: string | null
 }
 
 interface TableProps {
   rows: RenaksiRow[]
-  kodeOpd: string
-  tahun: string
-  bulanKey: string
-  bulanLabel: string
   onPrint: () => void
-  onFaktorSuccess: () => void
+  headerColor?: string
 }
 
 export const mapPenetapanToRenaksiRows = (
@@ -52,6 +47,7 @@ export const mapPenetapanToRenaksiRows = (
       keteranganCapaian: realisasi?.keterangan_capaian ?? null,
       faktorPenunjang: realisasi?.faktor_penunjang ?? '',
       faktorPenghambat: realisasi?.faktor_penghambat ?? '',
+      buktiPendukung: realisasi?.bukti_pendukung ?? null,
     }
   })
 
@@ -72,102 +68,55 @@ const formatNumber = (value: number | null | undefined): string => {
 
 const Table: React.FC<TableProps> = ({
   rows,
-  kodeOpd,
-  tahun,
-  bulanKey,
-  bulanLabel,
   onPrint,
-  onFaktorSuccess,
+  headerColor = 'bg-emerald-500 text-white',
 }) => {
-  const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null)
-  const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false)
-  const [isFaktorPenghambatModalOpen, setIsFaktorPenghambatModalOpen] = useState(false)
-
-  const periodLabel = `${tahun || 'Tahun'} - ${bulanLabel || 'Bulan'}`
-
-  const hasRealisasi = (row: RenaksiRow) =>
-    row.realisasi !== null && row.realisasi !== undefined && Number(row.realisasi) !== 0
-
-  const FaktorCell = ({ row, value, onEdit }: {
-    row: RenaksiRow
-    value: string
-    onEdit: () => void
-  }) => (
-    <div className="flex flex-col items-center gap-2">
-      <span className="whitespace-pre-line">{value || '-'}</span>
-      {hasRealisasi(row) && (
-        <ButtonGreenBorder
-          className="w-full max-w-[120px] text-xs py-0.5"
-          onClick={onEdit}
-        >
-          Faktor
-        </ButtonGreenBorder>
-      )}
-    </div>
+  const FaktorCell = ({ value }: { value: string }) => (
+    <span className="whitespace-pre-line">{value || '-'}</span>
   )
-
-  const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
-    setSelectedRow(row)
-    setIsFaktorPenunjangModalOpen(true)
-  }
-
-  const handleCloseFaktorPenunjang = () => {
-    setIsFaktorPenunjangModalOpen(false)
-    setSelectedRow(null)
-  }
-
-  const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
-    setSelectedRow(row)
-    setIsFaktorPenghambatModalOpen(true)
-  }
-
-  const handleCloseFaktorPenghambat = () => {
-    setIsFaktorPenghambatModalOpen(false)
-    setSelectedRow(null)
-  }
 
   return (
     <>
       <table id="print-area-renaksi" className="w-full">
         <thead>
-          <tr className="text-xm bg-emerald-500 text-white">
+          <tr className={`text-xm ${headerColor}`}>
             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">
-              No
+              <div className="flex flex-col items-center"><span>No</span><span>(1)</span></div>
             </td>
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[180px]">
-              Kode Renaksi
+              <div className="flex flex-col items-center"><span>Kode Renaksi</span><span>(2)</span></div>
             </td>
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[400px]">
-              Rencana Aksi
+              <div className="flex flex-col items-center"><span>Rencana Aksi</span><span>(3)</span></div>
             </td>
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px]">
-              Sasaran Kinerja
+              <div className="flex flex-col items-center"><span>Sasaran Kinerja</span><span>(4)</span></div>
             </td>
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">
-              Subkegiatan
+              <div className="flex flex-col items-center"><span>Subkegiatan</span><span>(5)</span></div>
             </td>
             <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[150px] text-center whitespace-nowrap">
-              Anggaran (Rp)
+              <div className="flex flex-col items-center"><span>Anggaran (Rp)</span><span>(6)</span></div>
             </td>
             <th colSpan={6} className="border-l border-b px-6 py-3 min-w-[100px] text-center uppercase">
-              {periodLabel}
+              Realisasi - Renaksi
             </th>
             <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">
-              Aksi
+              <div className="flex flex-col items-center"><span>Aksi</span><span>(13)</span></div>
             </td>
           </tr>
-          <tr className="bg-emerald-500 text-white">
-            <th className="border-l border-b px-3 py-2 min-w-[70px]">Target (%)</th>
+          <tr className={headerColor}>
+            <th className="border-l border-b px-3 py-2 min-w-[70px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(7)</span></div></th>
             <th
               className="border-l border-b px-3 py-2 min-w-[90px]"
               title="Nilai otomatis dari realisasi Renaksi Individu"
             >
-              Realisasi (%)
+              <div className="flex flex-col items-center"><span>Realisasi (%)</span><span>(8)</span></div>
             </th>
-            <th className="border-l border-b px-3 py-2 min-w-[80px]">Capaian (%)</th>
-            <th className="border-l border-b px-3 py-2 min-w-[180px]">Keterangan Capaian</th>
-            <th className="border-l border-b px-3 py-2 min-w-[250px]">Faktor Penunjang</th>
-            <th className="border-l border-b px-3 py-2 min-w-[250px]">Faktor Penghambat</th>
+            <th className="border-l border-b px-3 py-2 min-w-[80px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(9)</span><span>(8/7*100)</span></div></th>
+            <th className="border-l border-b px-3 py-2 min-w-[180px]"><div className="flex flex-col items-center"><span>Keterangan Capaian</span><span>(10)</span></div></th>
+            <th className="border-l border-b px-3 py-2 min-w-[250px]"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(11)</span></div></th>
+            <th className="border-l border-b px-3 py-2 min-w-[250px]"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(12)</span></div></th>
           </tr>
         </thead>
         <tbody>
@@ -200,20 +149,16 @@ const Table: React.FC<TableProps> = ({
                 {formatPercentageText(row.capaian ?? '-').replace(/%$/, '')}
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
-                {formatPercentageText(row.keteranganCapaian ?? '-')}
+                <CapaianKeterangan buktiPendukung={row.buktiPendukung}>{formatPercentageText(row.keteranganCapaian ?? '-')}</CapaianKeterangan>
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell
-                  row={row}
                   value={row.faktorPenunjang}
-                  onEdit={() => handleOpenFaktorPenunjang(row)}
                 />
               </td>
               <td className="border-r border-b border-emerald-500 px-3 py-4 text-center align-middle">
                 <FaktorCell
-                  row={row}
                   value={row.faktorPenghambat}
-                  onEdit={() => handleOpenFaktorPenghambat(row)}
                 />
               </td>
               <td className="border-r border-b border-emerald-500 px-6 py-4">
@@ -232,47 +177,6 @@ const Table: React.FC<TableProps> = ({
         </tbody>
       </table>
 
-      <FormModal
-        isOpen={isFaktorPenunjangModalOpen}
-        onClose={handleCloseFaktorPenunjang}
-        title="Faktor Penunjang"
-        maxWidthClass="max-w-lg"
-      >
-        <FormFaktorPenunjangRenaksiOpd
-          kodeOpd={kodeOpd}
-          tahun={tahun}
-          bulan={bulanKey}
-          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
-          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
-          currentValue={selectedRow?.faktorPenunjang ?? ''}
-          onClose={handleCloseFaktorPenunjang}
-          onSuccess={() => {
-            handleCloseFaktorPenunjang()
-            onFaktorSuccess()
-          }}
-        />
-      </FormModal>
-
-      <FormModal
-        isOpen={isFaktorPenghambatModalOpen}
-        onClose={handleCloseFaktorPenghambat}
-        title="Faktor Penghambat"
-        maxWidthClass="max-w-lg"
-      >
-        <FormFaktorPenghambatRenaksiOpd
-          kodeOpd={kodeOpd}
-          tahun={tahun}
-          bulan={bulanKey}
-          kodeRencanaAksiOpd={selectedRow?.kodeRencanaAksiOpd ?? ''}
-          namaRenaksi={selectedRow?.namaRenaksi ?? ''}
-          currentValue={selectedRow?.faktorPenghambat ?? ''}
-          onClose={handleCloseFaktorPenghambat}
-          onSuccess={() => {
-            handleCloseFaktorPenghambat()
-            onFaktorSuccess()
-          }}
-        />
-      </FormModal>
     </>
   )
 }

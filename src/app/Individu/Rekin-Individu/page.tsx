@@ -4,11 +4,13 @@ import React from 'react'
 import { useFilterContext } from '@/context/FilterContext'
 import { useUserContext } from '@/context/UserContext'
 import { ROLES } from '@/constants/roles'
+import { getMonthName } from '@/lib/months'
 import Table from './Table'
 
 const TujuanPage = () => {
     const { user } = useUserContext()
     const { activatedDinas, activatedTahun, activatedBulan, activatedLevelRole, activatedNamaPegawai } = useFilterContext()
+    const monthLabel = getMonthName(activatedBulan)
     const canBypassNip = user?.roles.includes(ROLES.SUPER_ADMIN) || user?.roles.includes(ROLES.ADMIN_OPD);
     const needsOpdSelection = !activatedDinas
     const needsPegawaiSelection = canBypassNip && (!activatedLevelRole || !activatedNamaPegawai)
@@ -27,8 +29,8 @@ const TujuanPage = () => {
 
     return (
         <div className="overflow-auto grid gap-2">
-            <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-semibold">Rencana Kinerja Individu</h2>
+            <div className="flex items-center mb-2">
+                <h2 className="text-lg font-semibold">Rencana Kinerja Individu - {activatedTahun} - {monthLabel}</h2>
             </div>
             <Table />
         </div>

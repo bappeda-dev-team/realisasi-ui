@@ -313,8 +313,8 @@ export default function RenaksiOpdPage() {
     <>
       {renderSyncButton()}
       <div className="overflow-auto grid gap-2">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-lg font-semibold">Realisasi Renaksi OPD - {namaDinas ?? '-'}</h2>
+        <div className="flex items-center mb-2">
+          <h2 className="text-lg font-semibold">Realisasi Renaksi OPD - {namaDinas ?? '-'} - {tahunValue} - {bulanName}</h2>
         </div>
 
         {loading ? (
@@ -337,12 +337,7 @@ export default function RenaksiOpdPage() {
         ) : (
           <Table
             rows={rows}
-            kodeOpd={kodeOpd}
-            tahun={tahunValue ?? ''}
-            bulanKey={bulanKey}
-            bulanLabel={bulanName}
             onPrint={handleOpenPrintPreview}
-            onFaktorSuccess={refetch}
           />
         )}
 

@@ -70,6 +70,7 @@ const RowTujuanComponent: React.FC<RowTujuanComponentProps> = ({
                                 target={target.target}
                                 satuan={target.satuan}
                                 realisasi={String(target.realisasi ?? 0)}
+                            buktiPendukung={target.buktiPendukung}
                                 capaian={target.capaian}
                                 keteranganCapaian={target.keteranganCapaian}
                                 faktorPenunjang={target.faktorPenunjang}

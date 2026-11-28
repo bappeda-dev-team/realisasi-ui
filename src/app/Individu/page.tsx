@@ -7,7 +7,7 @@ export default function Opd() {
   const router = useRouter()
 
   useEffect(() => {
-    router.replace('/Individu/Rekin-Individu')
+    router.replace('/Individu/Renaksi')
   }, [])
 
   return null

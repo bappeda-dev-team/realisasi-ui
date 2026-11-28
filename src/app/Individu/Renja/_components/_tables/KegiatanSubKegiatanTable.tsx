@@ -11,6 +11,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import { getMonthKey, getMonthName } from "@/lib/months";
 import { DEFAULT_JENIS_REALISASI } from "@/lib/jenis-realisasi";
 import { formatPercentageText } from "@/lib/formatPercentageText";
+import CapaianKeterangan from "@/components/Global/CapaianKeterangan";
 import { getHeaderColor, getHeaderFillColor, getEffectiveUserLevel } from "@/lib/userLevelStyle";
 import {
     RenjaTarget,
@@ -670,15 +671,16 @@ const KegiatanSubKegiatanTable = () => {
                 { content: "Nama/NIP", rowSpan: 2 },
                 { content: "Kegiatan / Sub Kegiatan", rowSpan: 2 },
                 { content: "Indikator", rowSpan: 2 },
-                { content: `Renja ${activatedTahun} - ${bulanName}`, colSpan: 8 },
+                { content: "Realisasi - Renja", colSpan: 4 },
+                { content: "Realisasi - Renja Pagu", colSpan: 4 },
                 { content: "Faktor Penunjang", rowSpan: 2 },
                 { content: "Faktor Penghambat", rowSpan: 2 },
             ],
             [
                 "Target (%)",
-                "Realisasi Target (%)",
+                "Realisasi (%)",
                 "Capaian (%)",
-                "Keterangan Capaian",
+                "Keterangan",
                 "Pagu (Rp.)",
                 "Realisasi Pagu (Rp.)",
                 "Capaian Pagu (%)",
@@ -845,24 +847,25 @@ const KegiatanSubKegiatanTable = () => {
                         <table id="print-area-renja-kegiatan-subkegiatan" className="w-full">
                             <thead>
                                 <tr className={`text-xm ${headerColor}`}>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">No</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]">Nama/NIP</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Kegiatan / Sub Kegiatan</td>
-                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]">Indikator</td>
-                                    <th colSpan={8} className="border-l border-b px-6 py-3 min-w-[100px]">{`Renja ${activatedTahun} - ${bulanName}`}</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penunjang</th>
-                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center">Faktor Penghambat</th>
-                                    <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center">Aksi</td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center"><div className="flex flex-col items-center"><span>No</span><span>(1)</span></div></td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[200px]"><div className="flex flex-col items-center"><span>Nama/NIP</span><span>(2)</span></div></td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Kegiatan / Sub Kegiatan</span><span>(3)</span></div></td>
+                                    <td rowSpan={2} className="border-r border-b px-6 py-3 min-w-[300px]"><div className="flex flex-col items-center"><span>Indikator</span><span>(4)</span></div></td>
+                                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi - Renja</th>
+                                    <th colSpan={4} className="border-l border-b px-6 py-3 min-w-[100px]">Realisasi - Renja Pagu</th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penunjang</span><span>(13)</span></div></th>
+                                    <th rowSpan={2} className="border-l border-b px-6 py-3 min-w-[250px] text-center"><div className="flex flex-col items-center"><span>Faktor Penghambat</span><span>(14)</span></div></th>
+                                    <td rowSpan={2} className="border-l border-b px-6 py-3 min-w-[120px] text-center"><div className="flex flex-col items-center"><span>Aksi</span><span>(15)</span></div></td>
                                 </tr>
                                 <tr className={headerColor}>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Target (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Realisasi Target (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[120px]">Keterangan Capaian</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Pagu (Rp.)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[80px]">Realisasi Pagu (Rp.)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[70px]">Capaian Pagu (%)</th>
-                                    <th className="border-l border-b px-6 py-3 min-w-[120px]">Keterangan Capaian Pagu</th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(5)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Realisasi (%)</span><span>(6)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]"><div className="flex flex-col items-center"><span>Capaian (%)</span><span>(7)</span><span>(6/5*100)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[120px]"><div className="flex flex-col items-center"><span>Keterangan</span><span>(8)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Pagu (Rp.)</span><span>(9)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[80px]"><div className="flex flex-col items-center"><span>Realisasi Pagu (Rp.)</span><span>(10)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[70px]"><div className="flex flex-col items-center"><span>Capaian Pagu (%)</span><span>(11)</span><span>(10/9*100)</span></div></th>
+                                    <th className="border-l border-b px-6 py-3 min-w-[120px]"><div className="flex flex-col items-center"><span>Keterangan Capaian Pagu</span><span>(12)</span></div></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -929,7 +932,7 @@ const KegiatanSubKegiatanTable = () => {
                                                 {formatPercentageText(target?.capaian || "-").replace(/%$/, "")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {formatPercentageText(target?.keteranganCapaian || "-")}
+                                            <CapaianKeterangan buktiPendukung={target?.buktiPendukung}>{formatPercentageText(target?.keteranganCapaian || "-")}</CapaianKeterangan>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 {formatRupiah(target?.pagu)}
@@ -952,7 +955,7 @@ const KegiatanSubKegiatanTable = () => {
                                                 {formatPercentageText(target?.capaianPagu || "-")}
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
-                                                {formatPercentageText(target?.keteranganCapaianPagu || "-")}
+                                            <CapaianKeterangan buktiPendukung={target?.buktiPendukung}>{formatPercentageText(target?.keteranganCapaianPagu || "-")}</CapaianKeterangan>
                                             </td>
                                             <td className="border-r border-b border-emerald-500 px-6 py-4">
                                                 <div className="flex flex-col items-center gap-2">
