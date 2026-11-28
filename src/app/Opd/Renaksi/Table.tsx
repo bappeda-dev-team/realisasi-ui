@@ -31,6 +31,8 @@ interface TableProps {
   bulanLabel: string
   onPrint: () => void
   onFaktorSuccess: () => void
+  canEditFaktor?: boolean
+  headerColor?: string
 }
 
 export const mapPenetapanToRenaksiRows = (
@@ -78,6 +80,8 @@ const Table: React.FC<TableProps> = ({
   bulanLabel,
   onPrint,
   onFaktorSuccess,
+  canEditFaktor = true,
+  headerColor = 'bg-emerald-500 text-white',
 }) => {
   const [selectedRow, setSelectedRow] = useState<RenaksiRow | null>(null)
   const [isFaktorPenunjangModalOpen, setIsFaktorPenunjangModalOpen] = useState(false)
@@ -95,7 +99,7 @@ const Table: React.FC<TableProps> = ({
   }) => (
     <div className="flex flex-col items-center gap-2">
       <span className="whitespace-pre-line">{value || '-'}</span>
-      {hasRealisasi(row) && (
+      {canEditFaktor && hasRealisasi(row) && (
         <ButtonGreenBorder
           className="w-full max-w-[120px] text-xs py-0.5"
           onClick={onEdit}
@@ -107,6 +111,7 @@ const Table: React.FC<TableProps> = ({
   )
 
   const handleOpenFaktorPenunjang = (row: RenaksiRow) => {
+    if (!canEditFaktor) return
     setSelectedRow(row)
     setIsFaktorPenunjangModalOpen(true)
   }
@@ -117,6 +122,7 @@ const Table: React.FC<TableProps> = ({
   }
 
   const handleOpenFaktorPenghambat = (row: RenaksiRow) => {
+    if (!canEditFaktor) return
     setSelectedRow(row)
     setIsFaktorPenghambatModalOpen(true)
   }
@@ -130,7 +136,7 @@ const Table: React.FC<TableProps> = ({
     <>
       <table id="print-area-renaksi" className="w-full">
         <thead>
-          <tr className="text-xm bg-emerald-500 text-white">
+          <tr className={`text-xm ${headerColor}`}>
             <td rowSpan={2} className="border-r border-b px-6 py-3 max-w-[100px] text-center">
               <div className="flex flex-col items-center"><span>No</span><span>(1)</span></div>
             </td>
@@ -156,7 +162,7 @@ const Table: React.FC<TableProps> = ({
               <div className="flex flex-col items-center"><span>Aksi</span><span>(13)</span></div>
             </td>
           </tr>
-          <tr className="bg-emerald-500 text-white">
+          <tr className={headerColor}>
             <th className="border-l border-b px-3 py-2 min-w-[70px]"><div className="flex flex-col items-center"><span>Target (%)</span><span>(7)</span></div></th>
             <th
               className="border-l border-b px-3 py-2 min-w-[90px]"
@@ -232,7 +238,7 @@ const Table: React.FC<TableProps> = ({
         </tbody>
       </table>
 
-      <FormModal
+      {canEditFaktor && <FormModal
         isOpen={isFaktorPenunjangModalOpen}
         onClose={handleCloseFaktorPenunjang}
         title="Faktor Penunjang"
@@ -251,9 +257,9 @@ const Table: React.FC<TableProps> = ({
             onFaktorSuccess()
           }}
         />
-      </FormModal>
+      </FormModal>}
 
-      <FormModal
+      {canEditFaktor && <FormModal
         isOpen={isFaktorPenghambatModalOpen}
         onClose={handleCloseFaktorPenghambat}
         title="Faktor Penghambat"
@@ -272,7 +278,7 @@ const Table: React.FC<TableProps> = ({
             onFaktorSuccess()
           }}
         />
-      </FormModal>
+      </FormModal>}
     </>
   )
 }
